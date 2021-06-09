@@ -1,0 +1,53 @@
+https://learn.adafruit.com/adafruit-1-44-color-tft-with-micro-sd-socket/python-usage
+
+# disp = st7735.ST7735R(spi, rotation=90,                           # 1.8" ST7735R
+# disp = st7735.ST7735R(spi, rotation=270, height=128, x_offset=2, y_offset=3,   # 1.44" ST7735R
+
+
+# disp = st7735.ST7735R(spi, rotation=90, bgr=True,                 # 0.96" MiniTFT ST7735R
+# disp = ssd1351.SSD1351(spi, rotation=180,                         
+
+
+
+import machine
+import gc
+from time import sleep_ms
+from drivers.st7735r.st7735r144 import ST7735R as SSD
+height = 128
+width = 128  # 160
+
+pdc = machine.Pin('Y1', machine.Pin.OUT_PP, value=0)
+pcs = machine.Pin('Y2', machine.Pin.OUT_PP, value=1)
+prst = machine.Pin('Y3', machine.Pin.OUT_PP, value=1)
+spi = machine.SPI(2, baudrate=12_000_000)
+gc.collect()  # Precaution before instantiating framebuf
+ssd = SSD(spi, pcs, pdc, prst, height, width)  # Create a display instance
+ssd.fill(0)
+ssd.show()
+sleep_ms(1000)
+ssd.line(0, 0, width - 1, height - 1, ssd.rgb(0, 255, 0))  # Green diagonal corner-to-corner
+ssd.rect(0, 0, 15, 15, ssd.rgb(255, 0, 0))  # Red square at top left
+ssd.show()
+sleep_ms(2000)
+ssd.fill(0)
+ssd.show()
+ssd.line(0, 0, width - 1, height - 1, ssd.rgb(0, 255, 255))
+ssd.rect(0, 0, 40, 40, ssd.rgb(0, 0, 255))
+ssd.rect(width - 41, height - 41, 40, 40, ssd.rgb(0, 0, 255))
+ssd.show()
+
+Attempt to rotate 1.44" unit fell foul of x and y offsets with 1-2 pixel errors.
+Rotation passed to ctor
+    def __init__(self, spi, cs, dc, rst, height=128, width=128, init_spi=False, rotation=0):
+    ...
+        quad, mod = divmod(rotation, 90)  # Get quadrant
+        if mod:
+            raise ValueError('Rotation should be divisible by 90')
+    ...
+            
+        self._init(quad)
+
+    def _init(self, quad):
+    ...
+        rval = (b'\x20', b'\x40', b'\xe0', b'\x80')[quad]
+        wcd(b'\x36', rval)
