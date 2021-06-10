@@ -640,6 +640,7 @@ Methods:
 from gui.core.colors import *  # Colors and shapes
 from gui.widgets.buttons import Button
 ```
+![Image](./images/pushbuttons.JPG)
 
 This emulates a pushbutton, with a callback being executed each time the button
 is pressed. Physically this consists of pressing the `select` button when the
@@ -739,6 +740,7 @@ for t in table:  # Buttons overlay each other at same location
 from gui.core.colors import *  # Colors and shapes
 from gui.widgets.buttons import Button, RadioButtons
 ```
+![Image](./images/radiobuttons.JPG)
 
 This object groups a set of buttons at different locations. When a button is
 pressed, it becomes highlighted and remains so until another button is pressed.
@@ -1124,6 +1126,7 @@ change. See `gui/demos/active.py`.
 ```python
 from gui.widgets.scale import Scale
 ```
+![Image](./images/scale.JPG)
 
 This displays floating point data having a wide dynamic range, and optionally
 provides for user input of such values. It is modelled on old radios where a
@@ -1231,6 +1234,7 @@ precision. Each visible division on the control represents 10 integer units.
 ```python
 from gui.widgets.scale_log import ScaleLog
 ```
+![Image](./images/log_scale.JPG)
 
 This enables the input and/or display of floating point values with extremely
 wide dynamic range. This is done by means of a base 10 logarithmic scale. In
