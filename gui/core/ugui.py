@@ -241,8 +241,8 @@ class Screen:
         cs_old = cls.current_screen
         if cs_old is not None:  # Leaving an existing screen
             for entry in cls.current_screen.tasklist:
-                if entry[1]:  # To be cancelled on screen change
-                    entry[0].cancel()
+                if entry[1] or not forward:  # To be cancelled on screen change
+                    entry[0].cancel()  # or on closing the screen
             cs_old.on_hide()  # Optional method in subclass
         if forward:
             if isinstance(cls_new_screen, type):
@@ -530,7 +530,7 @@ class Widget:
         if fgcolor is None:
             fgcolor = writer.fgcolor
         if bgcolor is None:
-            bgcolor = BGCOLOR
+            bgcolor = writer.bgcolor
         if bdcolor is None:
             bdcolor = fgcolor
         self.fgcolor = fgcolor
@@ -548,9 +548,6 @@ class Widget:
 
     def warning(self):
         print('Warning: attempt to create {} outside screen dimensions.'.format(self.__class__.__name__))
-
-    def greyed_out(self):
-        return self._greyed_out # Subclass may be greyed out
 
     def value(self, val=None): # User method to get or set value
         if val is not None:

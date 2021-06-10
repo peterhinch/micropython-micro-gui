@@ -177,7 +177,7 @@ class Graph(Widget):
         return super().show()  # Draw or erase border
 
 class CartesianGraph(Graph):
-    def __init__(self,  writer, row, col, *, height=90, width = 120, fgcolor=None, bgcolor=None, bdcolor=None,
+    def __init__(self,  writer, row, col, *, height=90, width=120, fgcolor=None, bgcolor=None, bdcolor=None,
                  gridcolor=None, xdivs=10, ydivs=10, xorigin=5, yorigin=5):
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, gridcolor)
         self.xdivs = xdivs

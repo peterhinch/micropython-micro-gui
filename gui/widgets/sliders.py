@@ -11,14 +11,12 @@ from gui.widgets.label import Label
 dolittle = lambda *_ : None
 
 # *********** SLIDER CLASSES ***********
-# A slider's text items lie outside its bounding box (area sensitive to touch)
+# A slider's text items lie outside its bounding box.
 
 _SLIDE_DEPTH = const(6)  # Must be divisible by 2
 _TICK_VISIBLE = const(3)  # No. of tick pixels visible either side of slider
 _HALF_SLOT_WIDTH = const(2)  # Width of slot /2
 
-# Slider ontrols have been rewritten to avoid the need for reading back framebuffer
-# contents as this is unreliable on RA8875.
 class Slider(LinearIO):
     def __init__(self, writer, row, col, *,
                  height=100, width=20, divisions=10, legends=None,

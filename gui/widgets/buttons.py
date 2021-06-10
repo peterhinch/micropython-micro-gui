@@ -13,10 +13,9 @@ dolittle = lambda *_ : None
 
 class Button(Widget):
     lit_time = 1000
-    long_press_time = 1000
     def __init__(self, writer, row, col, *, shape=RECTANGLE, height=20, width=50,
                  fgcolor=None, bgcolor=None, bdcolor=False, textcolor=None, litcolor=None, text='',
-                 callback=dolittle, args=[], onrelease=False, lp_callback=dolittle, lp_args=[]):
+                 callback=dolittle, args=[], onrelease=False):
         sl = writer.stringlen(text)
         if shape == CIRCLE:  # Only height need be specified
             width = max(sl, height)
@@ -35,8 +34,6 @@ class Button(Widget):
         self.callback = callback
         self.callback_args = args
         self.onrelease = onrelease
-        self.lp_callback = lp_callback
-        self.lp_args = lp_args
         if self.litcolor is not None:
             self.delay = Delay_ms(self.shownormal)
         self.litcolor = litcolor if self.fgcolor is not None else None
@@ -97,9 +94,6 @@ class Button(Widget):
     def unsel(self):  # Select was released
         if self.onrelease:
             self.callback(self, *self.callback_args) # Callback not a bound method so pass self
-
-    def longsel(self):  # Select was long pressed
-        self.lp_callback(self, *self.lp_args)
 
 # Preferred way to close a screen or dialog. Produces an X button at the top RHS.
 # Note that if the bottom screen is closed, the application terminates.

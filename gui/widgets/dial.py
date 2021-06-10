@@ -35,7 +35,7 @@ def arrow(display, origin, vec, lc, color, ccw=cmath.exp(3j * cmath.pi/4), cw=cm
         polar(display, origin + conj(start), chev*cw*uv, color)
 
 
-class Pointer():
+class Pointer:
     def __init__(self, dial):
         self.dial = dial
         dial.vectors.add(self)
@@ -59,7 +59,7 @@ class Pointer():
 class Dial(Widget):
     CLOCK = 0
     COMPASS = 1
-    def __init__(self, writer, row, col, *, height=50,
+    def __init__(self, writer, row, col, *, height=100,
                  fgcolor=None, bgcolor=None, bdcolor=False, ticks=4,
                  label=None, style=0, pip=None):
         super().__init__(writer, row, col, height, height, fgcolor, bgcolor, bdcolor)

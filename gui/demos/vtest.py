@@ -1,4 +1,4 @@
-# vtest.py Test/demo of VectorDial for micro-gui
+# vtest.py Test/demo of Dial for micro-gui
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
@@ -18,7 +18,7 @@ from gui.core.colors import *
 # Widgets
 from gui.widgets.label import Label
 from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.vectors import Pointer, VectorDial
+from gui.widgets.dial import Pointer, Dial
 
 
 def fwdbutton(wri, row, col, cls_screen, text='Next'):
@@ -94,13 +94,13 @@ class VScreen(Screen):
         fwdbutton(wri, 200, 2, BackScreen, 'Forward')
         CloseButton(wri)
         # Set up random vector display with two pointers
-        dial = VectorDial(wri, 2, 2, height = 100, ticks = 12, fgcolor = YELLOW, arrow = True)
+        dial = Dial(wri, 2, 2, height = 100, ticks = 12, fgcolor = YELLOW, style=Dial.COMPASS)
         self.reg_task(ptr_test(dial))
         self.reg_task(ptr_test(dial))
         # Set up clock display: instantiate labels
         lbldate = Label(wri, 110, 2, 200, **labels)
         lbltim = Label(wri, 150, 2, 80, **labels)
-        dial = VectorDial(wri, 2, 120, height = 100, ticks = 12, fgcolor = GREEN, pip = GREEN)
+        dial = Dial(wri, 2, 120, height = 100, ticks = 12, fgcolor = GREEN, pip = GREEN)
         self.reg_task(aclock(dial, lbldate, lbltim))
 
 def test():
