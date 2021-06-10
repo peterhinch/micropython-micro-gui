@@ -13,12 +13,13 @@ It is compatible with all display drivers for
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
 to a wide range of displays. It is also portable between hosts.
 
+![Image](./images/rp2_test_fixture.JPG)
+
 # Project status
 
-Code has been tested on ESP32 and Pi Pico. It is new and bugs are likely.
+Code has been tested on ESP32 and Pi Pico. It is new and bugs are likely. This
+document is also incomplete and under review.
 
-This document is seriously incomplete. Sections with headings labelled TODO
-have been pasted from another GUI and will definitely contain errors.
 
 # 0. Contents
 
@@ -489,6 +490,8 @@ not be updated until the window has closed.
 ```python
 from gui.widgets.label import Label
 ```
+![Image](./images/label.JPG)
+Two styles of `Label`.
 
 The purpose of a `Label` instance is to display text at a specific screen
 location.
@@ -1013,7 +1016,7 @@ the oldest (topmost) being discarded as required.
 ```python
 from gui.widgets.meter import Meter
 ```
-
+![Image](./images/meter.JPG)
 This passive widget provides a vertical linear meter display of values scaled
 between 0.0 and 1.0.
 
@@ -1066,6 +1069,8 @@ Methods:
 ```python
 from gui.widgets.sliders import Slider, HorizSlider
 ```
+![Image](./images/vert_slider.JPG)
+![Image](./images/horiz_slider.JPG)
 
 These emulate linear potentiometers in order to display or control floating
 point values. Vertical `Slider` and horizontal `HorizSlider` variants are
@@ -1348,6 +1353,7 @@ def tickcb(f, c):
 ```python
 from gui.widgets.dial import Dial, Pointer
 ```
+![Image](./images/dial.JPG)
 
 A `Dial` is a passive widget. It presents a circular display capable of
 displaying an arbitrary number of vectors; each vector is represented by a
@@ -1463,7 +1469,7 @@ Screen.change(BaseScreen)
 ```python
 from gui.widgets.knob import Knob
 ```
-
+![Image](./images/knob.JPG)
 This emulates a rotary control capable of being rotated through a predefined
 arc in order to display or set a floating point variable.
 
