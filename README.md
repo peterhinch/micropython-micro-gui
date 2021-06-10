@@ -491,6 +491,7 @@ not be updated until the window has closed.
 from gui.widgets.label import Label
 ```
 ![Image](./images/label.JPG)
+
 Two styles of `Label`.
 
 The purpose of a `Label` instance is to display text at a specific screen
@@ -1017,6 +1018,7 @@ the oldest (topmost) being discarded as required.
 from gui.widgets.meter import Meter
 ```
 ![Image](./images/meter.JPG)
+
 This passive widget provides a vertical linear meter display of values scaled
 between 0.0 and 1.0.
 
@@ -1470,6 +1472,7 @@ Screen.change(BaseScreen)
 from gui.widgets.knob import Knob
 ```
 ![Image](./images/knob.JPG)
+
 This emulates a rotary control capable of being rotated through a predefined
 arc in order to display or set a floating point variable.
 
@@ -1756,11 +1759,11 @@ order in which they are instantiated.
 
 The obvious layout for the physical buttons is as per a joystick:
 
+|      |          |      |
 |:----:|:--------:|:----:|
 |      | Increase |      |
 | Prev | Select   | Next |
 |      | Decrease |      |
-|:----:|:--------:|:----:|
 
 This works well with many screen layouts, if the tab order is considered in the
 layout of the screen. It works well with most widgets including vertical ones
