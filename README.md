@@ -646,6 +646,9 @@ from gui.widgets.buttons import Button
 ```
 ![Image](./images/pushbuttons.JPG)
 
+In this image `Button` "a" has the focus. Pressing `select` will press the
+`Button`.
+
 This emulates a pushbutton, with a callback being executed each time the button
 is pressed. Physically this consists of pressing the `select` button when the
 `Button` instance has focus. Buttons may be any one of three shapes: `CIRCLE`,
