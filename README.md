@@ -1525,6 +1525,13 @@ Methods:
 ```python
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
 ```
+![Image](./images/polar.png)  ![Image](./images/cartesian.png)
+
+![Image](./images/lissajous.png)  ![Image](./images/bernoulli.png)
+
+![Image](./images/sine.png)
+
+Realtime data simulation.
 
 For example code see `gui/demos/plot.py`.
 
