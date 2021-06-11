@@ -1,7 +1,7 @@
 # meter.py Extension to ugui providing a linear "meter" widget.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019 Peter Hinch
+# Copyright (c) 2021 Peter Hinch
 
 from gui.core.ugui import Widget, display
 from gui.widgets.label import Label

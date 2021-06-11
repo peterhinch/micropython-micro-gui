@@ -1798,4 +1798,42 @@ variable.
 
 ## 23.2 Use of graphics primitives
 
-     (ssd and display objects)
+These notes are for those wishing to draw directly to the `Screen` instance.
+This is done by providing the user `Screen` class with an `after_open()` method
+which issues the display driver calls.
+
+The following code instantiates two classes:
+```python
+from hardware_setup import display, ssd
+```
+The `ssd` object is an instance of the object defined in the display driver. It
+is a requirement that this is a subclass of `framebuf.FrameBuffer`. Hence `ssd`
+supports all the graphics primitives provided by `FrameBuffer`. These may be
+used to draw on the `Screen`.
+
+The `display` object has an `ssd` bound variable which is a reference to the
+`ssd` device. The `display` has methods with the same names and args as those
+of `ssd`. These support greying out. So you can write (for example)
+```python
+display.rect(10, 10, 50, 50, RED)
+```
+To render in the correct colors it is wise ensure that greying out is disabled
+prior to calling `display` methods. This is done with
+```python
+display.usegrey(False)
+```
+There is little point in issuing `display.rect` as it confers no advantage over
+`ssd.rect`. However the `Display` class adds methods not currently available in
+`framebuf`. These are listed below.
+
+ * `circle(self, x0, y0, r, color, width =1)` Width specifies the line width.
+ * `fillcircle(self, x0, y0, r, color)`
+ * `clip_rect(self, x, y, w, h, color)` Rectangle with clipped corners.
+ * `fill_clip_rect(self, x, y, w, h, color)`
+ * `print_left(self, writer, x, y, txt, fgcolor=None, bgcolor=None, invert=False)`
+ * `print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False)`
+
+Hopefully these are self explanatory. The `Display` methods use the `framebuf`
+convention of `x, y` coordinates rather than the `row, col` system used by
+micro-gui.
+

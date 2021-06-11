@@ -15,7 +15,7 @@ from math import log10
 from gui.core.ugui import LinearIO, display
 from hardware_setup import ssd  # Display driver for Writer
 from gui.core.writer import Writer
-from gui.core.colors import BLACK
+from gui.core.colors import *
 
 # Null function
 dolittle = lambda *_ : None
@@ -86,6 +86,7 @@ class ScaleLog(LinearIO):
             vc = self._value  # Current value, corresponds to centre of display
             d = int(log10(vc)) - 1  # 10**d is start of a decade guaranteed to be outside display
             vs = max(10 ** d, 1.0)  # vs: start value of current decade
+            txtcolor = GREY if self.greyed_out() else self.fontcolor
             while True:  # For each decade until we run out of space
                 done = True  # Assume completion
                 xs: float = xc - dw * log10(vc / vs)  # x location of start of scale
@@ -102,7 +103,7 @@ class ScaleLog(LinearIO):
                             txt = self.legendcb(vt)
                             tlen = wri.stringlen(txt)
                             Writer.set_textpos(ssd, y0, min(x, x1 - tlen))
-                            wri.setcolor(self.fontcolor, self.bgcolor)
+                            wri.setcolor(txtcolor, self.bgcolor)
                             wri.printstring(txt)
                             ys = self.ldy0  # Large tick
                             yl = self.ldl

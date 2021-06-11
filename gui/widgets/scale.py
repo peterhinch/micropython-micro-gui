@@ -9,7 +9,7 @@
 from gui.core.ugui import LinearIO, display
 from hardware_setup import ssd  # Display driver for Writer
 from gui.core.writer import Writer
-from gui.core.colors import BLACK
+from gui.core.colors import *
 
 dolittle = lambda *_ : None
 
@@ -84,6 +84,7 @@ class Scale(LinearIO):
             # So pixels per unit value == win_width/200
             win_width: int = x1 - x0
             ticks: int = self.ticks  # Total # of ticks visible and hidden
+            txtcolor = GREY if self.greyed_out() else self.fontcolor
             while True:
                 x: int = x0 + (fx * win_width) // 200  # Current X position
                 ys: int  # Start Y position for tick
@@ -94,7 +95,7 @@ class Scale(LinearIO):
                     txt = self.legendcb(self._fvalue(iv * 10))
                     tlen = wri.stringlen(txt)
                     Writer.set_textpos(ssd, y0, min(x, x1 - tlen))
-                    wri.setcolor(self.fontcolor, self.bgcolor)
+                    wri.setcolor(txtcolor, self.bgcolor)
                     wri.printstring(txt)
                     wri.setcolor()
                     ys = self.ldy0  # Large tick

@@ -65,15 +65,19 @@ class Display:
             self._down.close_func(self.do_down)
         self._is_grey = False  # Not greyed-out
     
-    def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None):
+    def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False):
         sl = writer.stringlen(text)
         writer.set_textpos(ssd, y - writer.height // 2, x - sl // 2)
+        if self._is_grey:
+            fgcolor = GREY
         writer.setcolor(fgcolor, bgcolor)
-        writer.printstring(text)
+        writer.printstring(text, invert)
         writer.setcolor()  # Restore defaults
 
     def print_left(self, writer, x, y, txt, fgcolor=None, bgcolor=None, invert=False):
         writer.set_textpos(ssd, y, x)
+        if self._is_grey:
+            fgcolor = GREY
         writer.setcolor(fgcolor, bgcolor)
         writer.printstring(txt, invert)
         writer.setcolor()  # Restore defaults
@@ -230,7 +234,6 @@ class Screen:
     def show(cls, force):
         for obj in cls.current_screen.displaylist:
             if obj.visible: # In a buttonlist only show visible button
-                # pend signals an obect with changed contents
                 if force or obj.draw:
                     obj.draw_border()
                     obj.show()

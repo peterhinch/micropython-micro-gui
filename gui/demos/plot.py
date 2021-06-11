@@ -48,7 +48,7 @@ class CartesianScreen(Screen):
         self.g = CartesianGraph(wri, 2, 2, yorigin = 2, fgcolor=GREEN,
                                 gridcolor=LIGHTGREEN) # Asymmetric y axis
         Label(wri, 100, 2, 'Asymmetric axes.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
         # At this point in time the Screen and graph have been constructed but
         # not rendered. If we drew the curves now they would be overwritten by
@@ -76,7 +76,7 @@ class PolarScreen(Screen):
     def __init__(self):
         super().__init__()
         self.g = PolarGraph(wri, 2, 2, fgcolor=GREEN, gridcolor=LIGHTGREEN)
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -94,7 +94,7 @@ class Lissajous(Screen):
         super().__init__()
         self.g = CartesianGraph(wri, 2, 2, fgcolor=GREEN, gridcolor=LIGHTGREEN)
         Label(wri, 100, 2, 'Lissajous figure.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -111,7 +111,7 @@ class Lemniscate(Screen):
         super().__init__()
         self.g = CartesianGraph(wri, 2, 2, height = 75, fgcolor=GREEN, gridcolor=LIGHTGREEN)
         Label(wri, 82, 2, 'To infinity and beyond...')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -130,7 +130,7 @@ class PolarClip(Screen):
         super().__init__()
         self.g = PolarGraph(wri, 2, 2, fgcolor=GREEN, gridcolor=LIGHTGREEN)
         Label(wri, 100, 2, 'Clipping of polar data.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -148,7 +148,7 @@ class RTPolar(Screen):
         super().__init__()
         self.g = PolarGraph(wri, 2, 2, fgcolor=GREEN, gridcolor=LIGHTGREEN)
         Label(wri, 100, 2, 'Realtime polar data.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -168,7 +168,7 @@ class RTRect(Screen):
         super().__init__()
         self.g = CartesianGraph(wri, 2, 2, fgcolor=GREEN, gridcolor=LIGHTGREEN)
         Label(wri, 100, 2, 'Realtime discontinuous data.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -198,7 +198,7 @@ class TSeq(Screen):
         self.g = CartesianGraph(wri, 2, 2, xorigin = 10, fgcolor=GREEN,
                            gridcolor=LIGHTGREEN, bdcolor=False)
         Label(wri, 100, 2, 'Time sequence.')
-        fwdbutton(wri, 2, 130, EmptyScreen, 'Forward', GREEN)
+        fwdbutton(wri, 30, 130, EmptyScreen, 'Forward', GREEN)
         CloseButton(wri)
 
     def after_open(self):  # After graph has been drawn
@@ -241,8 +241,8 @@ class BaseScreen(Screen):
         Screen.change(d[lb.textvalue()])
 
 def test():
-    if display.height < 240 or display.width < 320:
-        print(' This test requires a display of at least 320x240 pixels.')
+    if display.height < 128 or display.width < 200:
+        print(' This test requires a display of at least 128x200 pixels.')
     else:
         print('Testing micro-gui...')
         Screen.change(BaseScreen)

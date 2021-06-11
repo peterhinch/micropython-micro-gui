@@ -53,15 +53,18 @@ class FooScreen(Screen):
         self.rb0 = None
         self.bs0 = None
         wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
-        lbltim = Label(wri, 50, 85, 'this is a test', bdcolor=RED)
+        lbltim = Label(wri, 65, 100, 'this is a test', bdcolor=RED)
 
-        m0 = Meter(wri, 20, 240, divisions = 4, ptcolor=YELLOW,
-                label='left', style=Meter.LINE, legends=('0.0', '0.5', '1.0'))
+        m0 = Meter(wri, 10, 240, divisions = 4, ptcolor=YELLOW, height=80, width=15,
+                label='Meter example', style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
         # Instantiate displayable objects. bgcolor forces complete redraw.
         dial = Dial(wri, 2, 2, height = 75, ticks = 12, bgcolor=BLACK, bdcolor=None, label=120)  # Border in fg color
         scale = Scale(wri, 2, 100, width = 124, tickcb = tickcb,
                 pointercolor=RED, fontcolor=YELLOW, bdcolor=CYAN)
 
+        row = 105
+        col = 2
+        Label(wri, row, col, 'Normal buttons')
         # Four Button instances
         row = 120
         ht = 30
@@ -73,8 +76,9 @@ class FooScreen(Screen):
         self.bs = ButtonList(self.callback)
         self.bs0 = None
         col+= 50
+        Label(wri, row - 15, col, 'ButtonList')
         for t in table_buttonset: # Buttons overlay each other at same location
-            button = self.bs.add_button(wri, 120, col, shape=RECTANGLE, textcolor=BLUE, height=30, **t)
+            button = self.bs.add_button(wri, row, col, shape=RECTANGLE, textcolor=BLUE, height=30, **t)
             if self.bs0 is None: # Save for reset button callback
                 self.bs0 = button
 
@@ -82,21 +86,25 @@ class FooScreen(Screen):
         col+= 60
         btn = Button(wri, row, col, height=30, callback=self.rstcb, text='reset', litcolor=RED, fgcolor=GREEN, bgcolor=DARKGREEN)
 
+        col = 2
+        row = 170
+        Label(wri, row, col, 'Radio buttons')
         # Radio buttons
-        col= 2
+        row = 185
         self.rb = RadioButtons(BLUE, self.rbcb) # color of selected button
         self.rb0 = None
         for t in table_radiobuttons:
-            button = self.rb.add_button(wri, 160, col, textcolor = WHITE,
+            button = self.rb.add_button(wri, row, col, textcolor = WHITE,
                                 fgcolor = BLUE, bgcolor = DARKBLUE, shape=CIRCLE, height = 30, **t)
             if self.rb0 is None: # Save for reset button callback
                 self.rb0 = button
             col+= 35
         # Checkbox
         col+= 35
-        Checkbox(wri, 160, col, callback=self.cbcb)
+        Label(wri, row - 15, col, 'Checkbox and LED')
+        Checkbox(wri, row, col, callback=self.cbcb)
         col+= 40
-        self.led = LED(wri, 160, col, color=YELLOW, bdcolor=GREEN)
+        self.led = LED(wri, row, col, color=YELLOW, bdcolor=GREEN)
         CloseButton(wri)
         asyncio.create_task(run(dial, lbltim, m0, scale))
 
@@ -109,7 +117,7 @@ class FooScreen(Screen):
 
     def rstcb(self, button):
         print('Reset button: init ButtonList and RadioButtons')
-        self.bs.value(self.bs0)  # BUG This is calling ButtonList.value which calls ._update -> Screen.select which changes currency
+        self.bs.value(self.bs0)
         self.rb.value(self.rb0)
 
     def cbcb(self, cb):
