@@ -1071,8 +1071,9 @@ Methods:
 ```python
 from gui.widgets.sliders import Slider, HorizSlider
 ```
-![Image](./images/vert_slider.JPG)
-![Image](./images/horiz_slider.JPG)
+![Image](./images/sliders.JPG)
+
+Different styles of slider.
 
 These emulate linear potentiometers in order to display or control floating
 point values. Vertical `Slider` and horizontal `HorizSlider` variants are
