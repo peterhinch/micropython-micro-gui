@@ -848,7 +848,13 @@ means of the instance's `value` or `textvalue` methods.
 from gui.widgets.dropdown import Dropdown
 ```
 
-![Image](./images/dd_closed.JPG)  ![Image](./images/dd_open.JPG)
+![Image](./images/dd_closed.JPG)
+
+Closed dropdown list.
+
+![Image](./images/dd_open.JPG)
+
+Open dropdown list.
 
 A dropdown list. The list, when active, is drawn below the control. The height
 of the control is determined by the height of the font in use. The height of
