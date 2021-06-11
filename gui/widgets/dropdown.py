@@ -27,7 +27,7 @@ class _ListDialog(Window):
         super().__init__(row, col, ap_height, ap_width)
         self.listbox = Listbox(writer, row + 3, col + 3, elements = elements, width = lb_width,
                                fgcolor = dd.fgcolor, bgcolor = dd.bgcolor, bdcolor=False, 
-                               fontcolor = WHITE, select_color = dd.select_color,
+                               fontcolor = dd.fontcolor, select_color = dd.select_color,
                                value = dd.value(), callback = self.callback)
         self.dropdown = dd
 

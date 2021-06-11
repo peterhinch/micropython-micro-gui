@@ -60,9 +60,9 @@ class Listbox(Widget):
         for n in range(length):
             if n == self._value:
                 display.fill_rect(x, y + 1, self.width, self.entry_height - 1, self.select_color)
-                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fgcolor, self.select_color)
+                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.select_color)
             else:
-                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fgcolor, self.bgcolor)
+                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.bgcolor)
             y += self.entry_height
 
     def textvalue(self, text=None): # if no arg return current text

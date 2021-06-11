@@ -848,6 +848,8 @@ means of the instance's `value` or `textvalue` methods.
 from gui.widgets.dropdown import Dropdown
 ```
 
+![Image](./images/dd_closed.JPG)  ![Image](./images/dd_open.JPG)
+
 A dropdown list. The list, when active, is drawn below the control. The height
 of the control is determined by the height of the font in use. The height of
 the list is determined by the number of entries in it and the font in use.
@@ -953,6 +955,7 @@ in `gui/demos/screens.py`.
 ```python
 from gui.widgets.textbox import Textbox
 ```
+![Image](./images/textbox.JPG)
 
 Displays multiple lines of text in a field of fixed dimensions. Text may be
 clipped to the width of the control or may be word-wrapped. If the number of
