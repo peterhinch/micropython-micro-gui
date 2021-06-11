@@ -92,7 +92,7 @@ class Textbox(LinearIO):
         wri.setcolor()  # Restore defaults
 
     def show(self):
-        if super().show():
+        if super().show(False):
             self._print_lines()
 
     def append(self, s, ntrim=None, line=None):

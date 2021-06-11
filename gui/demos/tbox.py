@@ -58,7 +58,7 @@ pargs = (2, 2, 124, 7)  # Row, Col, Width, nlines
 # Keyword
 tbargs = {'fgcolor' : YELLOW,
         'bdcolor' : RED,
-        'bgcolor' : DARKGREEN,
+        'bgcolor' : BLACK,
         }
 
 

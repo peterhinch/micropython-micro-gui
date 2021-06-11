@@ -1355,7 +1355,7 @@ def tickcb(f, c):
 ```python
 from gui.widgets.dial import Dial, Pointer
 ```
-![Image](./images/dial.JPG)
+![Image](./images/dial.JPG)  ![Image](./images/dial1.JPG)
 
 A `Dial` is a passive widget. It presents a circular display capable of
 displaying an arbitrary number of vectors; each vector is represented by a
