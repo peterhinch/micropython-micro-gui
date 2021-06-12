@@ -1,7 +1,7 @@
 # screens.py micro-gui demo of multiple screens, dropdowns etc
-# Initialise hardware and framebuf before importing modules.
-# Import SSD and Display instances. Must be done first because of RAM use.
-from hardware_setup import display, ssd  # Create a display instance
+
+# Create SSD instance. Must be done first because of RAM use.
+from hardware_setup import ssd  # Create a display instance
 from gui.core.ugui import Screen, Window
 
 from gui.widgets.label import Label
@@ -100,7 +100,7 @@ class BaseScreen(Screen):
         CloseButton(wri)  # Quit the application
 
 def test():
-    if display.height < 128 or display.width < 240:
+    if ssd.height < 128 or ssd.width < 240:
         print('This test requires a display of at least 240x128 pixels.')
     else:
         print('Testing micro-gui...')

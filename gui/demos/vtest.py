@@ -3,8 +3,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
 
-# Initialise hardware and framebuf before importing modules.
-from hardware_setup import display, ssd  # Create a display instance
+# Create SSD instance. Must be done first because of RAM use.
+from hardware_setup import ssd
 
 import urandom
 import time
@@ -104,7 +104,7 @@ class VScreen(Screen):
         self.reg_task(aclock(dial, lbldate, lbltim))
 
 def test():
-    if display.height < 240 or display.width < 320:
+    if ssd.height < 240 or ssd.width < 320:
         print(' This test requires a display of at least 320x240 pixels.')
     else:
         print('Testing micro-gui...')

@@ -17,13 +17,37 @@ to a wide range of displays. It is also portable between hosts.
 
 # Project status
 
-Code has been tested on ESP32 and Pi Pico. It is new and bugs are likely. This
-document is also incomplete and under review.
-
+Code has been tested on ESP32 and Pi Pico. The API shuld be stable. I'm not
+aware of any bugs but code is new and issues are likely. This document is
+likely to have errors, typos and omissions. It is under review.
 
 # 0. Contents
 
-**TODO**
+**TODO** Add sub-headings
+
+1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
+2. [Usage](./README.md#2-usage) Application design.  
+3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
+4. [Screen class](./README.md#4-screen-class) Full screen window.  
+5. [Window class](./README.md#5-window-class)  
+6. [Label widget](./README.md#6-label-widget) Single line text display.  
+7. [LED widget](./README.md#7-led-widget) Display Boolean values.  
+8. [Checkbox widget](./README.md#8-checkbox-widget) Enter Boolean values.  
+9. [Button and CloseButton widgets](./README.md#9-button-and-closebutton-widgets) Pushbutton emulation.  
+10. [ButtonList object](./README.md#10-buttonlist-object) Pushbuttons with multiple states.  
+11. [RadioButtons object](./README.md#11-radiobuttons-object) One-of-N pushbuttons.  
+12. [Listbox widget](./README.md#12-listbox-widget)  
+13. [Dropdown widget](./README.md#13-dropdown-widget) Dropdown lists.  
+14. [DialogBox class](./README.md#14-dialogbox class) Pop-up modal dialog boxes.  
+15. [Textbox widget](./README.md#15-textbox-widget) Scrolling text display.  
+16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter.  
+17. [Slider and HorizSlider widgets](./README.md#17-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
+18. [Scale widget](./README.md#18-scale-widget) High precision float entry and display.  
+19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
+20. [Dial widget](./README.md#20-dial-widget) Display multiple vectors.  
+21. [Knob widget](./README.md#21-knob-widget) Rotary potentiometer float entry.  
+22. [Graph plotting](./README.md#22-graph-plotting) Widgets for Cartesian and polar graphs.  
+[Appendix 1 Application design](./README.md#appendix-1-application-design)  
 
 # 1. Basic concepts
 
@@ -54,12 +78,14 @@ attributes. It can overlay part of an underlying `Screen` and is typically used
 for modal dialog boxes.
 
 A `Widget` is an object capable of displaying data. Some are also capable of
-data input. The latter can be capable of accepting focus, see
-[navigation](./README.md#13-navigation). `Widget` objects have dimensions
-defined as `height` and `width`. The space requred by them exceeds these by two
-pixels all round, as a white border is drawn to show which object currently has
-focus. Thus to place a `Widget` at the extreme top left, `row` and `col` values
-should be 2.
+data input: such a widget is defined as `active`. A `passive` widget can only
+display data. An `active` widget can acquire `focus`. The widget with `focus`
+is able to respond to user input. See [navigation](./README.md#14-navigation).
+`Widget` objects have dimensions defined as `height` and `width`. The space
+requred by them exceeds these dimensions by two pixels all round. This is
+because `micro-gui` displays a white border to show which object currently has
+`focus`. Thus to place a `Widget` at the extreme top left, `row` and `col`
+values should be 2.
 
 ## 1.3 Fonts
 
@@ -87,16 +113,16 @@ The GUI requires from 2 to 5 pushbuttons for control. These are:
  1. `Next` Move to the next widget.
  2. `Select` Operate the currently selected widget.
  3. `Prev` Move to the previous widget.
- 4. `Increase` Move within the widget.
+ 4. `Increase` Move within the widget (i.e. adjust its value).
  5. `Decrease` Move within the widget.
 
 Many widgets such as `Pushbutton` or `Checkbox` objects require only the
-`Select` button to operate: it is possible to design an interface using only
-the first two buttons.
+`Select` button to operate: it is possible to design an interface with a subset
+of `micro-gui` widgets which requires only the first two buttons.
 
 Widgets such as `Listbox` objects, dropdown lists (`Dropdown`), and those for
-floating point data entry require the `Increase` and `Decrease` buttons to move
-within the widget or to adjust the linear value.
+floating point data entry require the `Increase` and `Decrease` buttons to
+select a data item or to adjust the linear value.
 
 A `LinearIO` is a `Widget` that responds to the `increase` and `decrease`
 buttons by running an `asyncio` task. These typically output floating point
@@ -104,25 +130,67 @@ values using an accelerating algorithm responding to the duration of the button
 press. This enables floats with a wide dynamic range to be adjusted with
 precision.
 
-The currently selected `Widget` is identified by a white border: the focus
-moves between widgets via `Next` and `Prev`. Only `Widget` instances that can
-accept input can receive the focus; such widgets are defined as `active`. 
-Widgets are defined as `active` or passive in the constructor, and this status
-cannot be changed. In some cases the state can be specified as a constructor
-arg. An `active` widget can be disabled and re-enabled at runtime. A disabled
-`active` widget is shown "greyed-out" and, until enabled, cannot accept the
-focus.
+The currently selected `Widget` is identified by a white border: the `focus`
+moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
+(those that can accept input) can receive the `focus`.  Widgets are defined as
+`active` or `passive` in the constructor, and this status cannot be changed. In
+some cases the state can be specified as a constructor arg. An `active` widget
+can be disabled and re-enabled at runtime. A disabled `active` widget is shown
+"greyed-out" and, until re-enabled, cannot accept the focus.
 
 ## 1.5 Hardware definition
 
 A file `hardware_setup.py` must exist in the GUI root directory. This defines
 the connections to the display, the display driver, and pins used for the
-pushbuttons. Example files may be found in the `setup_examples` directory.
+pushbuttons. Example files may be found in the `setup_examples` directory. The
+following is a typical example for a Raspberry Pi Pico driving an ILI9341
+display:
+
+```python
+from machine import Pin, SPI, freq
+import gc
+
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
+freq(250_000_000)  # RP2 overclock
+# Create and export an SSD instance
+pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
+prst = Pin(9, Pin.OUT, value=1)
+pcs = Pin(10, Pin.OUT, value=1)
+spi = SPI(0, baudrate=30_000_000)
+gc.collect()  # Precaution before instantiating framebuf
+ssd = SSD(spi, pcs, pdc, prst, usd=True)
+
+from gui.core.ugui import Display, setup
+# Create and export a Display instance
+# Define control buttons
+nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
+sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
+prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
+increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
+decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+display = Display(ssd, nxt, sel, prev, increase, decrease)
+setup(display)
+```
 
 Display drivers are documented
 [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
-## 1.6 Installation
+## 1.6 Quick hardware check
+
+The following may be pasted at the REPL to verify correct connection to the
+display. It also confirms that `hardware_setup.py` is specifying a suitable
+display driver.
+```python
+from hardware_setup import ssd  # Create a display instance
+from gui.core.colors import *
+ssd.fill(0)
+ssd.line(0, 0, ssd.width - 1, ssd.height - 1, GREEN)  # Green diagonal corner-to-corner
+ssd.rect(0, 0, 15, 15, RED)  # Red square at top left
+ssd.rect(ssd.width -15, ssd.height -15, 15, 15, BLUE)  # Blue square at bottom right
+ssd.show()
+```
+
+## 1.7 Installation
 
 The easy way to start is to use `mpremote` which allows a directory on your PC
 to be mounted on the host. In this way the filesystem on the host is left
@@ -155,21 +223,6 @@ kept.
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 Once again, directory structure must be maintained.
 
-## 1.7 Quick hardware check
-
-The following may be pasted at the REPL to verify correct connection to the
-display. It also confirms that `hardware_setup.py` is specifying a suitable
-display driver.
-```python
-from hardware_setup import ssd  # Create a display instance
-from gui.core.colors import *
-ssd.fill(0)
-ssd.line(0, 0, ssd.width - 1, ssd.height - 1, GREEN)  # Green diagonal corner-to-corner
-ssd.rect(0, 0, 15, 15, RED)  # Red square at top left
-ssd.rect(ssd.width -15, ssd.height -15, 15, 15, BLUE)  # Blue square at bottom right
-ssd.show()
-```
-
 ## 1.8 Performance and hardware notes
 
 The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
@@ -182,29 +235,25 @@ Snappy navigation benefits from several approaches:
  3. Device driver support for `uasyncio`. Currently this exists on ILI9341 and
     ST7789 (e.g. TTGO T-Display). I intend to extend this to other drivers.
 
-On ESP32 I found it necessary to use physical pullup resistors on the
-pushbutton GPIO lines.
+On the TTGO T-Display I found it necessary to use physical pullup resistors on
+the pushbutton GPIO lines. According to the ESP32 gurus pins 36-39 do not have
+pullup support.
 
 ## 1.9 Firmware and dependencies
 
-Firmware should be V1.15 or later.
-
-The source tree includes all dependencies. These are listed to enable users to
-check for newer versions:
+Firmware should be V1.15 or later. The source tree includes all dependencies.
+These are listed to enable users to check for newer versions:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
-
-A copy of the official driver for OLED displays using the SSD1306 chip is
-provided. The official file is here:  
  * [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
-
-Displays based on the Nokia 5110 (PCD8544 chip) require this driver. It is not
-in this repo but may be found here:  
- * [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git)
-
-Synchronisation primitives for `uasyncio` may be found here:  
- * [My async repo](https://github.com/peterhinch/micropython-async/tree/master/v3/primitives).
+ A copy of the official driver for OLED displays using the SSD1306 chip is
+ provided. The link is to the official file.
+ * [Synchronisation primitives](https://github.com/peterhinch/micropython-async/tree/master/v3/primitives).
+ The link is to my `uasyncio` support repo.
+ * [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
+ Displays based on the Nokia 5110 (PCD8544 chip) require this driver. It is not
+ provided in this repo. The link is to its source.
 
 ## 1.10 Supported hosts and displays
 
@@ -249,6 +298,8 @@ require a large (320x240) display. Demos are run by issuing (for example):
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `various.py` Assorted widgets including the different types of pushbutton.
  * `vtest.py` Clock and compass styles of vector display.
+
+###### [Contents](./README.md#0-contents)
 
 # 2. Usage
 
@@ -309,7 +360,7 @@ Note how the `Next` pushbutton moves the focus between the two buttons and the
 it is not `active`: a `Label` cannot accept user input. Pushing the `Select`
 pushbutton while the focus is on a `Pushbutton` causes the callback to run.
 
-Applications start by performing `Screen.change()` to a user-defined Screen
+Applications start by performing `Screen.change()` to a user-defined `Screen`
 object. This must be subclassed from the GUI's `Screen` class. Note that
 `Screen.change` accepts a class name, not a class instance.
 
@@ -340,41 +391,41 @@ optional: a default null function and empty list are provided. Callbacks may
 optionally be written as bound methods. This facilitates communication between
 widgets.
 
-When writing callbacks take care to ensure that the number of arguments passed
-is correct, bearing in mind the first arg listed above. Failure to do this will
-result in tracebacks which implicate the GUI code rather than the buggy user
-code: this is because the GUI runs the callbacks.
+When writing callbacks take care to ensure that the correct number of arguments
+are passed, bearing in mind the first arg described above. An incorrect
+argument count results in puzzling tracebacks which appear to implicate the GUI
+code. This is because it is the GUI which actually executes the callbacks.
 
 ## 2.3 Colors
 
-The file `gui/core/colors.py` defines standard color constants which may be
+The file `gui/core/colors.py` defines a set of color constants which may be
 used with any display driver. This section describes how to change these or
-to create additional colors.
+to create additional colors. Most of the color display drivers define colors
+as 8-bit or larger values. For the larger displays 4-bit drivers are provided
+with the aim of conserving RAM.
 
-Most of the color display drivers define colors as 8-bit or larger values.
-In such cases colors may be created and assigned to variables as follows:
-```python
-from hardware_setup import ssd
-PALE_YELLOW = ssd.rgb(150, 150, 0)
-```
-The GUI also provides drivers with 4-bit color to minimise RAM use. Colors are
-assigned to a lookup table having 16 entries. The frame buffer stores 4-bit
-color values, which are converted to the correct color depth for the hardware
-when the display is refreshed.
+In the 4-bit case colors are assigned to a lookup table (LUT) with 16 entries.
+The frame buffer stores 4-bit color values, which are converted to the correct
+color depth for the hardware when the display is refreshed. Of the 16 possible
+colors 13 are assigned in `gui/core/colors.py`, leaving color numbers 12, 13
+and 14 free.
 
-Of the possible 16 colors 13 are assigned in `gui/core/colors.py`, leaving
-color numbers 12, 13 and 14 free. Any color can be assigned as follows:
+The following code is portable between displays and creates a user defined
+color `PALE_YELLOW`.
 ```python
 from gui.core.colors import *  # Imports the create_color function
-PALE_YELLOW = create_color(12, 150, 150, 0)
+PALE_YELLOW = create_color(12, 150, 150, 0)  # index, r, g, b
 ```
-This creates a color `rgb(150, 150, 0)` assigns it to "spare" color number 12
-then sets `PALE_YELLOW` to 12. Any color number in range `0 <= n <= 15` may be
-used (implying that predefined colors may be reassigned). It is recommended
-that `BLACK` (0) and `WHITE` (15) are not changed. If code is to be ported
-between 4-bit and other drivers, use `create_color()` for all custom colors:
-it will produce appropriate behaviour. For an example see the `nano-gui` demo
-`color15.py` - in particular the `vari_fields` function.
+If a 4-bit driver is in use, the color `rgb(150, 150, 0)` will be assigned to
+"spare" color number 12. Any color number in range `0 <= n <= 15` may be
+used, implying that predefined colors may be reassigned. It is recommended
+that `BLACK` (0) and `WHITE` (15) are not changed. If an 8-bit or larger driver
+is in use, the first `index` arg is ignored and there is no restriction on the
+number of colors that may be created.
+
+Regardless of the display driver the `PALE_YELLOW` variable may be used to
+refer to the color. An example of custom color definition may be found in
+[this nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/4ef0e20da27ef7c0b5c34136dcb372200f0e5e66/gui/demos/color15.py#L92).
 
 ### 2.3.1 Monochrome displays
 
@@ -391,7 +442,24 @@ There is an issue regarding ePaper displays discussed
 I don't consider ePaper displays as suitable for I/O because of their slow
 refresh time.
 
-# 3. Class details
+###### [Contents](./README.md#0-contents)
+
+# 3. The ssd and display objects
+
+The following code, issued as the first executable line of an application,
+initialises the display.
+```python
+from hardware_setup import display, ssd
+```
+It creates singleton instances of `SSD` and `Display` classes. Normal GUI
+applications only need to import `ssd`. This refererence to the display driver
+is used to initialise `Writer` objects. Bound variables `.height` and `.width`
+may be read to determine the dimensions of the display hardware.
+
+Use of `display` is restricted to applications which use graphics primitives to
+write directly to the screen. See Appendix 1.
+
+###### [Contents](./README.md#0-contents)
 
 # 4. Screen class
 
@@ -454,6 +522,8 @@ base screen are cancelled.
 For finer control applications can ignore this method and handle cancellation
 explicitly in code.
 
+###### [Contents](./README.md#0-contents)
+
 # 5. Window class
 
 This is a `Screen` subclass providing for modal windows. As such it has
@@ -484,6 +554,8 @@ Another approach, demonstrated in `demos/screens.py`, is to pass one or more
 callbacks to the user window constructor args. These may be called by widgets
 to send data to the calling screen. Note that widgets on the screen below will
 not be updated until the window has closed.
+
+###### [Contents](./README.md#0-contents)
 
 # 6. Label widget
 
@@ -562,6 +634,8 @@ class BaseScreen(Screen):
 Screen.change(BaseScreen)
 ```
 
+###### [Contents](./README.md#0-contents)
+
 # 7. LED widget
 
 ```python
@@ -600,6 +674,8 @@ Methods:
     passed, no border is displayed. This clears a previously drawn border.  
  3. `show` No args. (Re)draws the LED. Primarily for internal use by GUI.
 
+###### [Contents](./README.md#0-contents)
+
 # 8. Checkbox widget
 
 ```python
@@ -637,6 +713,8 @@ Methods:
  * `value` Optional Boolean argument `val`. If the provided value does not
  correspond to the control's current value, updates it; the checkbox is
  re-drawn and the callback executed. Always returns the control's value.
+
+###### [Contents](./README.md#0-contents)
 
 # 9. Button and CloseButton widgets
 
@@ -694,6 +772,8 @@ right hand corner of the current `Screen`. Operating it causes the screen to
 close, with the screen below being revealed. On the bottom level screen, a
 `CloseButton` will shut down the application.
 
+###### [Contents](./README.md#0-contents)
+
 # 10. ButtonList object
 
 ```python
@@ -741,6 +821,8 @@ for t in table:  # Buttons overlay each other at same location
     bl.add_button(wri, 10, 10, textcolor = BLACK, **t)
 ```
 
+###### [Contents](./README.md#0-contents)
+
 # 11. RadioButtons object
 
 ```python
@@ -786,6 +868,8 @@ for t in table:
                   fgcolor = LIGHTBLUE, height = 40, **t)
     col += 60 # Horizontal row of buttons
 ```
+
+###### [Contents](./README.md#0-contents)
 
 # 12. Listbox widget
 
@@ -844,6 +928,8 @@ Methods:
 The callback's first argument is the listbox instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
 means of the instance's `value` or `textvalue` methods.
+
+###### [Contents](./README.md#0-contents)
 
 # 13. Dropdown widget
 
@@ -914,6 +1000,8 @@ The callback's first argument is the dropdown instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
 means of the instance's `value` or `textvalue` methods.
 
+###### [Contents](./README.md#0-contents)
+
 # 14. DialogBox class
 
 ```python
@@ -958,6 +1046,8 @@ Note that dialog boxes can also be constructed manually, allowing for more
 flexible designs. For example these might have widgets other than pushbuttons.
 The approach is to write a user subclass of `Window`. Example code may be found
 in `gui/demos/screens.py`.
+
+###### [Contents](./README.md#0-contents)
 
 # 15. Textbox widget
 
@@ -1024,6 +1114,8 @@ If text is regularly appended to a `Textbox` its buffer grows, using RAM. The
 value of `ntrim` sets a limit to the number of lines which are retained, with
 the oldest (topmost) being discarded as required.
 
+###### [Contents](./README.md#0-contents)
+
 # 16. Meter widget
 
 ```python
@@ -1077,6 +1169,8 @@ Methods:
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
  3. `show` No args. (Re)draws the meter. Primarily for internal use by GUI.
+
+###### [Contents](./README.md#0-contents)
 
 # 17. Slider and HorizSlider widgets
 
@@ -1140,6 +1234,8 @@ The callback receives an initial arg being the slider instance followed by any
 user supplied args. They can be a bound methods, typically of a `Screen`
 subclass. The callback runs whenever the value changes enabling dynamic color
 change. See `gui/demos/active.py`.
+
+###### [Contents](./README.md#0-contents)
 
 # 18. Scale widget
 
@@ -1248,6 +1344,8 @@ digit. If this is not done, consecutive legends will have the same value.
 For performance reasons the control stores values as integers. This means that
 if you set `value` and subsequently retrieve it, there may be some loss of
 precision. Each visible division on the control represents 10 integer units.
+
+###### [Contents](./README.md#0-contents)
 
 # 19. ScaleLog widget
 
@@ -1362,6 +1460,8 @@ def tickcb(f, c):
         return BLUE
     return c
 ```
+
+###### [Contents](./README.md#0-contents)
 
 # 20. Dial widget
 
@@ -1479,6 +1579,8 @@ class BaseScreen(Screen):
 Screen.change(BaseScreen)
 ```
 
+###### [Contents](./README.md#0-contents)
+
 # 21. Knob widget
 
 ```python
@@ -1519,6 +1621,8 @@ Methods:
  * `value` Optional argument `val`. If set, adjusts the pointer to
  correspond to the new value. The move callback will run. The method constrains
  the range to 0.0 to 1.0. Always returns the control's value.
+
+###### [Contents](./README.md#0-contents)
 
 # 22. Graph Plotting
 
@@ -1769,9 +1873,11 @@ class TSeq(Screen):
             t += 1
 ```
 
-# 23. Application design
+###### [Contents](./README.md#0-contents)
 
-## 23.1 Tab order and button layout
+# Appendix 1 Application design
+
+## Tab order and button layout
 
 The "tab order" of widgets on a `Screen` is the order with which they acquire
 focus with successive presses of the `Next` button. It is determined by the
@@ -1796,7 +1902,7 @@ The apparently obvious solution of designing a vertical `Scale` is tricky owing
 to the fact that the length of the internal text can be substantial and
 variable.
 
-## 23.2 Use of graphics primitives
+## Use of graphics primitives
 
 These notes are for those wishing to draw directly to the `Screen` instance.
 This is done by providing the user `Screen` class with an `after_open()` method

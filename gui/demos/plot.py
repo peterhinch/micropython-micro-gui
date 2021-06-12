@@ -7,8 +7,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
 
-# Initialise hardware and framebuf before importing modules.
-from hardware_setup import ssd, display  # Create a display instance
+# Create SSD instance. Must be done first because of RAM use.
+from hardware_setup import ssd
 
 import cmath
 import math
@@ -241,7 +241,7 @@ class BaseScreen(Screen):
         Screen.change(d[lb.textvalue()])
 
 def test():
-    if display.height < 128 or display.width < 200:
+    if ssd.height < 128 or ssd.width < 200:
         print(' This test requires a display of at least 128x200 pixels.')
     else:
         print('Testing micro-gui...')

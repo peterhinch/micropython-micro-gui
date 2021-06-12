@@ -7,7 +7,7 @@
 # import gui.demos.tbox
 
 # Initialise hardware and framebuf before importing modules.
-from hardware_setup import display, ssd  # Create a display instance
+from hardware_setup import ssd  # Create a display instance
 
 from gui.core.ugui import Screen
 from gui.core.writer import CWriter
@@ -111,7 +111,7 @@ class MainScreen(Screen):
         
 
 def test():
-    if display.height < 128 or display.width < 128:
+    if ssd.height < 128 or ssd.width < 128:
         print(' This test requires a display of at least 128x128 pixels.')
     else:
         print('Testing micro-gui...')

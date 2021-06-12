@@ -1,8 +1,9 @@
 # various.py micro-gui demo of multiple controls on a large display
 
 # Initialise hardware and framebuf before importing modules.
-# Import SSD and Display instances. Must be done first because of RAM use.
-from hardware_setup import display, ssd  # Create a display instance
+# Create SSD instance. Must be done first because of RAM use.
+from hardware_setup import ssd
+
 from gui.core.ugui import Screen
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
@@ -159,7 +160,7 @@ async def run(dial, lbltim, m0, scale):
 
 
 def test():
-    if display.height < 240 or display.width < 320:
+    if ssd.height < 240 or ssd.width < 320:
         print(' This test requires a display of at least 320x240 pixels.')
     else:
         print('Testing micro-gui...')
