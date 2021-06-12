@@ -15,6 +15,32 @@ to a wide range of displays. It is also portable between hosts.
 
 ![Image](./images/rp2_test_fixture.JPG)
 
+# Rationale
+
+Touch GUI's have many advantages, however they have drawbacks, principally cost
+and the need for calibration. Note that the latter does not apply to the
+[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H)).
+Another problem is that touch controllers vary, magnifying the difficulty of
+writing a portable GUI.
+
+Pushbutton input works well and yields astonishingly low cost solutions. A
+network-connected board with a 135x240 color display can be built for under £20
+($20?) using the
+[TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50044&Id=1126). The
+test board shown above has a 320x240 display with a Pi Pico with component cost
+well under £20.
+
+The following are similar GUI repos with differing objectives.
+ * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) Extremely low
+ RAM usage but display-only with no provision for input.
+ * [LCD160cr](https://github.com/peterhinch/micropython-lcd160cr-gui) Touch GUI
+ for the official display.
+ * [RA8875](https://github.com/peterhinch/micropython_ra8875) Touch GUI for
+ displays with RA8875 controller. Supports large displays, e.g. from Adafruit.
+ * [SSD1963](https://github.com/peterhinch/micropython-tft-gui) Touch GUI for
+ displays based on SSD1963 and XPT2046. High performance on large displays due
+ to the parallel interface. Specific to STM hosts.
+
 # Project status
 
 Code has been tested on ESP32 and Pi Pico. The API shuld be stable. I'm not
@@ -226,7 +252,7 @@ Once again, directory structure must be maintained.
 ## 1.8 Performance and hardware notes
 
 The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
-use of frozen bytecode the demos run with over 74K of free RAM. Substantial
+use of frozen bytecode the demos run with about 74K of free RAM. Substantial
 improvements could be achieved using frozen bytecode.
 
 Snappy navigation benefits from several approaches:
@@ -235,9 +261,14 @@ Snappy navigation benefits from several approaches:
  3. Device driver support for `uasyncio`. Currently this exists on ILI9341 and
     ST7789 (e.g. TTGO T-Display). I intend to extend this to other drivers.
 
+The consequence of inadequate speed is that brief button presses can be missed.
+This is because display update blocks for tens of milliseconds, during which
+time the pushbuttons are not polled. Blocking is much reduced by item 3 above.
+
 On the TTGO T-Display I found it necessary to use physical pullup resistors on
-the pushbutton GPIO lines. According to the ESP32 gurus pins 36-39 do not have
-pullup support.
+the pushbutton GPIO lines. According to the
+[ESP32 gurus](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/)
+pins 36-39 do not have pullup support.
 
 ## 1.9 Firmware and dependencies
 
@@ -318,7 +349,7 @@ Note that the import of `hardware_setup.py` is the first line of code. This is
 because the frame buffer is created here, with a need for a substantial block
 of contiguous RAM.
 ```python
-from hardware_setup import ssd  # Create a display instance
+from hardware_setup import ssd  # Instantiate display, setup color LUT (if present)
 from gui.core.ugui import Screen
 
 from gui.widgets.label import Label

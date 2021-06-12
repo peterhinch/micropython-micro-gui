@@ -281,14 +281,22 @@ class Screen:
         ssd.show()
         cls.current_screen = None  # Ensure another demo can run
 
+    # If the display driver has an async refresh method, determine the split
+    # value which must be a factor of the height. In the unlikely event of
+    # no factor, do_refresh confers no benefit, so use synchronous code.
     @staticmethod
     async def auto_refresh():
         arfsh = hasattr(ssd, 'do_refresh')  # Refresh can be asynchronous
+        if arfsh:
+            h = ssd.height
+            split = max(y for y in (1,2,3,5,7) if not h % y)
+            if split == 1:
+                arfsh = False
         while True:
             Screen.show(False)  # Update stale controls. No physical refresh.
             # Now perform physical refresh. 
             if arfsh:
-                await ssd.do_refresh()
+                await ssd.do_refresh(split)
             else:
                 ssd.show()  # Synchronous (blocking) refresh.
                 await asyncio.sleep_ms(0)
