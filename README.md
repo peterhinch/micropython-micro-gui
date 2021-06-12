@@ -38,7 +38,7 @@ likely to have errors, typos and omissions. It is under review.
 11. [RadioButtons object](./README.md#11-radiobuttons-object) One-of-N pushbuttons.  
 12. [Listbox widget](./README.md#12-listbox-widget)  
 13. [Dropdown widget](./README.md#13-dropdown-widget) Dropdown lists.  
-14. [DialogBox class](./README.md#14-dialogbox class) Pop-up modal dialog boxes.  
+14. [DialogBox class](./README.md#14-dialogbox-class) Pop-up modal dialog boxes.  
 15. [Textbox widget](./README.md#15-textbox-widget) Scrolling text display.  
 16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter.  
 17. [Slider and HorizSlider widgets](./README.md#17-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
@@ -1633,9 +1633,7 @@ from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSe
 
 ![Image](./images/lissajous.png)  ![Image](./images/bernoulli.png)
 
-![Image](./images/sine.png)
-
-Realtime data simulation.
+![Image](./images/sine.png) Realtime time sequence simulation.
 
 For example code see `gui/demos/plot.py`.
 
