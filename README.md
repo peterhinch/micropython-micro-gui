@@ -19,7 +19,7 @@ to a wide range of displays. It is also portable between hosts.
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
 and the need for calibration. Note that the latter does not apply to the
-[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H)).
+[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H).
 Another problem is that touch controllers vary, magnifying the difficulty of
 writing a portable GUI.
 

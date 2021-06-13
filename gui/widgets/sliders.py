@@ -4,8 +4,8 @@
 # Copyright (c) 2021 Peter Hinch
 
 from micropython import const
-from gui.core.ugui import LinearIO, display  # Class and instance
-from gui.widgets.label import Label
+from gui.core.ugui import LinearIO, display
+from gui.core.colors import *
 
 # Null function
 dolittle = lambda *_ : None
@@ -40,8 +40,6 @@ class Slider(LinearIO):
         self.slot_x0 = centre - _HALF_SLOT_WIDTH
         self.slot_y0 = row + _SLIDE_DEPTH // 2
         self.slot_h = height - _SLIDE_DEPTH - 1
-        # Prevent Label objects being added to display list when already there.
-        self.drawn = False
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
             self.callback(self, *self.args)
@@ -65,8 +63,8 @@ class Slider(LinearIO):
             display.fill_rect(self.slot_x0, self.slot_y0, slot_w, slot_len, self.slotcolor)
             display.rect(self.slot_x0, self.slot_y0, slot_w, slot_len, self.fgcolor)
 
-            # Legends: if redrawing, they are already on the Screen's display list
-            if self.legends is not None and not self.drawn:
+            txtcolor = GREY if self.greyed_out() else self.fontcolor
+            if self.legends is not None:
                 if len(self.legends) <= 1:
                     dy = 0
                 else:
@@ -75,7 +73,8 @@ class Slider(LinearIO):
                 wri = self.writer
                 fhdelta = wri.height / 2
                 for legend in self.legends:
-                    Label(wri, int(yl - fhdelta), x + self.width + 4, legend, fgcolor = self.fontcolor)
+                    display.print_left(wri, x + self.width + 4, int(yl - fhdelta),
+                                       legend, txtcolor, self.bgcolor)
                     yl -= dy
 
             slide_y = round(self.slide_y0 - self._value * slot_len)
@@ -112,8 +111,6 @@ class HorizSlider(LinearIO):
         self.slot_w = width - _SLIDE_DEPTH - 1
         centre = row + height // 2
         self.slot_y0 = centre - _HALF_SLOT_WIDTH
-        # Prevent Label objects being added to display list when already there.
-        self.drawn = False
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
             self.callback(self, *self.args)
@@ -136,8 +133,8 @@ class HorizSlider(LinearIO):
             display.fill_rect(self.slot_x0, self.slot_y0, slot_len, slot_h, self.slotcolor)
             display.rect(self.slot_x0, self.slot_y0, slot_len, slot_h, self.fgcolor)
 
-            # Legends: if redrawing, they are already on the Screen's display list
-            if self.legends is not None and not self.drawn:
+            txtcolor = GREY if self.greyed_out() else self.fontcolor
+            if self.legends is not None:
                 if len(self.legends) <= 1:
                     dx = 0
                 else:
@@ -146,7 +143,8 @@ class HorizSlider(LinearIO):
                 wri = self.writer
                 for legend in self.legends:
                     offset = wri.stringlen(legend) / 2
-                    Label(wri, y - wri.height - 4, int(xl - offset), legend, fgcolor = self.fontcolor)
+                    display.print_left(wri, int(xl - offset), y - wri.height - 4,
+                                       legend, txtcolor, self.bgcolor)
                     xl += dx
 
             self.slide_x = round(self.col + self._value * slot_len)
