@@ -2,7 +2,8 @@
 
 This is a lightweight, portable, MicroPython GUI library for displays with
 drivers subclassed from `framebuf`. It allows input via pushbuttons or via a
-switch joystick.
+switch joystick. Written in Python it runs under a standard MicroPython
+firmware build.
 
 It is larger and more complex than `nano-gui` owing to the support for input.
 It enables switching between screens and launching modal windows. In addition
@@ -20,8 +21,8 @@ to a wide range of displays. It is also portable between hosts.
 Touch GUI's have many advantages, however they have drawbacks, principally cost
 and the need for calibration. Note that the latter does not apply to the
 [official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H).
-Another problem is that touch controllers vary, magnifying the difficulty of
-writing a portable GUI.
+Another problem is that there are a number of types of touch controller,
+magnifying the difficulty of writing a portable GUI.
 
 Pushbutton input works well and yields astonishingly low cost solutions. A
 network-connected board with a 135x240 color display can be built for under £20
@@ -40,6 +41,10 @@ The following are similar GUI repos with differing objectives.
  * [SSD1963](https://github.com/peterhinch/micropython-tft-gui) Touch GUI for
  displays based on SSD1963 and XPT2046. High performance on large displays due
  to the parallel interface. Specific to STM hosts.
+
+[LVGL](https://lvgl.io/) is a pretty icon-based GUI library. It is written in C
+with MicroPython bindings; consequently it requires the build system for your
+target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
@@ -148,13 +153,8 @@ of `micro-gui` widgets which requires only the first two buttons.
 
 Widgets such as `Listbox` objects, dropdown lists (`Dropdown`), and those for
 floating point data entry require the `Increase` and `Decrease` buttons to
-select a data item or to adjust the linear value.
-
-A `LinearIO` is a `Widget` that responds to the `increase` and `decrease`
-buttons by running an `asyncio` task. These typically output floating point
-values using an accelerating algorithm responding to the duration of the button
-press. This enables floats with a wide dynamic range to be adjusted with
-precision.
+select a data item or to adjust the linear value. This is discussed in
+[Floating Point Widgets](./README.md#112-floating-point-widgets).
 
 The currently selected `Widget` is identified by a white border: the `focus`
 moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
@@ -329,6 +329,31 @@ require a large (320x240) display. Demos are run by issuing (for example):
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `various.py` Assorted widgets including the different types of pushbutton.
  * `vtest.py` Clock and compass styles of vector display.
+
+## 1.12 Floating Point Widgets
+
+The challenge is to devise a way, with just two pushbuttons, of adjusting a
+data value which may have an extremely large dynamic range. This is the ratio
+of the data value's total range to the smallest adjustment that can be made.
+The mechanism as currently implemented enables a precision of 0.05%.
+
+Floating point widgets respond to a brief press of the `increase` or `decrease`
+buttons by adjusting the value by a small amount. A continued press causes the
+value to be repeatedly adjusted, with the amount of the adjustment increasing
+with time. This enables the entire range of the control to be accessed quickly,
+while allowing small changes of 0.5%. This works well. In many cases the level
+of precision will suffice.
+
+Fine adjustments may be achieved by pressing the `select` button for at least
+one second. The GUI will respond by changing the border color from white
+(i.e. has focus) to yellow. In this mode a brief press of `increase` or
+`decrease` will have a reduced effect (0.05%). The fine mode may be cancelled
+by pressing `select` or by moving the focus to another control.
+
+In the case of slider and knob controls the precision of fine mode exceeds that
+of the visual appearance of the widget: fine changes can be too small to see.
+Options are to use the [Scale widget](./README.md#18-scale-widget) or to have a
+linked `Label` showing the widget's exact value.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1213,9 +1238,12 @@ from gui.widgets.sliders import Slider, HorizSlider
 Different styles of slider.
 
 These emulate linear potentiometers in order to display or control floating
-point values. Vertical `Slider` and horizontal `HorizSlider` variants are
-available. These are constructed and used similarly. The short forms (v) or (h)
-are used below to identify these variants.
+point values. A description of the user interface in the `active` case may be
+found in [Floating Point Widgets](./README.md#112-floating-point-widgets).
+
+Vertical `Slider` and horizontal `HorizSlider` variants are available. These
+are constructed and used similarly. The short forms (v) or (h) are used below
+to identify these variants.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1235,6 +1263,9 @@ Optional keyword only arguments:
  default is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
+ * `prcolor=None` If `active`, in precision mode the white focus border changes
+ to yellow to for a visual indication. An alternative color can be provided. 
+ `WHITE` will defeat this change.
  * `fontcolor=None` Text color. Defaults to foreground color.
  * `slotcolor=None` Color for the slot: this is a thin rectangular region in
  the centre of the control along which the slider moves. Defaults to the
@@ -1282,6 +1313,10 @@ scale with (say) 200 graduations (ticks) to readily be visible on a small
 display, with sufficient resolution to enable the user to interpolate between
 ticks. Default settings enable estimation of a value to within about +-0.1%.
 
+The `Scale` may be `active` or `passive`. A description of the user interface
+in the `active` case may be found in
+[Floating Point Widgets](./README.md#112-floating-point-widgets).
+
 Legends for the scale are created dynamically as it scrolls past the window.
 The user may control this by means of a callback. The example `lscale.py` in
 `nano-gui` illustrates a variable with range 88.0 to 108.0, the callback
@@ -1308,6 +1343,9 @@ Keyword only arguments (all optional):
  default is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
+ * `prcolor=None` If `active`, in precision mode the white focus border changes
+ to yellow to for a visual indication. An alternative color can be provided. 
+ `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `fgcolor`.
  * `value=0.0` Initial value.
@@ -1393,6 +1431,14 @@ The control is modelled on old radios where a large scale scrolls past a small
 window having a fixed pointer. The use of a logarithmic scale enables the
 display and input of a value which can change by many orders of magnitude.
 
+The `Scale` may be `active` or `passive`. A description of the user interface
+in the `active` case may be found in
+[Floating Point Widgets](./README.md#112-floating-point-widgets). Owing to the
+logarithmic nature of the widget, the changes discussed in that reference are
+multiplicative rather than additive. Thus a long press of `increase` will
+multiply the widget's value by a progressively larger factor, enabling many
+decades to be traversed quickly.
+
 Legends for the scale are created dynamically as it scrolls past the window,
 with one legend for each decade. The user may control this by means of a
 callback, for example to display units, e.g. `10nF`. A further callback
@@ -1421,6 +1467,9 @@ Keyword only arguments (all optional):
  default is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
+ * `prcolor=None` If `active`, in precision mode the white focus border changes
+ to yellow to for a visual indication. An alternative color can be provided. 
+ `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `WHITE`.
  * `legendcb=None` Callback for populating scale legends (see below).
@@ -1620,7 +1669,9 @@ from gui.widgets.knob import Knob
 ![Image](./images/knob.JPG)
 
 This emulates a rotary control capable of being rotated through a predefined
-arc in order to display or set a floating point variable.
+arc in order to display or set a floating point variable. A `Knob` may be
+`active` or `passive`. A description of the user interface in the `active` case
+may be found in [Floating Point Widgets](./README.md#112-floating-point-widgets).
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1637,6 +1688,9 @@ Optional keyword only arguments:
  default is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
+ * `prcolor=None` If `active`, in precision mode the white focus border changes
+ to yellow to for a visual indication. An alternative color can be provided. 
+ `WHITE` will defeat this change.
  * `color=None` Fill color for the control knob. Default: no fill.
  * `callback=dolittle` Callback function runs when the user moves the knob or
  the value is changed programmatically.

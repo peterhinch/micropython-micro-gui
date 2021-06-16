@@ -41,9 +41,11 @@ class Display:
     def __init__(self, ssd, nxt, sel, prev=None, up=None, down=None):
         self._next = Switch(nxt)
         self._sel = Switch(sel)
+        self._last = None  # Last switch pressed.
         # Mandatory buttons
-        self._next.close_func(Screen.next_ctrl)  # Call current screen bound method
-        self._sel.close_func(Screen.sel_ctrl)
+        # Call current screen bound method
+        self._next.close_func(self._closure, (self._next, Screen.next_ctrl))
+        self._sel.close_func(self._closure, (self._sel, Screen.sel_ctrl))
         self._sel.open_func(Screen.unsel)
 
         self.height = ssd.height
@@ -53,18 +55,25 @@ class Display:
         self._prev = None
         if prev is not None:
             self._prev = Switch(prev)
-            self._prev.close_func(Screen.prev_ctrl)
+            self._prev.close_func(self._closure, (self._prev, Screen.prev_ctrl))
         # Up and down methods get the button as an arg.
         self._up = None
         if up is not None:
             self._up = Switch(up)
-            self._up.close_func(self.do_up)
+            self._up.close_func(self._closure, (self._up, self.do_up))
         self._down = None
         if down is not None:
             self._down = Switch(down)
-            self._down.close_func(self.do_down)
+            self._down.close_func(self._closure, (self._down, self.do_down))
         self._is_grey = False  # Not greyed-out
-    
+
+    # Reject button presses where a button is already pressed.
+    # Execute if initialising, if same switch re-pressed or if last switch released
+    def _closure(self, switch, func):
+        if (self._last is None) or (self._last == switch) or self._last():
+            self._last = switch
+            func()
+
     def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False):
         sl = writer.stringlen(text)
         writer.set_textpos(ssd, y - writer.height // 2, x - sl // 2)
@@ -83,12 +92,10 @@ class Display:
         writer.setcolor()  # Restore defaults
 
     def do_up(self):
-        if self._down is not None and self._down():  # Interlock. TODO More?
-            Screen.up_ctrl(self._up)
+        Screen.up_ctrl(self._up)
 
     def do_down(self):
-        if self._up is not None and self._up():
-            Screen.down_ctrl(self._down)
+        Screen.down_ctrl(self._down)
 
     # Greying out has only one option given limitation of 4-bit display driver
     # It would be possible to do better with RGB565 but would need inverse transformation
@@ -603,7 +610,10 @@ class Widget:
             w = self.width + 4
             h = self.height + 4
             if self.has_focus():
-                dev.rect(x, y, w, h, WHITE)
+                color = WHITE
+                if hasattr(self, 'precision') and self.precision and self.prcolor is not None:
+                    color = self.prcolor
+                dev.rect(x, y, w, h, color)
                 self.has_border = True
             else:
                 if isinstance(self.bdcolor, bool):  # No border
@@ -676,6 +686,14 @@ class LinearIO(Widget):
         super().__init__(writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
                 value, active)
+        # Handle variable precision
+        self.precision = False
+        # 1 sec long press to set precise
+        self.lpd = Delay_ms(self.precise, (True,))
+        # Precision mode can only be entered when the active control has focus.
+        # In this state it will have a white border. By default this turns yellow
+        # but subclass can be defeat this with None or another color
+        self.prcolor = YELLOW
 
     def do_up(self, button):
         asyncio.create_task(self.btnhan(button, 1))
@@ -683,13 +701,37 @@ class LinearIO(Widget):
     def do_down(self, button):
         asyncio.create_task(self.btnhan(button, -1))
 
-    async def btnhan(self, button, up):  # Note: textbox.py, scale_log.py overrides
-        d = self.min_delta
+    # Handle increase and decrease buttons. Redefined by textbox.py, scale_log.py
+    async def btnhan(self, button, up):
+        if self.precision:
+            d = self.min_delta * 0.1
+            maxd = self.max_delta
+        else:
+            d = self.min_delta
+            maxd = d * 4  # Why move fast in slow mode?
         self.value(self.value() + up * d)
         t = ticks_ms()
         while not button():
             await asyncio.sleep_ms(0)  # Quit fast on button release
             if ticks_diff(ticks_ms(), t) > 500:  # Button was held down
-                d = min(self.max_delta, d * 2)
+                d = min(maxd, d * 2)
                 self.value(self.value() + up * d)
                 t = ticks_ms()
+
+    def precise(self, v):  # Timed out while button pressed
+        self.precision = v
+        if self.prcolor is not None:
+            self.draw = True
+
+    def do_sel(self):  # Select button was pushed
+        if self.precision:  # Already in mode
+            self.precise(False)
+        else:  # Require a long press to enter mode
+            self.lpd.trigger()
+
+    def unsel(self):  # Select button was released
+        self.lpd.stop()
+
+    def leave(self):  # Control has lost focus
+        self.precise(False)
+

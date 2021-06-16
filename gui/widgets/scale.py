@@ -18,7 +18,8 @@ class Scale(LinearIO):
                  ticks=200, legendcb=None, tickcb=None,
                  height=0, width=100, bdcolor=None, fgcolor=None, bgcolor=None,
                  callback=dolittle, args=[], 
-                 pointercolor=None, fontcolor=None, value=0.0, active=False):
+                 pointercolor=None, fontcolor=None, prcolor=None,
+                 value=0.0, active=False):
         if ticks % 2:
             raise ValueError('ticks arg must be divisible by 2')
         self.ticks = ticks
@@ -57,6 +58,8 @@ class Scale(LinearIO):
         self.ldy0 = ycl - self.ldl // 2
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
+            if prcolor is not None:
+                self.prcolor = prcolor  # Option for different bdcolor in precision mode
             self.callback(self, *self.args)
 
     def show(self):

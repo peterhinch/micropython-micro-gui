@@ -26,7 +26,7 @@ class ScaleLog(LinearIO):
     def __init__(self, writer, row, col, *,
                  decades=5, height=0, width=160,
                  bdcolor=None, fgcolor=None, bgcolor=None,
-                 pointercolor=None, fontcolor=None,
+                 pointercolor=None, fontcolor=None, prcolor=None,
                  legendcb=None, tickcb=None,
                  callback=dolittle, args=[],
                  value=1.0, delta=0.01, active=False):
@@ -70,6 +70,8 @@ class ScaleLog(LinearIO):
         self.dw = (self.x1 - self.x0) // 2  # Pixel width of a decade
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
+            if prcolor is not None:
+                self.prcolor = prcolor  # Option for different bdcolor in precision mode
             self.callback(self, *self.args)
 
     # Pre calculated log10(x) for x in range(1, 10)
@@ -144,8 +146,12 @@ class ScaleLog(LinearIO):
 
     async def btnhan(self, button, up):
         up = up == 1
-        delta = self.delta
-        maxdelta = 0.64
+        if self.precision:
+            delta = self.delta * 0.1
+            maxdelta = self.delta
+        else:
+            delta = self.delta
+            maxdelta = 0.64
         smul= (1 + delta) if up else (1 / (1 + delta))
         self.value(self.value() * smul)
         t = ticks_ms()

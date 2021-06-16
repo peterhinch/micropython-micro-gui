@@ -20,7 +20,8 @@ _HALF_SLOT_WIDTH = const(2)  # Width of slot /2
 class Slider(LinearIO):
     def __init__(self, writer, row, col, *,
                  height=100, width=20, divisions=10, legends=None,
-                 fgcolor=None, bgcolor=None, fontcolor=None, bdcolor=None, slotcolor=None,
+                 fgcolor=None, bgcolor=None, fontcolor=None, bdcolor=None,
+                 slotcolor=None, prcolor=None,
                  callback=dolittle, args=[], value=0.0, active=True):
         width &= 0xfe # ensure divisible by 2
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
@@ -42,6 +43,8 @@ class Slider(LinearIO):
         self.slot_h = height - _SLIDE_DEPTH - 1
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
+            if prcolor is not None:
+                self.prcolor = prcolor  # Option for different bdcolor in precision mode
             self.callback(self, *self.args)
 
     def show(self):
@@ -91,7 +94,7 @@ class HorizSlider(LinearIO):
     def __init__(self, writer, row, col, *,
                  height=20, width=100, divisions=10, legends=None,
                  fgcolor=None, bgcolor=None, fontcolor=None, bdcolor=None,
-                 slotcolor=None,
+                 slotcolor=None, prcolor=None,
                  callback=dolittle, args=[], value=0.0, active=True):
         height &= 0xfe # ensure divisible by 2
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
@@ -113,6 +116,8 @@ class HorizSlider(LinearIO):
         self.slot_y0 = centre - _HALF_SLOT_WIDTH
         self.draw = True  # Ensure a redraw on next refresh
         if active:  # Run callback (e.g. to set dynamic colors)
+            if prcolor is not None:
+                self.prcolor = prcolor  # Option for different bdcolor in precision mode
             self.callback(self, *self.args)
 
     def show(self):

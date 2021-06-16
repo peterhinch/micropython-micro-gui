@@ -42,7 +42,7 @@ class BaseScreen(Screen):
         self.lbl = Label(wri, row, col, 70, bdcolor=RED)
 
         self.vslider = Slider(wri, 2, 2, callback=self.slider_cb,
-                             bdcolor=RED, slotcolor=BLUE,
+                             bdcolor=RED, slotcolor=BLUE, prcolor=CYAN,
                              legends=('0.0', '0.5', '1.0'), value=0.5)
 
         col = 80
@@ -59,7 +59,8 @@ class BaseScreen(Screen):
                                   pointercolor=RED, fontcolor=YELLOW, bdcolor=CYAN,
                                   callback=self.cb, value=10, active=True)
         row = 120
-        self.knob = Knob(wri, row, 2, callback = self.cb, bgcolor=DARKGREEN, color=LIGHTRED)
+        self.knob = Knob(wri, row, 2, callback = self.cb,
+                         bgcolor=DARKGREEN, color=LIGHTRED)
         col = 150
         row = 185
         Checkbox(wri, row, col, callback=self.cbcb)
