@@ -250,9 +250,11 @@ class Screen:
     def change(cls, cls_new_screen, *, forward=True, args=[], kwargs={}):
         cs_old = cls.current_screen
         if cs_old is not None:  # Leaving an existing screen
-            for entry in cls.current_screen.tasklist:
-                if entry[1] or not forward:  # To be cancelled on screen change
-                    entry[0].cancel()  # or on closing the screen
+            for entry in cls.current_screen.tasks:
+                # Always cancel on back. Also on forward if requested.
+                if entry[1] or not forward:
+                    entry[0].cancel()
+                    cls.current_screen.tasks.remove(entry)  # remove from list
             cs_old.on_hide()  # Optional method in subclass
         if forward:
             if isinstance(cls_new_screen, type):
@@ -276,14 +278,15 @@ class Screen:
 
     @classmethod
     async def monitor(cls):
-        ar = asyncio.create_task(cls.auto_refresh())
-        await cls.is_shutdown.wait()
-        cls.is_shutdown.clear()
+        ar = asyncio.create_task(cls.auto_refresh())  # Start refreshing
+        await cls.is_shutdown.wait()  # and wait for termination.
+        cls.is_shutdown.clear()  # We're going down.
         # Task cancellation and shutdown
         ar.cancel()  # Refresh task
-        for entry in cls.current_screen.tasklist:
+        for entry in cls.current_screen.tasks:
+            # Screen instance will be discarded: no need to worry about .tasks
             entry[0].cancel()
-        await asyncio.sleep_ms(0)  # Allow subclass to cancel tasks
+        await asyncio.sleep_ms(0)  # Allow task cancellation to occur.
         display.clr_scr()
         ssd.show()
         cls.current_screen = None  # Ensure another demo can run
@@ -340,7 +343,7 @@ class Screen:
         self.lstactive = []  # Controls which respond to Select button
         self.selected_obj = None  # Index of currently selected object
         self.displaylist = []  # All displayable objects
-        self.tasklist = []  # Allow instance to register tasks for shutdown
+        self.tasks = []  # Instance can register tasks for cancellation
         self.modal = False
         self.height = ssd.height  # Occupies entire display
         self.width = ssd.width
@@ -354,7 +357,7 @@ class Screen:
 
     def _do_open(self, old_screen): # Window overrides
         dev = display.usegrey(False)
-# If opening a Screen from an Window just blank and redraw covered area
+        # If opening a Screen from an Window just blank and redraw covered area
         if old_screen is not None and old_screen.modal:
             x0, y0, x1, y1, w, h = old_screen._list_dims()
             dev.fill_rect(x0, y0, w, h, BGCOLOR) # Blank to screen BG
@@ -362,7 +365,7 @@ class Screen:
                 if obj.visible:
                     obj.draw_border()
                     obj.show()
-# Normally clear the screen and redraw everything
+        # Normally clear the screen and redraw everything
         else:
             dev.clr_scr()  # Clear framebuf but don't update display
             Screen.show(True)  # Force full redraw
@@ -466,7 +469,7 @@ class Screen:
     def reg_task(self, task, on_change=False):  # May be passed a coro or a Task
         if isinstance(task, type_coro):
             task = asyncio.create_task(task)
-        self.tasklist.append([task, on_change])
+        self.tasks.append((task, on_change))
 
     async def _garbage_collect(self):
         while True:
