@@ -806,19 +806,19 @@ Optional keyword only arguments:
  * `textcolor=None` Text color. Defaults to `fgcolor`.
  * `litcolor=None` If provided the button will display this color for one
  second after being pressed.
- * `text` Shown in centre of button. Default: an empty string.
- * `callback` Callback function which runs when button is pressed.
- * `args` A list/tuple of arguments for the above callback. Default `[]`.
- * `onrelease` Default `False`. If `True` the callback will occur when the
- `select` pushbutton is released otherwise it will occur when pressed.
+ * `text=''` Shown in centre of button.
+ * `callback=dolittle` Callback function which runs when button is pressed.
+ * `args=()` A list/tuple of arguments for the above callback.
+ * `onrelease=False` If `True` the callback will occur when the `select`
+ pushbutton is released otherwise it will occur when pressed.
 
 Method:
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
+ * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
 
 Class variable:
- * `lit_time` Period in seconds the `litcolor` is displayed. Default 1.
+ * `lit_time=1` Period in seconds the `litcolor` is displayed.
 
 ### CloseButton
 
@@ -827,6 +827,16 @@ single arg, being a `Writer` instance. It produces a red "X" button at the top
 right hand corner of the current `Screen`. Operating it causes the screen to
 close, with the screen below being revealed. On the bottom level screen, a
 `CloseButton` will shut down the application.
+
+Constructor mandatory positional arg:  
+ * writer
+
+Optional keyword only arguments:  
+ * `width=0` By default dimensions are calculated from font size. The button is
+ is square. Optionally `width` may be specified.
+ * `callback=dolittle` Optional callback, not normally required.
+ * `args=()` Args for above.
+ * `bgcolor=RED`
 
 ###### [Contents](./README.md#0-contents)
 
@@ -850,18 +860,28 @@ However each button can have its own list of `args`. Callback arguments
 comprise the currently visible button followed by its arguments.
 
 Constructor argument:
- * `callback` The callback function. Default does nothing.
+ * `callback=dolittle` The callback function. Default does nothing.
 
 Methods:
  * `add_button` Adds a button to the `ButtonList`. Arguments: as per the
  `Button` constructor.
  Returns the button object.
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
- * `value` Optional argument: a button in the set. If supplied and the button
- is not active the currency changes to the supplied button and its callback is
- run. Always returns the active button.
+ * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
+ * `value` Optional args `button=None`, `new_cb=False`. The `button` arg, if
+ provided, should be a button in the set. If supplied and the button is not
+ active the currency changes to the supplied button, which is displayed. By
+ default the callback of the previous button is run, otherwise the callback of
+ the newly displayed button. 
+
+Always returns the active button.
+
+Counter intuitively, running the callback of the previous button is normal
+behaviour. Consider a `ButtonList` consisting of ON and OFF buttons. If ON is
+visible this implies that the machine under control is off. Pressing `select`
+causes the ON callback to run, starting the machine. The new button displayed
+now reads OFF.
 
 Typical usage is as follows:
 ```python
@@ -899,9 +919,9 @@ Constructor positional arguments:
 Methods:
  * `add_button` Adds a button. Arguments: as per the `Button` constructor.
  Returns the Button instance.
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
+ * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
  * `value` Optional argument: a button in the set. If supplied, and the
  button is not currently active, the currency changes to the supplied button
  and its callback is run. Always returns the currently active button.
