@@ -4,14 +4,14 @@
 # Copyright (c) 2021 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
-from hardware_setup import ssd
+import hardware_setup
 
 import urandom
 import time
 from cmath import rect, pi
 import uasyncio as asyncio
 
-from gui.core.ugui import Screen
+from gui.core.ugui import Screen, ssd
 from gui.core.writer import CWriter
 from gui.fonts import font10
 from gui.core.colors import *

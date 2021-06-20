@@ -1,8 +1,8 @@
 # simple.py Minimal micro-gui demo.
 # Initialise hardware and framebuf before importing modules.
 # Import SSD and Display instances. Must be done first because of RAM use.
-from hardware_setup import ssd  # Create a display instance
-from gui.core.ugui import Screen
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, ssd
 
 from gui.widgets.label import Label
 from gui.widgets.buttons import Button, CloseButton

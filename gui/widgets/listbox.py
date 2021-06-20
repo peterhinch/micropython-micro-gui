@@ -2,7 +2,6 @@
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
-from micropython import const
 from gui.core.ugui import Widget, display
 from gui.core.colors import *
 
@@ -11,10 +10,11 @@ dolittle = lambda *_ : None
 # Behaviour has issues compared to touch displays because movement between
 # entries is sequential. This can affect the choice in when the callback runs.
 # It always runs when select is pressed. See 'also' ctor arg.
-ON_MOVE = const(1)  # Also run whenever the currency moves.
-ON_LEAVE = const(2)  # Also run on exit from the control.
 
 class Listbox(Widget):
+    ON_MOVE = 1  # Also run whenever the currency moves.
+    ON_LEAVE = 2  # Also run on exit from the control.
+
     @staticmethod
     def dimensions(writer, elements):
         entry_height = writer.height + 2 # Allow a pixel above and below text
@@ -81,13 +81,13 @@ class Listbox(Widget):
     def do_up(self, _):
         if v := self._value:
             self.value(v - 1)
-        if (self.also & ON_MOVE):  # Treat as if select pressed
+        if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
             self.do_sel()
 
     def do_down(self, _):
         if (v := self._value) < len(self.elements) - 1:
             self.value(v + 1)
-        if (self.also & ON_MOVE):
+        if (self.also & Listbox.ON_MOVE):
             self.do_sel()
 
     # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes
@@ -102,5 +102,5 @@ class Listbox(Widget):
         self.ev = self._value  # Value change detection
 
     def leave(self):
-        if (self.also & ON_LEAVE) and self._value != self.ev:
+        if (self.also & Listbox.ON_LEAVE) and self._value != self.ev:
             self.do_sel()

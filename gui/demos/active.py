@@ -1,8 +1,8 @@
 # active.py micro-gui demo of widgets that respond to user control
 
 # Create SSD instance. Must be done first because of RAM use.
-from hardware_setup import ssd
-from gui.core.ugui import Screen
+import hardware_setup
+from gui.core.ugui import Screen, ssd
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
 from gui.core.colors import *

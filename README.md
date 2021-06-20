@@ -195,7 +195,6 @@ prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
-setup(display)
 ```
 
 Display drivers are documented
@@ -269,6 +268,11 @@ On the TTGO T-Display I found it necessary to use physical pullup resistors on
 the pushbutton GPIO lines. According to the
 [ESP32 gurus](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/)
 pins 36-39 do not have pullup support.
+
+On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
+bytecode: in this configuration running the "various" demo there was 29K of
+free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
+RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
 ## 1.9 Firmware and dependencies
 
@@ -374,8 +378,8 @@ Note that the import of `hardware_setup.py` is the first line of code. This is
 because the frame buffer is created here, with a need for a substantial block
 of contiguous RAM.
 ```python
-from hardware_setup import ssd  # Instantiate display, setup color LUT (if present)
-from gui.core.ugui import Screen
+import hardware_setup  # Instantiate display, setup color LUT (if present)
+from gui.core.ugui import Screen, ssd
 
 from gui.widgets.label import Label
 from gui.widgets.buttons import Button, CloseButton
@@ -539,6 +543,10 @@ In normal use the following methods only are required:
  passing positional and keyword arguments to the constructor of the new, user
  defined, screen.
  * `back(cls)` Restore previous screen.
+ * `value(cls, val=None)` The `val` arg can be any Python type. It allows
+ widgets on a `Screen` to store information in a way which can be accessed from
+ the calling screen. This typically occurs after the screen has closed and no
+ longer exists as an instance, hence the use of a classmethod.
 
 These are uncommon:__
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
@@ -663,7 +671,6 @@ Methods:
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
  Returns the current text string.  
- 2. `show` No args. (Re)draws the label. Primarily for internal use by GUI.
 
 If populating a label would cause it to extend beyond the screen boundary a
 warning is printed at the console. The label may appear at an unexpected place.
@@ -728,7 +735,6 @@ Methods:
     * `bgcolor=None` Background color, as per foreground.
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
- 3. `show` No args. (Re)draws the LED. Primarily for internal use by GUI.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -763,9 +769,9 @@ Optional keyword only arguments:
  * `active=True` By default user input is accepted.
 
 Methods:
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise, if
- the widget is `active`, enables or disables it, showing it in its new state.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
  * `value` Optional Boolean argument `val`. If the provided value does not
  correspond to the control's current value, updates it; the checkbox is
  re-drawn and the callback executed. Always returns the control's value.
@@ -813,7 +819,7 @@ Optional keyword only arguments:
  pushbutton is released otherwise it will occur when pressed.
 
 Method:
- * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
 
@@ -866,7 +872,7 @@ Methods:
  * `add_button` Adds a button to the `ButtonList`. Arguments: as per the
  `Button` constructor.
  Returns the button object.
- * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
  * `value` Optional args `button=None`, `new_cb=False`. The `button` arg, if
@@ -919,12 +925,12 @@ Constructor positional arguments:
 Methods:
  * `add_button` Adds a button. Arguments: as per the `Button` constructor.
  Returns the Button instance.
- * `greyed_out=None` Optional Boolean argument `val`. If `None` returns the
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
  * `value` Optional argument: a button in the set. If supplied, and the
- button is not currently active, the currency changes to the supplied button
- and its callback is run. Always returns the currently active button.
+ button is not currently active, the supplied button receives the focus and its
+ callback is run. Always returns the currently active button.
 
 Typical usage:
 ```python
@@ -950,7 +956,7 @@ for t in table:
 # 12. Listbox widget
 
 ```python
-from gui.widgets.listbox import Listbox, ON_MOVE, ON_LEAVE
+from gui.widgets.listbox import Listbox
 ```
 
 A `Listbox` is an active widget. Its height is determined by the number of
@@ -977,29 +983,26 @@ Optional keyword only arguments:
  default is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
- * `fontcolor` Text color. Defaults to system text color.
- * `select_color` Background color for selected item in list. Default
- `LIGHTBLUE`.
- * `callback` Callback function which runs when `select` is pressed.
- * `args` A list/tuple of arguments for above callback. Default `[]`.
- * `also=0` Options are `ON_MOVE` or `ON_LEAVE`. By default the callback runs
- only when the `select` button is pressed. The `ON_LEAVE` value meanse that it
- will also run when the focus moves from the control if the currently selected
- element has been changed. The `ON_MOVE` arg causes the callback to run every
- time the highlighted element is changed.
+ * `fontcolor=None` Text color. Defaults to system text color.
+ * `select_color=DARKBLUE` Background color for selected item in list.
+ * `callback=dolittle` Callback function which runs when `select` is pressed.
+ * `args=[]` A list/tuple of arguments for above callback.
+ * `also=0` Options are `Listbox.ON_MOVE` or `Listbox.ON_LEAVE`. By default the
+ callback runs only when the `select` button is pressed. The `ON_LEAVE` value
+ causes it also to run when the focus moves from the control if the currently
+ selected element has changed. The `ON_MOVE` arg causes the callback to run
+ every time the highlighted element is changed.
 
 Methods:
- * `greyed_out` Optional boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
- * `value` Argument `val` default `None`. If the argument is provided
- which is a valid index into the list that entry becomes current and the
- callback is executed. Always returns the index of the currently active entry.
- * `textvalue` Argument `text` a string default `None`. If the argument
- is provided and is in the control's list, that item becomes current. Returns
- the current string, unless the arg was provided but did not correspond to any
- list item. In this event the control's state is not changed and `None` is
- returned.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
+ * `value` Argument `val=None`. If a provided argument is a valid index for the list, that entry becomes current and the callback is executed. Always returns
+ the index of the currently active entry.
+ * `textvalue` Argument `text=None`. If a string argument is provided and is in
+ the control's list, that item becomes current. Normally returns the current
+ string. If a provided arg did not match any list item, the control's state is
+ not changed and `None` is returned.
 
 The callback's first argument is the listbox instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
@@ -1024,7 +1027,8 @@ Open dropdown list.
 A dropdown list. The list, when active, is drawn below the control. The height
 of the control is determined by the height of the font in use. The height of
 the list is determined by the number of entries in it and the font in use.
-Scrolling is not supported.
+Scrolling is not supported. The dropdown should be placed high enough on the
+screen to ensure that the list can be displayed
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1038,7 +1042,7 @@ Mandatory keyword only argument:
 Optional keyword only arguments:
  * `width=None` Control width in pixels. By default this is calculated to
  accommodate all elements.
- * `value=0` Index of currently selected list item. Default 0.
+ * `value=0` Index of currently selected list item.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -1051,17 +1055,16 @@ Optional keyword only arguments:
  * `args=[]` A list/tuple of arguments for above callback.
 
 Methods:
- * `greyed_out` Optional boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
- * `value` Argument `val` default `None`. If the argument is provided
- which is a valid index into the list that entry becomes current and the
- callback is executed. Always returns the index of the currently active entry.
- * `textvalue` Argument `text` a string default `None`. If the argument
- is provided and is in the control's list, that item becomes current. Returns
- the current string, unless the arg was provided but did not correspond to any
- list item. In this event the control's state is not changed and `None` is
- returned.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
+ * `value` Argument `val=None`. If a provided arg is a valid index into the
+ list, that entry becomes current and the callback is executed. Always returns
+ the index of the currently active entry.
+ * `textvalue` Argument `text=None`. If a string argument is provided and is in
+ the control's list, that item becomes current. Normally returns the current
+ string. If a provided arg did not match any list item, the control's state is
+ not changed and `None` is returned.
 
 If `select` is pressed when the `Dropdown` has focus, the list is displayed.
 The `increase` and `decrease` buttons move the list currency. If `select` is
@@ -1091,10 +1094,10 @@ calculated from the strings assigned to the buttons. This ensures that buttons
 are evenly spaced and identically sized. Typically used for simple queries such
 as "yes/no/cancel".
 
-Constructor mandatory positional args:  
+Constructor positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
- 2. `row` Location on screen.
- 3. `col`  
+ 2. `row=20` Location on screen.
+ 3. `col=20`  
 
 Mandatory keyword only arg:  
  * `elements` A list or tuple of 2-tuples. Each defines the text and color of
@@ -1111,16 +1114,18 @@ Optional keyword only args:
  * `callback=dolittle`
  * `args=[]`
 
-The `DialogBox` is a `Window` subclass. Pressing any button closes the dialog
-and sets the `Window` value to the text of the button pressed or "Close" in the
+Classmethod (inherited from `Screen`):  
+ * `value(cls, val=None)` The `val` arg can be any Python type.
+
+The `DialogBox` is a `Screen` subclass. Pressing any button closes the dialog
+and sets the `Screen` value to the text of the button pressed or "Close" in the
 case of the `close` button. The outcome can therefore be tested by running
-`Window.value()` or by implementing the callback. The latter receives the
+`Screen.value()` or by implementing the callback. The latter receives the
 `DialogBox` instance as a first arg, followed by any args supplied to the
 constructor.
 
-Note that dialog boxes can also be constructed manually, allowing for more
-flexible designs. For example these might have widgets other than pushbuttons.
-The approach is to write a user subclass of `Window`. Example code may be found
+Note that dialog boxes can also be constructed manually, enabling more flexible designs. For example these might have widgets other than pushbuttons. The
+approach is to write a user subclass of `Window`. Example code may be found
 in `gui/demos/screens.py`.
 
 ###### [Contents](./README.md#0-contents)
@@ -1143,12 +1148,12 @@ fonts.
 Constructor mandatory positional arguments:
  1. `writer` The `Writer` instance (font and screen) to use.
  2. `row` Location on screen.
- 3. `col`  
+ 3. `col`
  4. `width` Width of the object in pixels.
  5. `nlines` Number of lines of text to display. The object's height is
  determined from the height of the font:  
  `height in pixels = nlines*font_height`  
- As per most widgets the border is drawn two pixels beyond the control's
+ As per all widgets the border is drawn two pixels beyond the control's
  boundary.
 
 Keyword only arguments:
@@ -1207,14 +1212,13 @@ Constructor mandatory positional args:
  2. `row` Location on screen.
  3. `col`  
 
-Keyword only args:
-
+Keyword only args:  
  * `height=50` Height of meter.
  * `width=10` Width.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
- * `bgcolor=None` Background color of object. If `None` the `Writer` background
- default is used.
+ * `bgcolor=BLACK` Background color of meter. If `None` the `Writer` background
+ is used.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
  * `ptcolor=None` Color of meter pointer or bar. Default is foreground color.
@@ -1226,8 +1230,7 @@ Keyword only args:
  * `legends=None` If a tuple of strings is passed, `Label` instances will be
  displayed to  the right hand side of the meter, starting at the bottom. E.G.
  `('0.0', '0.5', '1.0')`
- * `value=None` Initial value. If `None` the meter will not be drawn until
- its `value()` method is called.
+ * `value=0` Initial value.
  
 Methods:
  1. `value` Args: `n=None, color=None`.
@@ -1244,7 +1247,6 @@ Methods:
     * `bgcolor=None` Background color, as per foreground.
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
- 3. `show` No args. (Re)draws the meter. Primarily for internal use by GUI.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1274,43 +1276,43 @@ Optional keyword only arguments:
  * `height` Dimension of the bounding box. Default 100 pixels (v), 20 (h).
  * `width` Dimension of the bounding box. Default 20 pixels (v), 100 (h).
  * `divisions=10` Number of graduations on the scale.
- * `legends=None` A tuple of strings to display near the slider. These `Label`
- instances will be  distributed evenly along its length, starting at the bottom
- (v) or left (h).
+ * `legends=None` A tuple of strings to display near the slider. These will be
+ distributed evenly along its length, starting at the bottom (v) or left (h).
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
  default is used.
+ * `fontcolor=None` Text color. Defaults to foreground color.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
- * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow to for a visual indication. An alternative color can be provided. 
- `WHITE` will defeat this change.
- * `fontcolor=None` Text color. Defaults to foreground color.
  * `slotcolor=None` Color for the slot: this is a thin rectangular region in
  the centre of the control along which the slider moves. Defaults to the
  background color.
+ * `prcolor=None` If `active`, in precision mode the white focus border changes
+ to yellow to for a visual indication. An alternative color can be provided. 
+ `WHITE` will defeat this change.
  * `callback=dolittle` Callback function which runs whenever the control's
  value changes. If the control is `active` it also runs on instantiation. This
  enables dynamic color changes. Default is a null function.
  * `args=[]` A list/tuple of arguments for above callback.
- * `value` The initial value. Default 0.0: slider will be at the bottom (v),
- left (h).
+ * `value=0.0` The initial value: slider will be at the bottom (v), left (h).
  * `active=True` Determines whether the control can accept user input.
 
 Methods:
- * `greyed_out` Optional argument, boolean or default `val=None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
  * `value=None` Optional float argument. If supplied the slider moves to show
  the new value and the callback is triggered. The method constrains the range
  to 0.0 to 1.0. The method always returns the control's value.
  * `color` Mandatory arg `color` The control is rendered in the selected
  color. This supports dynamic color changes.
 
-When the widget has focus, the `increase` and `decrease` buttons adjust the
-value. Brief presses make small changes, longer presses cause accelerating
-change.
+If instantiated as `active`, the floating point widget behaves as per
+[section 1.12](./README.md#112-floating-point-widgets). When the widget has
+focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
+small changes, longer presses cause accelerating change. A long press of
+`select` invokes high precision mode.
 
 The callback receives an initial arg being the slider instance followed by any
 user supplied args. They can be a bound methods, typically of a `Screen`
@@ -1351,12 +1353,12 @@ Constructor mandatory positional args:
  2. `row` Location on screen.
  3. `col`  
 
-Keyword only arguments (all optional): 
+Optional keyword only arguments: 
  * `ticks=200` Number of "tick" divisions on scale. Must be divisible by 2.
  * `legendcb=None` Callback for populating scale legends (see below).
  * `tickcb=None` Callback for setting tick colors (see below).
  * `height=0` Pass 0 for a minimum height based on the font height.
- * `width=200`
+ * `width=100`
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -1368,23 +1370,31 @@ Keyword only arguments (all optional):
  `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `fgcolor`.
+ * `callback=dolittle` Callback function which runs whenever the control's
+ value changes. If the control is `active` it also runs on instantiation. This
+ enables dynamic color changes. Default is a null function.
+ * `args=[]` A list/tuple of arguments for above callback.
  * `value=0.0` Initial value.
  * `active=False` By default the widget is passive. By setting `active=True`
- the widget can acquire focus. When current, the value can be changed with the
- `increase` and `decrease` buttons. An accelerating algorithm allows rapid
- changes with a long button push. Short pushes change the value by a small
- amount, currently 0.01.
+ the widget can acquire focus; its value can then be adjusted with the
+ `increase` and `decrease` buttons.
 
 Methods:
- * `greyed_out` Optional argument, boolean or default `val=None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
  * `value=None` Set or get the current value. Always returns the current value.
  A passed `float` is constrained to the range -1.0 <= V <= 1.0 and becomes the
  `Scale`'s current value. The `Scale` is updated. Passing `None` enables
  reading the current value, but see note below on precision.
 
 For example code see `gui/demos/active.py`.
+
+If instantiated as `active`, the floating point widget behaves as per
+[section 1.12](./README.md#112-floating-point-widgets). When the widget has
+focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
+small changes, longer presses cause accelerating change. A long press of
+`select` invokes high precision mode.
 
 ### Callback legendcb
 
@@ -1500,8 +1510,7 @@ Keyword only arguments (all optional):
  arguments are the `ScaleLog` instance, followed by any user supplied args.
  * `value=1.0` Initial value.
  * `delta=0.01` This determines the smallest amount of change which can be
- achieved with a brief button press. The value is multiplied or divided by
- `1+delta`.
+ achieved with a brief button press. See Control Algorithm below.
  * `active=False` Determines whether the widget accepts user input.
 
 Methods:
@@ -1509,20 +1518,28 @@ Methods:
  A passed `float` is constrained to the range `1.0 <= V <= 10**decades` and
  becomes the control's current value. The `ScaleLog` is updated. Always returns
  the control's current value. See note below on precision.
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise
- enables or disables it, showing it in its new state.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
 
 For example code see `gui/demos/active.py`.
 
 ### Control algorithm
 
-When `increase` or `decrease` buttons are briefly pressed, the widget's value
-is multiplied or divided by `(1 + delta)`. A long press causes an accelerating
-change. This facilitates both small and large changes. The value of `delta`
-determines the minimum change possible and hence the level of precision that
-the widget can achieve. The choice of `delta` represents a compromise between
-precision and usability.
+If instantiated as `active`, the floating point widget behaves as per
+[section 1.12](./README.md#112-floating-point-widgets). When the widget has
+focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
+small changes, longer presses cause accelerating change. A long press of
+`select` invokes high precision mode.
+
+In normal mode, the amount of change caused by a brief button press is
+controlled by the constructor arg `delta`; the choice of this value represents
+a compromise between precision and usability.
+
+Owing to the logarithmic nature of the control, a small positive change is
+defined by multiplication of the value by `(1 + delta)` and a negative change
+corresponds to division by `(1 + delta)`. In precision mode `delta` is
+reduced by a factor of 10.
 
 ### Callback
 
@@ -1720,9 +1737,9 @@ Optional keyword only arguments:
  * `active=True` Enable user input via the `increase` and `decrease` buttons.
 
 Methods:
- * `greyed_out` Optional Boolean argument `val` default `None`. If
- `None` returns the current 'greyed out' status of the control. Otherwise, if
- the widget is `active`, enables or disables it, showing it in its new state.
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
  * `value` Optional argument `val`. If set, adjusts the pointer to
  correspond to the new value. The move callback will run. The method constrains
  the range to 0.0 to 1.0. Always returns the control's value.

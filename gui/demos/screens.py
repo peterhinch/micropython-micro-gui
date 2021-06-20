@@ -1,12 +1,12 @@
 # screens.py micro-gui demo of multiple screens, dropdowns etc
 
 # Create SSD instance. Must be done first because of RAM use.
-from hardware_setup import ssd  # Create a display instance
-from gui.core.ugui import Screen, Window
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, Window, ssd
 
 from gui.widgets.label import Label
 from gui.widgets.buttons import Button, RadioButtons, CloseButton
-from gui.widgets.listbox import Listbox, ON_LEAVE
+from gui.widgets.listbox import Listbox
 from gui.widgets.dropdown import Dropdown
 from gui.widgets.dialog import DialogBox
 from gui.core.writer import CWriter
@@ -80,7 +80,8 @@ class BaseScreen(Screen):
         row = 2
         Listbox(wri, row, col, callback=lbcb,
                 elements = ('cat', 'dog', 'aardvark', 'goat', 'pig', 'mouse'),
-                bdcolor = GREEN, bgcolor = DARKGREEN, also = ON_LEAVE)
+                bdcolor = GREEN, bgcolor = DARKGREEN,
+                also = Listbox.ON_LEAVE)
         col = 70
         Dropdown(wri, row, col, callback=ddcb,
                 elements = ('hydrogen', 'helium', 'neon', 'xenon', 'new screen'),

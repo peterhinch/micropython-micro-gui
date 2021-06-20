@@ -95,7 +95,7 @@ ssd = SSD(spi, height=135, width=240, dc=pdc, cs=pcs, rst=prst, disp_mode=LANDSC
 # Normal portrait display: consistent with TTGO logo at top
 # ssd = SSD(spi, height=240, width=135, dc=pdc, cs=pcs, rst=prst, disp_mode=PORTRAIT, display=TDISPLAY)
 
-from gui.core.ugui import Display, setup
+from gui.core.ugui import Display
 # Create and export a Display instance
 # Define control buttons
 nxt = Pin(36, Pin.IN, Pin.PULL_UP)  # Move to next control
@@ -104,7 +104,6 @@ prev = Pin(38, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(39, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(32, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
-setup(display)
 
 # optional
 # b1 = Pin(BUTTON1, Pin.IN)

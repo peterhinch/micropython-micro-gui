@@ -8,7 +8,7 @@
 # Copyright (c) 2021 Peter Hinch
 
 # Create SSD instance. Must be done first because of RAM use.
-from hardware_setup import ssd
+import hardware_setup
 
 import cmath
 import math
@@ -16,7 +16,7 @@ import uasyncio as asyncio
 from collections import OrderedDict
 
 from gui.core.writer import Writer, CWriter
-from gui.core.ugui import Screen
+from gui.core.ugui import Screen, ssd
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
 from gui.widgets.label import Label
 from gui.widgets.buttons import Button, CloseButton

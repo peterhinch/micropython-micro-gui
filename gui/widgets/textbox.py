@@ -16,7 +16,8 @@ import uasyncio as asyncio
 # Reason for no tab support in nano-gui/private/reason_for_no_tabs
 
 class Textbox(LinearIO):
-    def __init__(self, writer, row, col, width, nlines, *, bdcolor=None, fgcolor=None,
+    def __init__(self, writer, row, col, width, nlines, *,
+                 bdcolor=None, fgcolor=None,
                  bgcolor=None, clip=True, active=False):
         height = nlines * writer.height
         devht = writer.device.height

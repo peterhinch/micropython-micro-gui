@@ -16,6 +16,10 @@ from hardware_setup import ssd
 from gui.primitives.delay_ms import Delay_ms
 from gui.primitives.switch import Switch
 
+# Globally available singleton objects
+display = None  # Singleton instance
+ssd = None
+
 gc.collect()
 __version__ = (0, 1, 0)
 
@@ -26,10 +30,6 @@ async def _g():
     pass
 type_coro = type(_g())
 
-def setup(d):
-    global display
-    display = d
-
 _FIRST = const(0)
 _NEXT = const(1)
 _PREV = const(2)
@@ -38,7 +38,8 @@ _LAST = const(3)
 # Wrapper for ssd providing buttons and framebuf compatible methods
 class Display:
 
-    def __init__(self, ssd, nxt, sel, prev=None, up=None, down=None):
+    def __init__(self, objssd, nxt, sel, prev=None, up=None, down=None):
+        global display, ssd
         self._next = Switch(nxt)
         self._sel = Switch(sel)
         self._last = None  # Last switch pressed.
@@ -48,8 +49,8 @@ class Display:
         self._sel.close_func(self._closure, (self._sel, Screen.sel_ctrl))
         self._sel.open_func(Screen.unsel)
 
-        self.height = ssd.height
-        self.width = ssd.width
+        self.height = objssd.height
+        self.width = objssd.width
 
         # Optional buttons
         self._prev = None
@@ -66,6 +67,8 @@ class Display:
             self._down = Switch(down)
             self._down.close_func(self._closure, (self._down, self.do_down))
         self._is_grey = False  # Not greyed-out
+        display = self  # Populate globals
+        ssd = objssd
 
     # Reject button presses where a button is already pressed.
     # Execute if initialising, if same switch re-pressed or if last switch released
@@ -199,6 +202,15 @@ class Display:
 class Screen:
     current_screen = None
     is_shutdown = Event()
+    _value = None
+
+    # Allow a Screen to store an arbitrary object. Retrieval may be
+    # done by caller, after the Screen instance was deleted
+    @classmethod
+    def value(cls, val=None):
+        if val is not None:
+            cls._value = val
+        return cls._value
 
     @classmethod
     def next_ctrl(cls):
@@ -480,7 +492,7 @@ class Screen:
 
 # Very basic window class. Cuts a rectangular hole in a screen on which content may be drawn
 class Window(Screen):
-    _value = None
+
     def __init__(self, row, col, height, width, *, draw_border=True, bgcolor=None, fgcolor=None):
         Screen.__init__(self)
         self.row = row
@@ -506,12 +518,6 @@ class Window(Screen):
         x = self.col
         y = self.row
         return x, y, x + w, y + h, w, h
-
-    @classmethod
-    def value(cls, val=None): # Mechanism for testing the outcome of a dialog box
-        if val is not None:
-            cls._value = val
-        return cls._value
 
 
 # Base class for all displayable objects

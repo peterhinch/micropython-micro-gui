@@ -7,9 +7,9 @@
 # import gui.demos.tbox
 
 # Initialise hardware and framebuf before importing modules.
-from hardware_setup import ssd  # Create a display instance
+import hardware_setup  # Create a display instance
 
-from gui.core.ugui import Screen
+from gui.core.ugui import Screen, ssd
 from gui.core.writer import CWriter
 
 import uasyncio as asyncio

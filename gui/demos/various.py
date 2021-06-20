@@ -2,9 +2,9 @@
 
 # Initialise hardware and framebuf before importing modules.
 # Create SSD instance. Must be done first because of RAM use.
-from hardware_setup import ssd
+import hardware_setup
 
-from gui.core.ugui import Screen
+from gui.core.ugui import Screen, ssd
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
 from gui.core.colors import *
