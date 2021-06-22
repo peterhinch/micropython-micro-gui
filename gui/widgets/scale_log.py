@@ -48,9 +48,8 @@ class ScaleLog(LinearIO):
         else:
             ctrl_ht = height - min_ht  # adjust ticks for greater height
         width &= 0xfffe  # Make divisible by 2: avoid 1 pixel pointer offset
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, self._constrain(value), active)
-        if active:
-            super()._set_callbacks(callback, args)
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, self._constrain(value), active, prcolor)
+        super()._set_callbacks(callback, args)
         self.fontcolor = fontcolor if fontcolor is not None else self.fgcolor
 
         self.x0 = col + 2
@@ -69,10 +68,8 @@ class ScaleLog(LinearIO):
         self.ldy0 = ycl - self.ldl // 2
         self.dw = (self.x1 - self.x0) // 2  # Pixel width of a decade
         self.draw = True  # Ensure a redraw on next refresh
-        if active:  # Run callback (e.g. to set dynamic colors)
-            if prcolor is not None:
-                self.prcolor = prcolor  # Option for different bdcolor in precision mode
-            self.callback(self, *self.args)
+        # Run callback (e.g. to set dynamic colors)
+        self.callback(self, *self.args)
 
     # Pre calculated log10(x) for x in range(1, 10)
     def show(self, logs=(0.0, 0.3010, 0.4771, 0.6021, 0.6990, 0.7782, 0.8451, 0.9031, 0.9542)):

@@ -16,7 +16,7 @@ class Knob(LinearIO):
     def __init__(self, writer, row, col, *, height=70, arc=TWOPI, ticks=9, value=0.0,
                  fgcolor=None, bgcolor=None, color=None, bdcolor=None, prcolor=None,
                  callback=dolittle, args=[], active=True):
-        super().__init__(writer, row, col, height, height, fgcolor, bgcolor, bdcolor, value, active)
+        super().__init__(writer, row, col, height, height, fgcolor, bgcolor, bdcolor, value, active, prcolor)
         super()._set_callbacks(callback, args)
         radius = height / 2
         self.arc = min(max(arc, 0), TWOPI) # Usable angle of control
@@ -28,10 +28,8 @@ class Knob(LinearIO):
         self.ticks = max(ticks, 2) # start and end of travel
         self.color = color
         self.draw = True  # Ensure a redraw on next refresh
-        if active:  # Run callback (e.g. to set dynamic colors)
-            if prcolor is not None:
-                self.prcolor = prcolor  # Option for different bdcolor in precision mode
-            self.callback(self, *self.args)
+        # Run callback (e.g. to set dynamic colors)
+        self.callback(self, *self.args)
 
     def show(self):
         if super().show(False):  # Honour bgcolor

@@ -1314,10 +1314,12 @@ focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
 small changes, longer presses cause accelerating change. A long press of
 `select` invokes high precision mode.
 
-The callback receives an initial arg being the slider instance followed by any
-user supplied args. They can be a bound methods, typically of a `Screen`
-subclass. The callback runs whenever the value changes enabling dynamic color
-change. See `gui/demos/active.py`.
+### Callback
+
+The callback receives an initial arg being the widget instance followed by any
+user supplied args. The callback can be a bound method, typically of a `Screen`
+subclass. The callback runs when the widget is instantiated and whenever the
+value changes. This enables dynamic color change. See `gui/demos/active.py`.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1339,14 +1341,15 @@ The `Scale` may be `active` or `passive`. A description of the user interface
 in the `active` case may be found in
 [Floating Point Widgets](./README.md#112-floating-point-widgets).
 
-Legends for the scale are created dynamically as it scrolls past the window.
-The user may control this by means of a callback. The example `lscale.py` in
-`nano-gui` illustrates a variable with range 88.0 to 108.0, the callback
-ensuring that the display legends match the user variable. A further callback
-enables the scale's color to change over its length or in response to other
-circumstances.
+The scale handles floats in range `-1.0 <= V <= 1.0`, however data values may
+be scaled to match any given range.
 
-The scale handles floats in range `-1.0 <= V <= 1.0`.
+Legends for the scale are created dynamically as it scrolls past the window.
+The user may control this by means of a callback. Example code may be found
+[in nano-gui](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py) which has a `Scale` whose value range is 88.0 to 108.0.
+A callback ensures that the display legends match the user variable. A further
+callback can enable the scale's color to change over its length or in response
+to other circumstances.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1355,26 +1358,27 @@ Constructor mandatory positional args:
 
 Optional keyword only arguments: 
  * `ticks=200` Number of "tick" divisions on scale. Must be divisible by 2.
- * `legendcb=None` Callback for populating scale legends (see below).
- * `tickcb=None` Callback for setting tick colors (see below).
- * `height=0` Pass 0 for a minimum height based on the font height.
+ * `value=0.0` Initial value.
+ * `height=0` Default is a minimum height based on the font height.
  * `width=100`
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
  default is used.
- * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
- color is provided, a border line will be drawn around the control.
+ * `bdcolor=None` Color of border, default `fgcolor`. If `False` no border will
+ be drawn. If a  color is provided, a border line will be drawn around the
+ control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
  to yellow to for a visual indication. An alternative color can be provided. 
  `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `fgcolor`.
- * `callback=dolittle` Callback function which runs whenever the control's
- value changes. If the control is `active` it also runs on instantiation. This
- enables dynamic color changes. Default is a null function.
+ * `legendcb=None` Callback for populating scale legends (see below).
+ * `tickcb=None` Callback for setting tick colors (see below).
+ * `callback=dolittle` Callback function which runs when the user moves the
+ scale or the value is changed programmatically. If the control is `active` it
+ also runs on instantiation. Default is a null function.
  * `args=[]` A list/tuple of arguments for above callback.
- * `value=0.0` Initial value.
  * `active=False` By default the widget is passive. By setting `active=True`
  the widget can acquire focus; its value can then be adjusted with the
  `increase` and `decrease` buttons.
@@ -1390,11 +1394,20 @@ Methods:
 
 For example code see `gui/demos/active.py`.
 
+### Control algorithm
+
 If instantiated as `active`, the floating point widget behaves as per
 [section 1.12](./README.md#112-floating-point-widgets). When the widget has
 focus, `increase` and `decrease` buttons adjust the value. Brief presses cause
 small changes, longer presses cause accelerating change. A long press of
 `select` invokes high precision mode.
+
+### Callback
+
+The callback receives an initial arg being the widget instance followed by any
+user supplied args. The callback can be a bound method, typically of a `Screen`
+subclass. The callback runs when the widget is instantiated and whenever the
+value changes. This enables dynamic color change.
 
 ### Callback legendcb
 
@@ -1404,8 +1417,8 @@ whose text is defined by the `legendcb` callback. If no user callback is
 supplied, legends will be of the form `0.3`, `0.4` etc. User code may override
 these to cope with cases where a user variable is mapped onto the control's
 range. The callback takes a single `float` arg which is the value of the tick
-(in range -1.0 <= v <= 1.0). It must return a text string. An example from the
-`lscale.py` demo shows FM radio frequencies:
+(in range -1.0 <= v <= 1.0). It must return a text string. An example from
+[ths nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py) shows FM radio frequencies:
 ```python
 def legendcb(f):
     return '{:2.0f}'.format(88 + ((f + 1) / 2) * (108 - 88))
@@ -1453,13 +1466,14 @@ from gui.widgets.scale_log import ScaleLog
 ```
 ![Image](./images/log_scale.JPG)
 
-This enables the input and/or display of floating point values with extremely
-wide dynamic range. This is done by means of a base 10 logarithmic scale. In
-other respects the concept is that of the `Scale` class.
+This displays floating point values with extremely wide dynamic range and
+optionally enables their input. The dynamic range is handled by means of a base
+10 logarithmic scale. In other respects the concept is that of the `Scale`
+class.
 
 The control is modelled on old radios where a large scale scrolls past a small
 window having a fixed pointer. The use of a logarithmic scale enables the
-display and input of a value which can change by many orders of magnitude.
+value to span a range of multiple orders of magnitude.
 
 The `Scale` may be `active` or `passive`. A description of the user interface
 in the `active` case may be found in
@@ -1471,7 +1485,7 @@ decades to be traversed quickly.
 
 Legends for the scale are created dynamically as it scrolls past the window,
 with one legend for each decade. The user may control this by means of a
-callback, for example to display units, e.g. `10nF`. A further callback
+callback, for example to display units, e.g. `10MHz`. A further callback
 enables the scale's color to change over its length or in response to other
 circumstances.
 
@@ -1489,14 +1503,15 @@ Keyword only arguments (all optional):
  * `decades=5` Defines the control's maximum value (i.e. `10**decades`).
  * `value=1.0` Initial value for control. Will be constrained to
  `1.0 <= value <= 10**decades` if outside this range.
- * `height=0` Pass 0 for a minimum height based on the font height.
+ * `height=0` Default is a minimum height based on the font height.
  * `width=160`
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
  default is used.
- * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
- color is provided, a border line will be drawn around the control.
+ * `bdcolor=None` Color of border, default `fgcolor`. If `False` no border will
+ be drawn. If a color is provided, a border line will be drawn around the
+ control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
  to yellow to for a visual indication. An alternative color can be provided. 
  `WHITE` will defeat this change.
@@ -1504,11 +1519,11 @@ Keyword only arguments (all optional):
  * `fontcolor=None` Color of legends. Default `WHITE`.
  * `legendcb=None` Callback for populating scale legends (see below).
  * `tickcb=None` Callback for setting tick colors (see below).
- * `callback=dolittle` Callback function which will run when the user moves the
- scale or the value is changed programmatically. Default is a null function.
+ * `callback=dolittle` Callback function which runs when the user moves the
+ scale or the value is changed programmatically. If the control is `active` it
+ also runs on instantiation. Default is a null function.
  * `args=[]` A list/tuple of arguments for above callback. The callback's
  arguments are the `ScaleLog` instance, followed by any user supplied args.
- * `value=1.0` Initial value.
  * `delta=0.01` This determines the smallest amount of change which can be
  achieved with a brief button press. See Control Algorithm below.
  * `active=False` Determines whether the widget accepts user input.
@@ -1517,7 +1532,7 @@ Methods:
  * `value=None` Set or get the current value. Always returns the current value.
  A passed `float` is constrained to the range `1.0 <= V <= 10**decades` and
  becomes the control's current value. The `ScaleLog` is updated. Always returns
- the control's current value. See note below on precision.
+ the control's current value.
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
@@ -1543,10 +1558,10 @@ reduced by a factor of 10.
 
 ### Callback
 
-This receives an initial arg being the widget instance followed by any user
-supplied args. They can be bound methods, typically of a `Screen` subclass.
-`cb_move` runs when the value changes but before the update is processed,
-enabling dynamic color change.
+The callback receives an initial arg being the widget instance followed by any
+user supplied args. The callback can be a bound method, typically of a `Screen`
+subclass. The callback runs when the widget is instantiated and whenever the
+value changes. This enables dynamic color change.
 
 ### Callback legendcb
 
@@ -1630,7 +1645,7 @@ Keyword only args:
  foreground color will be used. If `False` is passed, no pip will be drawn. The
  pip is suppressed if the shortest pointer would be hard to see.
 
-Methods:
+Method:
 
  1. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
     * `text=None` The text to display. If `None` displays last value.
@@ -1639,7 +1654,6 @@ Methods:
     * `bgcolor=None` Background color, as per foreground.
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
- 2. `show` No args. (Re)draws the control. Primarily for internal use by GUI.
 
 When a `Pointer` is instantiated it is assigned to the `Dial` by the `Pointer`
 constructor.
@@ -1678,7 +1692,7 @@ async def run(dial):
     mins.value(0 + 0.9j, YELLOW)
     dm = cmath.exp(-1j * cmath.pi / 30)  # Rotate by 1 minute
     dh = cmath.exp(-1j * cmath.pi / 1800)  # Rotate hours by 1 minute
-    # Twiddle the hands: see aclock.py for an actual clock
+    # Twiddle the hands: see vtest.py for an actual clock
     while True:
         await asyncio.sleep_ms(200)
         mins.value(mins.value() * dm, RED)
@@ -1717,23 +1731,24 @@ Constructor mandatory positional args:
 
 Optional keyword only arguments:
  * `height=70` Dimension of the square bounding box.
- * `arc=TWOPI` Movement available. Default 2*PI radians (360 degrees).
+ * `arc=TWOPI` Movement available. Default 2*PI radians (360 degrees). May be
+ reduced, e.g. to provide a 270° range of movement.
  * `ticks=9` Number of graduations around the dial.
+ * `value=0.0` Initial value. By default the knob will be at its most
+ counter-clockwise position.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
  default is used.
+ * `color=None` Fill color for the control knob. Default: no fill.
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
  to yellow to for a visual indication. An alternative color can be provided. 
  `WHITE` will defeat this change.
- * `color=None` Fill color for the control knob. Default: no fill.
  * `callback=dolittle` Callback function runs when the user moves the knob or
  the value is changed programmatically.
  * `args=[]` A list/tuple of arguments for above callback.
- * `value=0.0` Initial value. By default the knob will be at its most
- counter-clockwise position.
  * `active=True` Enable user input via the `increase` and `decrease` buttons.
 
 Methods:
@@ -1743,6 +1758,13 @@ Methods:
  * `value` Optional argument `val`. If set, adjusts the pointer to
  correspond to the new value. The move callback will run. The method constrains
  the range to 0.0 to 1.0. Always returns the control's value.
+
+### Callback
+
+The callback receives an initial arg being the widget instance followed by any
+user supplied args. The callback can be a bound method, typically of a `Screen`
+subclass. The callback runs when the widget is instantiated and whenever the
+value changes. This enables dynamic color change.
 
 ###### [Contents](./README.md#0-contents)
 

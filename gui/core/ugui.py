@@ -21,7 +21,7 @@ display = None  # Singleton instance
 ssd = None
 
 gc.collect()
-__version__ = (0, 1, 0)
+__version__ = (0, 1, 1)
 
 # Null function
 dolittle = lambda *_ : None
@@ -688,21 +688,24 @@ class Widget:
 class LinearIO(Widget):
     def __init__(self, writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
-                value=None, active=True,
+                value=None, active=True, prcolor=False,
                 min_delta=0.01, max_delta=0.1):
         self.min_delta = min_delta
         self.max_delta = max_delta
         super().__init__(writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
                 value, active)
-        # Handle variable precision
+        # Handle variable precision. Start normal
         self.precision = False
-        # 1 sec long press to set precise
-        self.lpd = Delay_ms(self.precise, (True,))
-        # Precision mode can only be entered when the active control has focus.
-        # In this state it will have a white border. By default this turns yellow
-        # but subclass can be defeat this with None or another color
-        self.prcolor = YELLOW
+        self.do_precision = prcolor is not False
+        if self.do_precision:
+            # Subclass supports precision mode
+            # 1 sec long press to set precise
+            self.lpd = Delay_ms(self.precise, (True,))
+            # Precision mode can only be entered when the active control has focus.
+            # In this state it will have a white border. By default this turns yellow
+            # but subclass can be defeat this with WHITE or another color
+            self.prcolor = YELLOW if prcolor is None else prcolor
 
     def do_up(self, button):
         asyncio.create_task(self.btnhan(button, 1))
@@ -717,7 +720,7 @@ class LinearIO(Widget):
             maxd = self.max_delta
         else:
             d = self.min_delta
-            maxd = d * 4  # Why move fast in slow mode?
+            maxd = d * 4  # Why move fast in precision mode?
         self.value(self.value() + up * d)
         t = ticks_ms()
         while not button():
@@ -729,17 +732,17 @@ class LinearIO(Widget):
 
     def precise(self, v):  # Timed out while button pressed
         self.precision = v
-        if self.prcolor is not None:
-            self.draw = True
+        self.draw = True
 
     def do_sel(self):  # Select button was pushed
-        if self.precision:  # Already in mode
-            self.precise(False)
-        else:  # Require a long press to enter mode
-            self.lpd.trigger()
+        if self.do_precision:  # Subclass handles precision mode
+            if self.precision:  # Already in mode
+                self.precise(False)
+            else:  # Require a long press to enter mode
+                self.lpd.trigger()
 
     def unsel(self):  # Select button was released
-        self.lpd.stop()
+        self.do_precision and self.lpd.stop()
 
     def leave(self):  # Control has lost focus
         self.precise(False)

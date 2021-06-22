@@ -24,9 +24,8 @@ class Slider(LinearIO):
                  slotcolor=None, prcolor=None,
                  callback=dolittle, args=[], value=0.0, active=True):
         width &= 0xfe # ensure divisible by 2
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
-        if active:
-            super()._set_callbacks(callback, args)
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor)
+        super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends
         self.fontcolor = self.fgcolor if fontcolor is None else fontcolor
@@ -42,10 +41,8 @@ class Slider(LinearIO):
         self.slot_y0 = row + _SLIDE_DEPTH // 2
         self.slot_h = height - _SLIDE_DEPTH - 1
         self.draw = True  # Ensure a redraw on next refresh
-        if active:  # Run callback (e.g. to set dynamic colors)
-            if prcolor is not None:
-                self.prcolor = prcolor  # Option for different bdcolor in precision mode
-            self.callback(self, *self.args)
+        # Run callback (e.g. to set dynamic colors)
+        self.callback(self, *self.args)
 
     def show(self):
         # Blank slot, ticks and slider
@@ -97,9 +94,8 @@ class HorizSlider(LinearIO):
                  slotcolor=None, prcolor=None,
                  callback=dolittle, args=[], value=0.0, active=True):
         height &= 0xfe # ensure divisible by 2
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active)
-        if active:
-            super()._set_callbacks(callback, args)
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor)
+        super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends
         self.fontcolor = self.fgcolor if fontcolor is None else fontcolor
@@ -115,10 +111,8 @@ class HorizSlider(LinearIO):
         centre = row + height // 2
         self.slot_y0 = centre - _HALF_SLOT_WIDTH
         self.draw = True  # Ensure a redraw on next refresh
-        if active:  # Run callback (e.g. to set dynamic colors)
-            if prcolor is not None:
-                self.prcolor = prcolor  # Option for different bdcolor in precision mode
-            self.callback(self, *self.args)
+        # Run callback (e.g. to set dynamic colors)
+        self.callback(self, *self.args)
 
     def show(self):
         # Blank slot, ticks and slider

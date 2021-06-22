@@ -42,13 +42,13 @@ class BaseScreen(Screen):
         self.lbl = Label(wri, row, col, 70, bdcolor=RED)
 
         self.vslider = Slider(wri, 2, 2, callback=self.slider_cb,
-                             bdcolor=RED, slotcolor=BLUE, prcolor=CYAN,
+                             bdcolor=RED, slotcolor=BLUE,
                              legends=('0.0', '0.5', '1.0'), value=0.5)
 
         col = 80
         row = 15
         self.hslider = HorizSlider(wri, row, col, callback=self.slider_cb,
-                                   bdcolor=YELLOW, slotcolor=BLUE,
+                                   bdcolor=GREEN, slotcolor=BLUE,
                                    legends=('0.0', '0.5', '1.0'), value=0.7)
         row += 30
         self.scale = Scale(wri, row, col, width = 150, tickcb = tickcb,
@@ -70,7 +70,7 @@ class BaseScreen(Screen):
 
 
     def cb(self, obj):
-        self.lbl.value('{:4.2f}'.format(obj.value()))
+        self.lbl.value('{:5.3f}'.format(obj.value()))
 
     def cbcb(self, cb):
         val = cb.value()
