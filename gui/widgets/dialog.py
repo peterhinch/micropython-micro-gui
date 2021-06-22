@@ -44,6 +44,7 @@ class DialogBox(Window):
         for text, color in elements:
             Button(writer, *self.locn(row, col), height = buttonheight, width = buttonwidth,
                    textcolor = BLACK, bgcolor = color,
+                   fgcolor = color, bdcolor = color,
                    text = text, shape = RECTANGLE,
                    callback = back, args = (text,))
             col += buttonwidth + gap
