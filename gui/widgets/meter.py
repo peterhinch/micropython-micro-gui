@@ -16,10 +16,11 @@ class Meter(Widget):
     def __init__(self, writer, row, col, *, height=50, width=10,
                  fgcolor=None, bgcolor=BLACK, ptcolor=None, bdcolor=None,
                  divisions=5, label=None, style=0, legends=None, value=0):
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor)  # TODO Consider active
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor)
         self.divisions = divisions
         if label is not None:
-            Label(writer, row + height + 3, col, label)
+            # Ensure bottom legend has space
+            Label(writer, row + height + writer.height // 2, col, label)
         self.style = style
         self.ptcolor = ptcolor if ptcolor is not None else self.fgcolor
         if legends is not None: # Legends

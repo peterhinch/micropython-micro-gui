@@ -628,7 +628,7 @@ from gui.widgets.label import Label
 ```
 ![Image](./images/label.JPG)
 
-Two styles of `Label`.
+Various styles of `Label`.
 
 The purpose of a `Label` instance is to display text at a specific screen
 location.
@@ -704,8 +704,11 @@ Screen.change(BaseScreen)
 ```python
 from gui.widgets.led import LED
 ```
+![Image](./images/led.JPG)
 
-This is a virtual LED whose color may be altered dynamically.
+This is a virtual LED whose color may be altered dynamically. An `LED` may be
+defined with a color and turned on or off by setting `.value` to a boolean. For
+more flexibility the `.color` method may be use to set it to any color.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -743,9 +746,10 @@ Methods:
 ```python
 from gui.widgets.checkbox import Checkbox
 ```
-
+![Image](./images/checkbox.JPG)  
 This provides for Boolean data entry and display. In the `True` state the
-control can show an 'X' or a filled block of any color.
+control can show an 'X' or a filled block of any color depending on the
+`fillcolor` constructor arg.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -786,8 +790,8 @@ from gui.widgets.buttons import Button
 ```
 ![Image](./images/pushbuttons.JPG)
 
-In this image `Button` "a" has the focus. Pressing `select` will press the
-`Button`.
+In this image `Button` "a" has the focus. Pressing the physical `select` button
+will press the virtual `Button`.
 
 This emulates a pushbutton, with a callback being executed each time the button
 is pressed. Physically this consists of pressing the `select` button when the
@@ -827,6 +831,8 @@ Class variable:
  * `lit_time=1` Period in seconds the `litcolor` is displayed.
 
 ### CloseButton
+![Image](./images/closebutton.JPG)  
+This example has focus, as shown by white border.
 
 This `Button` subclass is a special case of a Button. Its constructor takes a
 single arg, being a `Writer` instance. It produces a red "X" button at the top
@@ -914,8 +920,8 @@ from gui.widgets.buttons import Button, RadioButtons
 ![Image](./images/radiobuttons.JPG)
 
 This object groups a set of buttons at different locations. When a button is
-pressed, it becomes highlighted and remains so until another button is pressed.
-A callback runs each time the current button is changed.
+pressed, it becomes highlighted and remains so until another button in the set
+is pressed. A callback runs each time the current button is changed.
 
 Constructor positional arguments:
  * `highlight` Color to use for the highlighted button. Mandatory.
@@ -958,6 +964,10 @@ for t in table:
 ```python
 from gui.widgets.listbox import Listbox
 ```
+![Image](./images/listbox.JPG)
+
+A `listbox` with the second item highlighted. Pressing the physical `select`
+button will cause the callback to run.
 
 A `Listbox` is an active widget. Its height is determined by the number of
 entries in it and the font in use. Scrolling is not supported. When the widget
@@ -1022,7 +1032,7 @@ Closed dropdown list.
 
 ![Image](./images/dd_open.JPG)
 
-Open dropdown list.
+Open dropdown list. When closed, hidden items below are refreshed.
 
 A dropdown list. The list, when active, is drawn below the control. The height
 of the control is determined by the height of the font in use. The height of
@@ -1086,6 +1096,10 @@ means of the instance's `value` or `textvalue` methods.
 ```python
 from gui.widgets.dialog import DialogBox
 ```
+![Image](./images/dialog.JPG)
+
+A rather poor photo of an active dialog box. Auto generated dialogs contain
+only `pushbutton` instances, but user created dialogs may contain any widget. 
 
 This implements a modal dialog box based on a horizontal row of pushbuttons.
 Any button press will close the dialog. The caller can determine which button
@@ -1124,7 +1138,8 @@ case of the `close` button. The outcome can therefore be tested by running
 `DialogBox` instance as a first arg, followed by any args supplied to the
 constructor.
 
-Note that dialog boxes can also be constructed manually, enabling more flexible designs. For example these might have widgets other than pushbuttons. The
+Note that dialog boxes can also be constructed manually, enabling more flexible
+designs. For example these might have widgets other than pushbuttons. The
 approach is to write a user subclass of `Window`. Example code may be found
 in `gui/demos/screens.py`.
 
@@ -1204,8 +1219,8 @@ from gui.widgets.meter import Meter
 ```
 ![Image](./images/meter.JPG)
 
-This passive widget provides a vertical linear meter display of values scaled
-between 0.0 and 1.0.
+The two styles of `meter`, both showing a value of 0.65. This `passive` widget
+provides a vertical linear meter display of values scaled between 0.0 and 1.0.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1718,6 +1733,8 @@ Screen.change(BaseScreen)
 from gui.widgets.knob import Knob
 ```
 ![Image](./images/knob.JPG)
+
+Rightmost example has no border and 270° travel. Others have 360°.
 
 This emulates a rotary control capable of being rotated through a predefined
 arc in order to display or set a floating point variable. A `Knob` may be
