@@ -1098,8 +1098,8 @@ from gui.widgets.dialog import DialogBox
 ```
 ![Image](./images/dialog.JPG)
 
-A rather poor photo of an active dialog box. Auto generated dialogs contain
-only `pushbutton` instances, but user created dialogs may contain any widget. 
+An active dialog box. Auto generated dialogs contain only `pushbutton`
+instances, but user created dialogs may contain any widget. 
 
 This implements a modal dialog box based on a horizontal row of pushbuttons.
 Any button press will close the dialog. The caller can determine which button
