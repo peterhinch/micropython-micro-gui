@@ -1,6 +1,6 @@
 # simple.py Minimal micro-gui demo.
-# Initialise hardware and framebuf before importing modules.
-# Import SSD and Display instances. Must be done first because of RAM use.
+
+# hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
@@ -33,7 +33,7 @@ class BaseScreen(Screen):
         CloseButton(wri)  # Quit the application
 
 def test():
-    print('Testing micro-gui...')
-    Screen.change(BaseScreen)
+    print('Simple demo: button presses print to REPL.')
+    Screen.change(BaseScreen)  # A class is passed here, not an instance.
 
 test()

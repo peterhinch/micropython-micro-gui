@@ -48,9 +48,10 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Code has been tested on ESP32 and Pi Pico. The API shuld be stable. I'm not
-aware of any bugs but code is new and issues are likely. This document is
-likely to have errors, typos and omissions. It is under review.
+Code has been tested on ESP32, Pi Pico and Pyboard. The API shuld be stable.
+Code is new and issues are likely: please report any found. This document is
+under review. I plan to add further demos and to upgrade the performance of
+some display drivers.
 
 # 0. Contents
 
@@ -160,16 +161,20 @@ The currently selected `Widget` is identified by a white border: the `focus`
 moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
 (those that can accept input) can receive the `focus`.  Widgets are defined as
 `active` or `passive` in the constructor, and this status cannot be changed. In
-some cases the state can be specified as a constructor arg. An `active` widget
-can be disabled and re-enabled at runtime. A disabled `active` widget is shown
-"greyed-out" and, until re-enabled, cannot accept the focus.
+some cases the state can be specified as a constructor arg, but other widgets
+have a predefined state. An `active` widget can be disabled and re-enabled at
+runtime. A disabled `active` widget is shown "greyed-out" and, until
+re-enabled, cannot accept the `focus`.
 
 ## 1.5 Hardware definition
 
 A file `hardware_setup.py` must exist in the GUI root directory. This defines
 the connections to the display, the display driver, and pins used for the
-pushbuttons. Example files may be found in the `setup_examples` directory. The
-following is a typical example for a Raspberry Pi Pico driving an ILI9341
+pushbuttons. Example files may be found in the `setup_examples` directory.
+Further examples (without pin definitions) are in this
+[nano-gui directory](https://github.com/peterhinch/micropython-nano-gui/tree/master/setup_examples).
+
+The following is a typical example for a Raspberry Pi Pico driving an ILI9341
 display:
 
 ```python
@@ -242,8 +247,8 @@ If installing to the device's filesystem it is necessary to maintain the
 directory structure. The `drivers` and `gui` directories (with subdirectories
 and contents) should be copied, along with `hardware_setup.py`. Filesystem
 space may be conserved by copying only the display driver in use. Unused
-widgets, fonts and demos can also be trimmed, but directory structure must be
-kept.
+widgets, fonts and demos can also be trimmed, but the directory structure must
+be kept.
 
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 Once again, directory structure must be maintained.
@@ -326,20 +331,36 @@ require a large (320x240) display. Demos are run by issuing (for example):
 ```python
 >>> import gui.demos.simple
 ```
- * `simple.py` Minimal demo discussed below.
- * `active.py` Demonstrates `active` controls providing floating point input.
- * `plot.py` Graph plotting.
- * `screens.py` Listbox, dropdown and dialog boxes.
+#### Demos
+
+These will run on screens of 128x128 pixels or above. The initial ones are
+minimal and aim to demonstrate a single technique.  
+ * `simple.py` Minimal demo discussed below. `Button` presses print to REPL. 
+ * `checkbox` A `Checkbox` controlling an `LED`.
+ * `slider.py` A `Slider` whose color varies with its value.
+ * `slider_label.py` A `Slider` updating a `Label`. Good for trying precision
+ mode.
+ * `screen_change.py` A `Pushbutton` causing a screen change.
  * `tbox.py` Text boxes and user-controlled scrolling.
- * `various.py` Assorted widgets including the different types of pushbutton.
- * `vtest.py` Clock and compass styles of vector display.
+
+#### Test scripts
+
+Some of these require larger screens. Required sizes are specified as
+(height x width).  
+ * `active.py` Demonstrates `active` controls providing floating point input
+ (240x320).
+ * `plot.py` Graph plotting (128x200).
+ * `screens.py` Listbox, dropdown and dialog boxes (128x240).
+ * `various.py` Assorted widgets including the different types of pushbutton
+ (240x320).
+ * `vtest.py` Clock and compass styles of vector display (240x320).
 
 ## 1.12 Floating Point Widgets
 
 The challenge is to devise a way, with just two pushbuttons, of adjusting a
 data value which may have an extremely large dynamic range. This is the ratio
 of the data value's total range to the smallest adjustment that can be made.
-The mechanism as currently implemented enables a precision of 0.05%.
+The mechanism currently implemented enables a precision of 0.05%.
 
 Floating point widgets respond to a brief press of the `increase` or `decrease`
 buttons by adjusting the value by a small amount. A continued press causes the
@@ -358,6 +379,10 @@ In the case of slider and knob controls the precision of fine mode exceeds that
 of the visual appearance of the widget: fine changes can be too small to see.
 Options are to use the [Scale widget](./README.md#18-scale-widget) or to have a
 linked `Label` showing the widget's exact value.
+
+The callback runs whenever the widget's value changes. This causes the callback
+to run repeatedly while the user adjusts the widget. This is required if there
+is a linked `Label` to update.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -479,9 +504,10 @@ PALE_YELLOW = create_color(12, 150, 150, 0)  # index, r, g, b
 If a 4-bit driver is in use, the color `rgb(150, 150, 0)` will be assigned to
 "spare" color number 12. Any color number in range `0 <= n <= 15` may be
 used, implying that predefined colors may be reassigned. It is recommended
-that `BLACK` (0) and `WHITE` (15) are not changed. If an 8-bit or larger driver
-is in use, the first `index` arg is ignored and there is no restriction on the
-number of colors that may be created.
+that `BLACK` (0) and `WHITE` (15) are not changed; `GREY` (6) and `YELLOW` (5)
+are also GUI defaults. If an 8-bit or larger driver is in use, the first
+`index` arg is ignored and there is no restriction on the number of colors that
+may be created.
 
 Regardless of the display driver the `PALE_YELLOW` variable may be used to
 refer to the color. An example of custom color definition may be found in

@@ -1,6 +1,6 @@
 # screens.py micro-gui demo of multiple screens, dropdowns etc
 
-# Create SSD instance. Must be done first because of RAM use.
+# hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, Window, ssd
 

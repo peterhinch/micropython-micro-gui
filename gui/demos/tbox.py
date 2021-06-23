@@ -114,7 +114,7 @@ def test():
     if ssd.height < 128 or ssd.width < 128:
         print(' This test requires a display of at least 128x128 pixels.')
     else:
-        print('Testing micro-gui...')
+        print('Textbox demo.')
         Screen.change(MainScreen)
 
 test()
