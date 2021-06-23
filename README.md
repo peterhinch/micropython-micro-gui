@@ -340,6 +340,8 @@ minimal and aim to demonstrate a single technique.
  * `slider.py` A `Slider` whose color varies with its value.
  * `slider_label.py` A `Slider` updating a `Label`. Good for trying precision
  mode.
+ * `linked_slider.py` One slider updating two others, and a coding "wrinkle"
+ required for doing this.
  * `screen_change.py` A `Pushbutton` causing a screen change.
  * `tbox.py` Text boxes and user-controlled scrolling.
 
