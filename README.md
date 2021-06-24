@@ -19,17 +19,17 @@ to a wide range of displays. It is also portable between hosts.
 # Rationale
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
-and the need for calibration. Note that the latter does not apply to the
-[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H).
-Another problem is that there are a number of types of touch controller,
-magnifying the difficulty of writing a portable GUI.
+and the need for calibration (although the
+[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H) is
+factory calibrated). Another problem is that there are various types of touch
+controller, magnifying the difficulty of writing a portable GUI.
 
 Pushbutton input works well and yields astonishingly low cost solutions. A
 network-connected board with a 135x240 color display can be built for under £20
 ($20?) using the
 [TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50044&Id=1126). The
-test board shown above has a 320x240 display with a Pi Pico with component cost
-well under £20.
+test board shown above has a 320x240 display from eBay with a Pi Pico and has a
+component cost of well below £20.
 
 The following are similar GUI repos with differing objectives.
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) Extremely low
@@ -66,10 +66,12 @@ some display drivers.
  1.8 [Performance and hardware notes](./README.md#18-performance-and-hardware-notes)  
  1.9 [Firmware and dependencies](./README.md#19-firmware-and-dependencies)  
  1.10 [Supported hosts and displays](./README.md#110-supported-hosts-and-displays)  
- 1.11 [Files](./README.md#111-files) Discussion of the files in the library. List of demos.  
+ 1.11 [Files](./README.md#111-files) Discussion of the files in the library.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.11.1 [Demos](./README.md#1111-demos) Simple demos showing coding techniques.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.11.2 [Test scripts](./README.md#1112-test-scripts) GUI tests, some needing larger displays  
  1.12 [Floating Point Widgets](./README.md#112-floating-point-widgets) How to input floating point data.  
 2. [Usage](./README.md#2-usage) Application design.  
- 2.1 [Program structure and operation](./README.md#21-program-structure-and-operation)  
+ 2.1 [Program structure and operation](./README.md#21-program-structure-and-operation) A simple demo of navigation and use.  
  2.2 [Callbacks](./README.md#22-callbacks)  
  2.3 [Colors](./README.md#23-colors)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3.1 [Monochrome displays](./README.md#231-monochrome-displays)  
@@ -377,12 +379,15 @@ The `gui/primitives` directory contains the following files:
  * `switch.py` Interface to physical pushbuttons.
  * `delay_ms.py` A software triggerable timer.
 
-The `gui/demos` directory contains a variety of demos and tests, some of which
-require a large (320x240) display. Demos are run by issuing (for example):
+The `gui/demos` directory contains a variety of demos and tests described
+below.
+
+### 1.11.1 Demos
+
+Demos are run by issuing (for example):
 ```python
 >>> import gui.demos.simple
 ```
-#### Demos
 
 These will run on screens of 128x128 pixels or above. The initial ones are
 minimal and aim to demonstrate a single technique.  
@@ -396,7 +401,12 @@ minimal and aim to demonstrate a single technique.
  * `screen_change.py` A `Pushbutton` causing a screen change.
  * `tbox.py` Text boxes and user-controlled scrolling.
 
-#### Test scripts
+### 1.11.2 Test scripts
+
+These more complex demos are run in the same way by issuing (for example):
+```python
+>>> import gui.demos.active
+```
 
 Some of these require larger screens. Required sizes are specified as
 (height x width).  
