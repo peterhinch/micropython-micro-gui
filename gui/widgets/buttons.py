@@ -21,7 +21,7 @@ class Button(Widget):
             width = max(sl, height)
             height = width
         else:
-            width = max(sl, width)
+            width = max(sl + 10, width)  # Allow 5 pixels before and after text
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, False, True)
         self.shape = shape
         self.radius = height // 2
@@ -100,9 +100,9 @@ class Button(Widget):
 class CloseButton(Button):
     def __init__(self, writer, width=0, callback=dolittle, args=(), bgcolor=RED):
         scr = Screen.current_screen
-        # The factor of 2 is an empirical fix to make it look OK over
-        # the range of fonts in use.
-        wd = width if width else writer.stringlen('X') * 2
+        # Calculate the button width if not provided. Button allows
+        # 5 pixels either side.
+        wd = width if width else (writer.stringlen('X') + 10)
         self.user_cb = callback
         self.user_args = args
         super().__init__(writer, *scr.locn(4, scr.width - wd - 4),

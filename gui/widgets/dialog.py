@@ -25,7 +25,7 @@ class DialogBox(Window):
 
         height = 80
         spacing = 10
-        buttonwidth = max(max(writer.stringlen(e[0]) for e in elements) + 4, buttonwidth)
+        buttonwidth = max(max(writer.stringlen(e[0]) for e in elements) + 14, buttonwidth)
         buttonheight = max(writer.height, 15)
         nelements = len(elements)
         width = spacing + (buttonwidth + spacing) * nelements

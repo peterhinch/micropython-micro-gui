@@ -9,6 +9,7 @@ from gui.core.colors import *
 # text: str display string int save width
 class Label(Widget):
     def __init__(self, writer, row, col, text, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=False):
+        self.writer = writer
         # Determine width of object
         if isinstance(text, int):
             width = text
@@ -22,6 +23,8 @@ class Label(Widget):
             self.value(text, invert)
 
     def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
+        if self.writer.stringlen(text) > self.width:
+            raise ValueError('Label.value() string is too long.')
         txt = super().value(text)  # Sets .draw ensuring refresh
         # Redraw even if no text supplied: colors may have changed.
         self.invert = invert

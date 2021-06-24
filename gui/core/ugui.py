@@ -202,15 +202,6 @@ class Display:
 class Screen:
     current_screen = None
     is_shutdown = Event()
-    _value = None
-
-    # Allow a Screen to store an arbitrary object. Retrieval may be
-    # done by caller, after the Screen instance was deleted
-    @classmethod
-    def value(cls, val=None):
-        if val is not None:
-            cls._value = val
-        return cls._value
 
     @classmethod
     def next_ctrl(cls):
@@ -490,8 +481,18 @@ class Screen:
             gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
             #print(gc.mem_free())
 
-# Very basic window class. Cuts a rectangular hole in a screen on which content may be drawn
+# Very basic window class. Cuts a rectangular hole in a screen on which
+# content may be drawn.
 class Window(Screen):
+
+    _value = None
+    # Allow a Window to store an arbitrary object. Retrieval may be
+    # done by caller, after the Window instance was deleted
+    @classmethod
+    def value(cls, val=None):
+        if val is not None:
+            cls._value = val
+        return cls._value
 
     def __init__(self, row, col, height, width, *, draw_border=True, bgcolor=None, fgcolor=None):
         Screen.__init__(self)

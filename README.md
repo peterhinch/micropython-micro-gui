@@ -53,11 +53,15 @@ Code is new and issues are likely: please report any found. This document is
 under review. I plan to add further demos and to upgrade the performance of
 some display drivers.
 
+An issue under investigation is that a soft reset is required after a GUI
+application is run and before running another. Otherwise the second application
+displays correctly but is unresponsive.
+
 # 0. Contents
 
 1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
  1.1 [Coordinates](./README.md#11-coordinates) The GUI's coordinate system.  
- 1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects)  
+ 1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects) Basic GUI classes.  
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Navigation](./README.md#14-navigation) How the GUI navigates between widgets.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
@@ -396,9 +400,11 @@ minimal and aim to demonstrate a single technique.
  * `slider.py` A `Slider` whose color varies with its value.
  * `slider_label.py` A `Slider` updating a `Label`. Good for trying precision
  mode.
- * `linked_slider.py` One slider updating two others, and a coding "wrinkle"
+ * `linked_slider.py` One `Slider` updating two others, and a coding "wrinkle"
  required for doing this.
- * `screen_change.py` A `Pushbutton` causing a screen change.
+ * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
+ * `screen_change.py` A `Pushbutton` causing a screen change using a re-usable
+ "forward" button.
  * `tbox.py` Text boxes and user-controlled scrolling.
 
 ### 1.11.2 Test scripts
@@ -643,10 +649,6 @@ In normal use the following methods only are required:
  passing positional and keyword arguments to the constructor of the new, user
  defined, screen.
  * `back(cls)` Restore previous screen.
- * `value(cls, val=None)` The `val` arg can be any Python type. It allows
- widgets on a `Screen` to store information in a way which can be accessed from
- the calling screen. This typically occurs after the screen has closed and no
- longer exists as an instance, hence the use of a classmethod.
 
 These are uncommon:__
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
