@@ -105,7 +105,7 @@ some display drivers.
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.3 [Coordinates](./README.md#2213-coordinates)  
  22.2 [Graph classes](./README.md#221-graph-classes)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.1 [Class CartesianGraph](./README.md#2221-class-cartesiangraph)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.2 [Class PolarGraph](./README.md#2221-class-polargraph)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.2 [Class PolarGraph](./README.md#2222-class-polargraph)  
  22.3 [Curve classes](./README.md#223-curve-classes)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.1 [Class Curve](./README.md#2231-class-curve)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.2 [Class PolarCurve](./README.md#2232-class-polarcurve)  
@@ -130,6 +130,8 @@ corresponds to the top left most pixel. Rows increase downwards and columns
 increase to the right. The graph plotting widget uses normal mathematical
 conventions within graphs.
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.2 Screen Window and Widget objects
 
 A `Screen` is a window which occupies the entire display. A `Screen` can
@@ -150,6 +152,8 @@ because `micro-gui` displays a white border to show which object currently has
 `focus`. Thus to place a `Widget` at the extreme top left, `row` and `col`
 values should be 2.
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.3 Fonts
 
 Python font files are in the `gui/fonts` directory. The easiest way to conserve
@@ -169,6 +173,8 @@ is required `-f` is also required. Supplied examples are:
  * `font6.py` FreeSans 14 high.
  * `font10.py` FreeSans 17 high.
  * `freesans20.py` FreeSans 20 high.
+
+###### [Contents](./README.md#0-contents)
 
 ## 1.4 Navigation
 
@@ -196,6 +202,8 @@ some cases the state can be specified as a constructor arg, but other widgets
 have a predefined state. An `active` widget can be disabled and re-enabled at
 runtime. A disabled `active` widget is shown "greyed-out" and, until
 re-enabled, cannot accept the `focus`.
+
+###### [Contents](./README.md#0-contents)
 
 ## 1.5 Hardware definition
 
@@ -236,6 +244,8 @@ display = Display(ssd, nxt, sel, prev, increase, decrease)
 Display drivers are documented
 [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.6 Quick hardware check
 
 The following may be pasted at the REPL to verify correct connection to the
@@ -250,6 +260,8 @@ ssd.rect(0, 0, 15, 15, RED)  # Red square at top left
 ssd.rect(ssd.width -15, ssd.height -15, 15, 15, BLUE)  # Blue square at bottom right
 ssd.show()
 ```
+
+###### [Contents](./README.md#0-contents)
 
 ## 1.7 Installation
 
@@ -284,6 +296,8 @@ be kept.
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 Once again, directory structure must be maintained.
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.8 Performance and hardware notes
 
 The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
@@ -310,6 +324,8 @@ bytecode: in this configuration running the "various" demo there was 29K of
 free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
 RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.9 Firmware and dependencies
 
 Firmware should be V1.15 or later. The source tree includes all dependencies.
@@ -326,6 +342,8 @@ These are listed to enable users to check for newer versions:
  Displays based on the Nokia 5110 (PCD8544 chip) require this driver. It is not
  provided in this repo. The link is to its source.
 
+###### [Contents](./README.md#0-contents)
+
 ## 1.10 Supported hosts and displays
 
 Development was done using a Raspberry Pi Pico connected to a cheap ILI9341
@@ -341,6 +359,8 @@ In practice usage with ePaper displays is questionable because of their slow
 refresh times. I haven't tested these, or the Sharp displays.
 
 Display drivers are documented [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
+
+###### [Contents](./README.md#0-contents)
 
 ## 1.11 Files
 
@@ -387,6 +407,8 @@ Some of these require larger screens. Required sizes are specified as
  * `various.py` Assorted widgets including the different types of pushbutton
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
+
+###### [Contents](./README.md#0-contents)
 
 ## 1.12 Floating Point Widgets
 
@@ -495,6 +517,8 @@ instance followed by `row` and `col`. These args are followed by a number of
 optional keyword args. These have (hopefully) sensible defaults enabling you to
 get started easily.
 
+###### [Contents](./README.md#0-contents)
+
 ## 2.2 Callbacks
 
 The interface is event driven. Widgets may have optional callbacks which will
@@ -513,6 +537,8 @@ When writing callbacks take care to ensure that the correct number of arguments
 are passed, bearing in mind the first arg described above. An incorrect
 argument count results in puzzling tracebacks which appear to implicate the GUI
 code. This is because it is the GUI which actually executes the callbacks.
+
+###### [Contents](./README.md#0-contents)
 
 ## 2.3 Colors
 
@@ -545,6 +571,8 @@ may be created.
 Regardless of the display driver the `PALE_YELLOW` variable may be used to
 refer to the color. An example of custom color definition may be found in
 [this nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/4ef0e20da27ef7c0b5c34136dcb372200f0e5e66/gui/demos/color15.py#L92).
+
+###### [Contents](./README.md#0-contents)
 
 ### 2.3.1 Monochrome displays
 
@@ -593,6 +621,8 @@ by subclassing the `Screen` class. Widgets are instantiated in the constructor.
 Widgets may be assigned to bound variable: this facilitates communication
 between them.
 
+###### [Contents](./README.md#0-contents)
+
 ## 4.1 Class methods
 
 In normal use the following methods only are required:  
@@ -616,6 +646,8 @@ These are uncommon:__
  are re-drawn. Explicit calls to this should never be needed.
 
 See `demos/plot.py` for an example of multi-screen design.
+
+###### [Contents](./README.md#0-contents)
 
 ## 4.2 Constructor
 
@@ -1067,7 +1099,8 @@ Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
- * `value` Argument `val=None`. If a provided argument is a valid index for the list, that entry becomes current and the callback is executed. Always returns
+ * `value` Argument `val=None`. If a provided argument is a valid index for the
+ list, that entry becomes current and the callback is executed. Always returns
  the index of the currently active entry.
  * `textvalue` Argument `text=None`. If a string argument is provided and is in
  the control's list, that item becomes current. Normally returns the current
@@ -1421,10 +1454,10 @@ be scaled to match any given range.
 
 Legends for the scale are created dynamically as it scrolls past the window.
 The user may control this by means of a callback. Example code may be found
-[in nano-gui](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py) which has a `Scale` whose value range is 88.0 to 108.0.
-A callback ensures that the display legends match the user variable. A further
-callback can enable the scale's color to change over its length or in response
-to other circumstances.
+[in nano-gui](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py)
+which has a `Scale` whose value range is 88.0 to 108.0. A callback ensures that
+the display legends match the user variable. A further callback can enable the
+scale's color to change over its length or in response to other circumstances.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1493,7 +1526,8 @@ supplied, legends will be of the form `0.3`, `0.4` etc. User code may override
 these to cope with cases where a user variable is mapped onto the control's
 range. The callback takes a single `float` arg which is the value of the tick
 (in range -1.0 <= v <= 1.0). It must return a text string. An example from
-[ths nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py) shows FM radio frequencies:
+[ths nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/master/gui/demos/scale.py)
+shows FM radio frequencies:
 ```python
 def legendcb(f):
     return '{:2.0f}'.format(88 + ((f + 1) / 2) * (108 - 88))
@@ -1903,6 +1937,8 @@ Points on polar curves are defined as Python `complex` types and should lie
 within the unit circle. Points which are out of range may be plotted beyond the
 unit circle but will be clipped to the rectangular graph boundary.
 
+###### [Contents](./README.md#0-contents)
+
 ## 22.2 Graph classes
 
 ### 22.2.1 Class CartesianGraph
@@ -1954,6 +1990,8 @@ Keyword only arguments (all optional):
 
 Method:  
  * `show` No args. Redraws the empty graph.
+
+###### [Contents](./README.md#0-contents)
 
 ## 22.3 Curve classes
 
@@ -2028,6 +2066,8 @@ time, and realtime plotting is required. See class `RTPolar` in
 #### Scaling
 
 Complex points should lie within the unit circle to be drawn within the grid.
+
+###### [Contents](./README.md#0-contents)
 
 ## 22.4 Class TSequence
 
@@ -2162,3 +2202,4 @@ Hopefully these are self explanatory. The `Display` methods use the `framebuf`
 convention of `x, y` coordinates rather than the `row, col` system used by
 micro-gui.
 
+###### [Contents](./README.md#0-contents)
