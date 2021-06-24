@@ -550,6 +550,8 @@ class Widget:
         self.col = col
         self.height = height
         self.width = width
+        self.rows = height + 4  # For metrics. Default: allow for border.
+        self.cols = width + 4
         self.visible = True # Used by ButtonList class for invisible buttons
         self.draw = True  # Signals that obect must be redrawn
         self._value = value

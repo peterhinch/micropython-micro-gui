@@ -11,7 +11,8 @@ class Checkbox(Widget):
     def __init__(self, writer, row, col, *, height=30, fillcolor=None,
                  fgcolor=None, bgcolor=None, bdcolor=False,
                  callback=dolittle, args=[], value=False, active=True):
-        super().__init__(writer, row, col, height, height, fgcolor, bgcolor, bdcolor, value, active)
+        super().__init__(writer, row, col, height, height, fgcolor,
+                         bgcolor, bdcolor, value, active)
         super()._set_callbacks(callback, args)
         self.fillcolor = fillcolor
 

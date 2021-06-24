@@ -1,5 +1,8 @@
 # dialog.py micro-gui demo of the DialogBox class
 
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2021 Peter Hinch
+
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, Window, ssd

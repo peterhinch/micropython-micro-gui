@@ -1,5 +1,8 @@
 # slider.py Minimal micro-gui demo showing a Slider with variable color.
 
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2021 Peter Hinch
+
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup
 from gui.core.ugui import Screen, ssd

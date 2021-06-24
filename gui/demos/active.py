@@ -1,5 +1,8 @@
 # active.py micro-gui demo of widgets that respond to user control
 
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2021 Peter Hinch
+
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup
 from gui.core.ugui import Screen, ssd

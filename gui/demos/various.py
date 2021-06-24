@@ -1,5 +1,8 @@
 # various.py micro-gui demo of multiple controls on a large display
 
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2021 Peter Hinch
+
 # Initialise hardware and framebuf before importing modules.
 # Create SSD instance. Must be done first because of RAM use.
 import hardware_setup

@@ -396,15 +396,19 @@ Demos are run by issuing (for example):
 These will run on screens of 128x128 pixels or above. The initial ones are
 minimal and aim to demonstrate a single technique.  
  * `simple.py` Minimal demo discussed below. `Button` presses print to REPL. 
- * `checkbox` A `Checkbox` controlling an `LED`.
+ * `checkbox.py` A `Checkbox` controlling an `LED`.
  * `slider.py` A `Slider` whose color varies with its value.
  * `slider_label.py` A `Slider` updating a `Label`. Good for trying precision
  mode.
- * `linked_slider.py` One `Slider` updating two others, and a coding "wrinkle"
+ * `linked_sliders.py` One `Slider` updating two others, and a coding "wrinkle"
  required for doing this.
+ * `dropdown.py` A dropdown list updates a `Label`.
  * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
  * `screen_change.py` A `Pushbutton` causing a screen change using a re-usable
  "forward" button.
+ * `primitives.py` Use of graphics primitives.
+ * `aclock.py` An analog clock using the `Dial` vector display. Also shows
+ screen layout using widget metrics. Has a simple `uasyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
 
 ### 1.11.2 Test scripts
@@ -766,17 +770,21 @@ Constructor args:
 
 The constructor displays the string at the required location.
 
-Methods:  
- 1. `value` Redraws the label. This takes the following args:
-    * `text=None` The text to display. If `None` displays last value.
-    * ` invert=False` If true, show inverse text.
-    * `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
-    * `bgcolor=None` Background color, as per foreground.
-    * `bdcolor=None` Border color. As per above except that if `False` is
-    passed, no border is displayed. This clears a previously drawn border.  
- Returns the current text string.  
+Method:  
+`value` Redraws the label. This takes the following args:
+ * `text=None` The text to display. If `None` displays last value.
+ * `invert=False` If true, show inverse text.
+ * `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
+ * `bgcolor=None` Background color, as per foreground.
+ * `bdcolor=None` Border color. As per above except that if `False` is
+ passed, no border is displayed. This clears a previously drawn border.  
+Returns the current text string.  
 
-If populating a label would cause it to extend beyond the screen boundary a
+If the `value` method is called with a text string too long for the `Label` a
+`ValueError` will be thrown. The width specified to the constructor should be
+sufficient for all possible values.
+
+If constructing a label would cause it to extend beyond the screen boundary a
 warning is printed at the console. The label may appear at an unexpected place.
 The following is a complete "Hello world" script.
 ```python
@@ -1368,6 +1376,11 @@ Methods:
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
 
+### Legends
+
+Depending on the font in use for legends additional space may be required above
+and below the `Meter` to display the top and bottom legends.
+
 ###### [Contents](./README.md#0-contents)
 
 # 17. Slider and HorizSlider widgets
@@ -1440,6 +1453,11 @@ The callback receives an initial arg being the widget instance followed by any
 user supplied args. The callback can be a bound method, typically of a `Screen`
 subclass. The callback runs when the widget is instantiated and whenever the
 value changes. This enables dynamic color change. See `gui/demos/active.py`.
+
+### Legends
+
+Depending on the font in use for legends additional space may be required
+around sliders to display all legends.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -2173,7 +2191,29 @@ The apparently obvious solution of designing a vertical `Scale` is tricky owing
 to the fact that the length of the internal text can be substantial and
 variable.
 
+## Screen layout
+
+Widgets are positioned using absolute `row` and `col` coordinates. These may
+optionally be calculated using the metrics of other widgets. This facilitates
+relative positioning which can make layouts easier to modify. Such layouts can
+also automatically adapt to changes of fonts. To simplify this, all widgets
+have the following bound variables, which should be considered read-only:
+
+ * `height` As specified. Does not include border.
+ * `width` Ditto.
+ * `rows` Height including borders.
+ * `cols` Width with borders.
+
+This support is fairly "micro" and does not take account of labels and legends.
+This means that `rows` and `cols` for `Dial`, `Meter`, `Slider` and
+`HorizSlider` do not necessarily reflect the full amount of space used by the
+control.
+
+The `aclock.py` demo provides a simple example of this approach.
+
 ## Use of graphics primitives
+
+See [demo primitives.py](./gui/demos/primitives.py).
 
 These notes are for those wishing to draw directly to the `Screen` instance.
 This is done by providing the user `Screen` class with an `after_open()` method

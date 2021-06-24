@@ -23,13 +23,13 @@ class Meter(Widget):
             Label(writer, row + height + writer.height // 2, col, label)
         self.style = style
         self.ptcolor = ptcolor if ptcolor is not None else self.fgcolor
-        if legends is not None: # Legends
+        if legends is not None:  # Legends are static
             x = col + width + 4
             y = row + height
             dy = 0 if len(legends) <= 1 else height / (len(legends) -1)
             yl = y - writer.height / 2 # Start at bottom
             for legend in legends:
-                Label(writer, int(yl), x, legend)
+                l = Label(writer, round(yl), x, legend)
                 yl -= dy
         self.value(value)
 

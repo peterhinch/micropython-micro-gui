@@ -56,7 +56,7 @@ async def ptr_test(dial):
                 ptr.value(v, RED)
             await asyncio.sleep_ms(200)
 
-# Analog clock demo. Note this could also be achieved using the Dial class.
+# Analog clock demo.
 async def aclock(dial, lbldate, lbltim):
     uv = lambda phi : rect(1, phi)  # Return a unit vector of phase phi
     days = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',

@@ -64,6 +64,7 @@ class Slider(LinearIO):
             display.rect(self.slot_x0, self.slot_y0, slot_w, slot_len, self.fgcolor)
 
             txtcolor = GREY if self.greyed_out() else self.fontcolor
+            # Dynamic processing of legends supports greying-out
             if self.legends is not None:
                 if len(self.legends) <= 1:
                     dy = 0
