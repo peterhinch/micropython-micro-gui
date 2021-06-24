@@ -55,13 +55,33 @@ some display drivers.
 
 # 0. Contents
 
-**TODO** Add sub-headings
-
 1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
+ 1.1 [Coordinates](./README.md#11-coordinates) The GUI's coordinate system.  
+ 1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects)  
+ 1.3 [Fonts](./README.md#13-fonts)  
+ 1.4 [Navigation](./README.md#14-navigation) How the GUI navigates between widgets.  
+ 1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
+ 1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config.  
+ 1.7 [Installation](./README.md#17-installation) Installing the library.  
+ 1.8 [Performance and hardware notes](./README.md#18-performance-and-hardware-notes)  
+ 1.9 [Firmware and dependencies](./README.md#19-firmware-and-dependencies)  
+ 1.10 [Supported hosts and displays](./README.md#110-supported-hosts-and-displays)  
+ 1.11 [Files](./README.md#111-files) Discussion of the files in the library. List of demos.  
+ 1.12 [Floating Point Widgets](./README.md#112-floating-point-widgets) How to input floating point data.  
 2. [Usage](./README.md#2-usage) Application design.  
+ 2.1 [Program structure and operation](./README.md#21-program-structure-and-operation)  
+ 2.2 [Callbacks](./README.md#22-callbacks)  
+ 2.3 [Colors](./README.md#23-colors)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3.1 [Monochrome displays](./README.md#231-monochrome-displays)  
 3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
 4. [Screen class](./README.md#4-screen-class) Full screen window.  
+ 4.1 [Class methods](./README.md#41-class-methods)  
+ 4.2 [Constructor](./README.md#42-constructor)  
+ 4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
+ 4.4 [Method](./README.md#44-method) Optional interface to usayncio code.  
 5. [Window class](./README.md#5-window-class)  
+ 5.1 [Constructor](./README.md#51-constructor)  
+ 5.2 [Class method](./README.md#52-class-method)  
 6. [Label widget](./README.md#6-label-widget) Single line text display.  
 7. [LED widget](./README.md#7-led-widget) Display Boolean values.  
 8. [Checkbox widget](./README.md#8-checkbox-widget) Enter Boolean values.  
@@ -79,7 +99,18 @@ some display drivers.
 20. [Dial widget](./README.md#20-dial-widget) Display multiple vectors.  
 21. [Knob widget](./README.md#21-knob-widget) Rotary potentiometer float entry.  
 22. [Graph plotting](./README.md#22-graph-plotting) Widgets for Cartesian and polar graphs.  
-[Appendix 1 Application design](./README.md#appendix-1-application-design)  
+ 22.1 [Concepts](./README.md#221-concepts)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.1 [Graph classes](./README.md#2211-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.2 [Curve classes](./README.md#2212-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.3 [Coordinates](./README.md#2213-coordinates)  
+ 22.2 [Graph classes](./README.md#221-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.1 [Class CartesianGraph](./README.md#2221-class-cartesiangraph)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.2 [Class PolarGraph](./README.md#2221-class-polargraph)  
+ 22.3 [Curve classes](./README.md#223-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.1 [Class Curve](./README.md#2231-class-curve)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.2 [Class PolarCurve](./README.md#2232-class-polarcurve)  
+ 22.4 [Class TSequence](./README.md#224-class-tsequence) Plotting realtime, time sequential data.  
+[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, use of graphics primitives  
 
 # 1. Basic concepts
 
@@ -99,7 +130,7 @@ corresponds to the top left most pixel. Rows increase downwards and columns
 increase to the right. The graph plotting widget uses normal mathematical
 conventions within graphs.
 
-## 1.2 Screen, Window and Widget objects
+## 1.2 Screen Window and Widget objects
 
 A `Screen` is a window which occupies the entire display. A `Screen` can
 overlay another, replacing all its contents. When closed, the `Screen` below is
@@ -534,18 +565,19 @@ refresh time.
 
 # 3. The ssd and display objects
 
-The following code, issued as the first executable line of an application,
+The following code, issued as the first executable lines of an application,
 initialises the display.
 ```python
-from hardware_setup import display, ssd
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, ssd, display
 ```
 It creates singleton instances of `SSD` and `Display` classes. Normal GUI
 applications only need to import `ssd`. This refererence to the display driver
-is used to initialise `Writer` objects. Bound variables `.height` and `.width`
-may be read to determine the dimensions of the display hardware.
+is used to initialise `Writer` objects. Bound variables `ssd.height` and
+`ssd.width` may be read to determine the dimensions of the display hardware.
 
-Use of `display` is restricted to applications which use graphics primitives to
-write directly to the screen. See Appendix 1.
+The `display` object is only needed in applications which use graphics
+primitives to write directly to the screen. See Appendix 1.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -622,7 +654,7 @@ This is a `Screen` subclass providing for modal windows. As such it has
 positional and dimension information. Usage consists of writing a user class
 subclassed from `Window`. Example code is in `demos/screens.py`.
 
-## 5.2 Constructor
+## 5.1 Constructor
 
 This takes the following positional args:  
  * `row`
@@ -635,7 +667,7 @@ Followed by keyword-only args
  * `bgcolor=None` Background color, default black.
  * `fgcolor=None` Foreground color, default white.
 
-## 5.3 Class method
+## 5.2 Class method
 
  * `value(cls, val=None)` The `val` arg can be any Python type. It allows
  widgets on a `Window` to store information in a way which can be accessed from
@@ -1925,7 +1957,7 @@ Method:
 
 ## 22.3 Curve classes
 
-### 22.3.1 class Curve
+### 22.3.1 Class Curve
 
 The Cartesian curve constructor takes the following positional arguments:
 
@@ -1965,7 +1997,7 @@ To plot x values from 1000 to 4000 we would set the `origin` x value to 1000
 and the `excursion` x value to 3000. The `excursion` values scale the plotted
 values to fit the corresponding axis.
 
-### 22.3.2 class PolarCurve
+### 22.3.2 Class PolarCurve
 
 The constructor takes the following positional arguments:
 
@@ -1997,7 +2029,7 @@ time, and realtime plotting is required. See class `RTPolar` in
 
 Complex points should lie within the unit circle to be drawn within the grid.
 
-## 22.4 class TSequence
+## 22.4 Class TSequence
 
 A common task is the acquisition and plotting of real time data against time,
 such as hourly temperature and air pressure readings. This class facilitates
@@ -2093,20 +2125,20 @@ variable.
 
 These notes are for those wishing to draw directly to the `Screen` instance.
 This is done by providing the user `Screen` class with an `after_open()` method
-which issues the display driver calls.
+which is written to issue the display driver calls.
 
 The following code instantiates two classes:
 ```python
-from hardware_setup import display, ssd
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, ssd, display
 ```
 The `ssd` object is an instance of the object defined in the display driver. It
 is a requirement that this is a subclass of `framebuf.FrameBuffer`. Hence `ssd`
 supports all the graphics primitives provided by `FrameBuffer`. These may be
 used to draw on the `Screen`.
 
-The `display` object has an `ssd` bound variable which is a reference to the
-`ssd` device. The `display` has methods with the same names and args as those
-of `ssd`. These support greying out. So you can write (for example)
+The `display` object has methods with the same names and args as those of
+`ssd`. These support greying out. So you can write (for example)
 ```python
 display.rect(10, 10, 50, 50, RED)
 ```
