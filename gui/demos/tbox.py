@@ -21,13 +21,13 @@ from gui.widgets.buttons import Button, CloseButton
 
 wri = CWriter(ssd, arial10, verbose=False)
 
-def fwdbutton(wri, row, col, cls_screen, width, text='Next'):
+def fwdbutton(wri, row, col, cls_screen, text='Next'):
     def fwd(button):
         Screen.change(cls_screen)
-    Button(wri, row, col, height = 20, width = width,
+    b = Button(wri, row, col,
            callback = fwd, fgcolor = BLACK, bgcolor = GREEN,
            text = text, shape = RECTANGLE)
-    return width
+    return b.mrow
 
 
 async def wrap(tb):
@@ -53,7 +53,7 @@ async def clip(tb):
 
 # Args for textboxes
 # Positional
-pargs = (2, 2, 124, 7)  # Row, Col, Width, nlines
+pargs = (2, 2, 100, 7)  # Row, Col, Width, nlines
 
 # Keyword
 tbargs = {'fgcolor' : YELLOW,
@@ -103,10 +103,10 @@ class MainScreen(Screen):
         super().__init__()
         Label(wri, 2, 2, 'Select test to run')
         col = 2
-        row = 60
-        col += fwdbutton(wri, row, col, TBWScreen, 50, 'Wrap') + 10
-        col += fwdbutton(wri, row, col, TBCScreen, 50, 'Clip') + 10
-        fwdbutton(wri, row, col, TBUScreen, 50, 'Scroll')
+        row = 20
+        row = fwdbutton(wri, row, col, TBWScreen, 'Wrap') + 2
+        row = fwdbutton(wri, row, col, TBCScreen, 'Clip') + 2
+        fwdbutton(wri, row, col, TBUScreen, 'Scroll')
         CloseButton(wri)
         
 

@@ -80,7 +80,7 @@ of some display drivers.
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
- 4.4 [Method](./README.md#44-method) Optional interface to usayncio code.  
+ 4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
@@ -374,6 +374,10 @@ files in `gui/core` are:
  * `colors.py` Constants including colors and shapes.
  * `ugui.py` The main GUI code.
  * `writer.py` Supports the `Writer` and `CWriter` classes.
+ * `framebuf_utils.mpy` Accelerator for the `CWriter` class. This optional file
+ is compiled for STM hardware. It is specific to Pyboards (1.x and D) and will
+ be ignored on other ports. Details may be found
+ [here](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#224-a-performance-boost).
 
 The `gui/primitives` directory contains the following files:  
  * `switch.py` Interface to physical pushbuttons.
@@ -2207,12 +2211,17 @@ have the following bound variables, which should be considered read-only:
  * `width` Ditto.
  * `mrow` Maximum absolute row occupied by the widget.
  * `mcol` Maximum absolute col occupied by the widget.
+ 
+A further aid to metrics is the `Writer` method `.stringlen(s)`. This takes a
+string as its arg and returns its length in pixels when rendered using that
+`Writer` instance's font.
 
 The `mrow` and `mcol` values enable other widgets to be positioned relative to
 the one previously instantiated. In the cases of sliders, `Dial` and `Meter`
 widgets these take account of space ocupied by legends or labels.
 
-The `aclock.py` demo provides a simple example of this approach.
+The `aclock.py` and `linked_sliders.py` demos provide simple examples of this
+approach.
 
 ## Use of graphics primitives
 

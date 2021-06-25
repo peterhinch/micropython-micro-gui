@@ -13,7 +13,7 @@ from gui.widgets.dropdown import Dropdown
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.font10 as font
+import gui.fonts.arial10 as font
 from gui.core.colors import *
 
 
@@ -26,13 +26,16 @@ class BaseScreen(Screen):
 
         col = 2
         row = 2
-        Dropdown(wri, row, col,
-                elements = ('hydrogen', 'helium', 'neon', 'xenon', 'radon'),
-                bdcolor = GREEN, bgcolor = DARKGREEN,
-                callback=self.ddcb)
+        self.dd = Dropdown(wri, row, col,
+                           elements = ('hydrogen', 'helium', 'neon', 'xenon', 'radon'),
+                           bdcolor = GREEN, bgcolor = DARKGREEN,
+                           callback=self.ddcb)
         row += 30
-        self.lbl = Label(wri, row, col, 90, bdcolor=RED)
+        self.lbl = Label(wri, row, col, self.dd.width, bdcolor=RED)
         CloseButton(wri)  # Quit the application
+
+    def after_open(self):
+        self.lbl.value(self.dd.textvalue())
 
     def ddcb(self, dd):
         if hasattr(self, 'lbl'):

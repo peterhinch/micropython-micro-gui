@@ -12,7 +12,7 @@ from gui.widgets.label import Label
 from gui.core.writer import CWriter
 
 # Font for CWriter
-import gui.fonts.font10 as font10
+import gui.fonts.arial10 as font
 from gui.core.colors import *
 
 # Defining a button in this way enables it to be re-used on
@@ -22,11 +22,11 @@ def fwdbutton(wri, row, col, cls_screen, text='Next'):
     def fwd(button):
         Screen.change(cls_screen)  # Callback
 
-    Button(wri, row, col, height = 30, callback = fwd,
+    Button(wri, row, col, callback = fwd,
            fgcolor = BLACK, bgcolor = GREEN,
-           text = text, shape = RECTANGLE, width = 100)
+           text = text, shape = RECTANGLE)
 
-wri = CWriter(ssd, font10, GREEN, BLACK, verbose=False)
+wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
 # This screen overlays BaseScreen.
 class BackScreen(Screen):

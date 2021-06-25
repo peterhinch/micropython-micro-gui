@@ -32,7 +32,7 @@ class BaseScreen(Screen):
         # Trailing spaces ensure Label is wide enough to show results
         self.lbl = Label(wri, row, col, 'Dialog box test   ')
         # DialogBox constructor arguments. Here we pass all as keyword wargs.
-        kwargs = {'writer' : wri,
+        kwargs = {'writer' : wri, 'row': 20, 'col' : 2,
                   'elements' : (('Yes', GREEN), ('No', RED), ('Foo', YELLOW)),
                   'label' : 'Test dialog',
                   }

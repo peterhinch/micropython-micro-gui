@@ -29,7 +29,7 @@ class BaseScreen(Screen):
         col = 2
         row = 2
         Label(wri, row, col, 'Simple Demo')
-        row = 20
+        row = 50
         Button(wri, row, col, text='Yes', callback=my_callback, args=('Yes',))
         col += 60
         Button(wri, row, col, text='No', callback=my_callback, args=('No',))
