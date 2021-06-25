@@ -28,6 +28,9 @@ class Slider(LinearIO):
         super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends
+        if legends is not None:  # Adjust column metric
+            ml = max((writer.stringlen(l) for l in legends))
+            self.mcol += ml + 2  # Strings are rendered 2 pixels right of border
         self.fontcolor = self.fgcolor if fontcolor is None else fontcolor
         self.slotcolor = self.bgcolor if slotcolor is None else slotcolor
         # Define slider

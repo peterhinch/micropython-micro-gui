@@ -49,13 +49,9 @@ target and a C device driver (unless you can acquire a suitable binary).
 # Project status
 
 Code has been tested on ESP32, Pi Pico and Pyboard. The API shuld be stable.
-Code is new and issues are likely: please report any found. This document is
-under review. I plan to add further demos and to upgrade the performance of
-some display drivers.
-
-An issue under investigation is that a soft reset is required after a GUI
-application is run and before running another. Otherwise the second application
-displays correctly but is unresponsive.
+Code is new and issues are likely: please report any found. The project is
+under development so check for updates. I also plan to upgrade the performance
+of some display drivers.
 
 # 0. Contents
 
@@ -392,6 +388,11 @@ Demos are run by issuing (for example):
 ```python
 >>> import gui.demos.simple
 ```
+If shut down cleanly with the "close" button a demo can be re-run with (e.g.):
+```python
+gui.demos.simple.test()
+```
+Before running a different demo the host should be reset (ctrl-d) to clear RAM.
 
 These will run on screens of 128x128 pixels or above. The initial ones are
 minimal and aim to demonstrate a single technique.  
@@ -2170,7 +2171,10 @@ class TSeq(Screen):
 
 The "tab order" of widgets on a `Screen` is the order with which they acquire
 focus with successive presses of the `Next` button. It is determined by the
-order in which they are instantiated. 
+order in which they are instantiated. Tab order is important for usability but
+instantiating in the best order can conflict with program logic. This happens
+if a widget's callback refers to others not yet instantiated. See demos
+`dropdown.py` and `linked_sliders.py` for one solution.
 
 The obvious layout for the physical buttons is as per a joystick:
 
@@ -2201,13 +2205,12 @@ have the following bound variables, which should be considered read-only:
 
  * `height` As specified. Does not include border.
  * `width` Ditto.
- * `rows` Height including borders.
- * `cols` Width with borders.
+ * `mrow` Maximum absolute row occupied by the widget.
+ * `mcol` Maximum absolute col occupied by the widget.
 
-This support is fairly "micro" and does not take account of labels and legends.
-This means that `rows` and `cols` for `Dial`, `Meter`, `Slider` and
-`HorizSlider` do not necessarily reflect the full amount of space used by the
-control.
+The `mrow` and `mcol` values enable other widgets to be positioned relative to
+the one previously instantiated. In the cases of sliders, `Dial` and `Meter`
+widgets these take account of space ocupied by legends or labels.
 
 The `aclock.py` demo provides a simple example of this approach.
 
@@ -2253,5 +2256,7 @@ There is little point in issuing `display.rect` as it confers no advantage over
 Hopefully these are self explanatory. The `Display` methods use the `framebuf`
 convention of `x, y` coordinates rather than the `row, col` system used by
 micro-gui.
+
+The `primitives.py` demo provides a simple example.
 
 ###### [Contents](./README.md#0-contents)

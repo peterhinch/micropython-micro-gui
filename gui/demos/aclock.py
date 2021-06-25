@@ -25,9 +25,9 @@ from gui.core.colors import *
 async def aclock(dial, lbldate, lbltim):
     # Return a unit vector of phase phi. Multiplying by this will
     # rotate a vector anticlockwise which is mathematically correct.
-    # Alas clocks modelled on sundials were invented in the northern
-    # hemisphere. Otherwise they would have rotated widdershins
-    # in accordance with maths. Hence negative sign when called.
+    # Alas clocks, modelled on sundials, were invented in the northern
+    # hemisphere. Otherwise they would have rotated widdershins like
+    # the maths. Hence negative sign when called.
     def uv(phi):
         return rect(1, phi)
 
@@ -70,13 +70,14 @@ class BaseScreen(Screen):
                   }
 
         wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
-        gap = 4  # Vertical gap between widgets
         dial = Dial(wri, 2, 2, height = 70, ticks = 12,
                     fgcolor = GREEN, pip = GREEN)
         # Set up clock display: instantiate labels
-        row = dial.rows + gap
+        # Demo of relative positioning.
+        gap = 4  # Vertical gap between widgets
+        row = dial.mrow + gap
         lbldate = Label(wri, row, 2, 100, **labels)
-        row += lbldate.rows + gap
+        row = lbldate.mrow + gap
         lbltim = Label(wri, row, 2, '00.00.00', **labels)
         self.reg_task(aclock(dial, lbldate, lbltim))
         CloseButton(wri)

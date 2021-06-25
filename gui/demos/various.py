@@ -61,8 +61,11 @@ class FooScreen(Screen):
 
         m0 = Meter(wri, 10, 240, divisions = 4, ptcolor=YELLOW, height=80, width=15,
                 label='Meter example', style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
+        #Label(wri, 2, m0.mcol, 'FF')
         # Instantiate displayable objects. bgcolor forces complete redraw.
         dial = Dial(wri, 2, 2, height = 75, ticks = 12, bgcolor=BLACK, bdcolor=None, label=120)  # Border in fg color
+        #Label(wri, dial.mrow, 2, 'FF')
+        #Label(wri, dial.mrow, dial.mcol, 'FF')
         scale = Scale(wri, 2, 100, width = 124, tickcb = tickcb,
                 pointercolor=RED, fontcolor=YELLOW, bdcolor=CYAN)
 

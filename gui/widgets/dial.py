@@ -67,8 +67,9 @@ class Dial(Widget):
         self.pip = self.fgcolor if pip is None else pip
         if label is not None:
             self.label = Label(writer, row + height + 3, col, label)
-            #self.cols = max(self.cols, self.label.cols)
-            #self.rows += 3 + self.label.rows
+            # Adjust metrics
+            self.mrow = self.label.mrow - 2  # Label never has border
+            self.mcol = max(self.mcol, self.label.mcol - 2)
         radius = int(height / 2)
         self.radius = radius
         self.ticks = ticks

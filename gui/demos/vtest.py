@@ -41,7 +41,10 @@ async def ptr_test(dial):
     ptr = Pointer(dial)
     v = 0j
     steps = 20  # No. of interpolation steps
-    grv = lambda : urandom.getrandbits(16) / 2**15 - 1  # Random: range -1.0 to +1.0
+    # BUG getting a weird visual flicker on occasion, with yellow
+    # being briefly displayed. Where is that coming from?
+    # Does not seem to be affected by max value. TODO
+    grv = lambda : urandom.getrandbits(16) / 2**15 - 1  # Random: range -1.0 to +0.999
     while True:
         v1 = grv() + 1j * grv()  # Random vector
         dv = (v1 - v) / steps  # Interpolation vector

@@ -274,10 +274,9 @@ class Screen:
         cs_new._do_open(cs_old) # Clear and redraw
         cs_new.after_open() # Optional subclass method
         if cs_old is None:  # Initialising
-            try:
-                asyncio.run(Screen.monitor())  # Starts and ends uasyncio
-            finally:
-                asyncio.new_event_loop()
+            asyncio.run(Screen.monitor())  # Starts and ends uasyncio
+            # Don't do asyncio.new_event_loop() as it prevents re-running
+            # the same app.
 
     @classmethod
     async def monitor(cls):
@@ -550,8 +549,9 @@ class Widget:
         self.col = col
         self.height = height
         self.width = width
-        self.rows = height + 4  # For metrics. Default: allow for border.
-        self.cols = width + 4
+        # Maximum row and col. Defaults for user metrics. May be overridden
+        self.mrow = row + height + 2  # in subclass. Allow for border.
+        self.mcol = col + width + 2
         self.visible = True # Used by ButtonList class for invisible buttons
         self.draw = True  # Signals that obect must be redrawn
         self._value = value

@@ -24,6 +24,7 @@ class Meter(Widget):
         self.style = style
         self.ptcolor = ptcolor if ptcolor is not None else self.fgcolor
         if legends is not None:  # Legends are static
+            mcol = 0
             x = col + width + 4
             y = row + height
             dy = 0 if len(legends) <= 1 else height / (len(legends) -1)
@@ -31,6 +32,8 @@ class Meter(Widget):
             for legend in legends:
                 l = Label(writer, round(yl), x, legend)
                 yl -= dy
+                mcol = max(mcol, l.mcol)
+            self.mcol = mcol - 2  # For metrics. Legends never have border.
         self.value(value)
 
     def value(self, n=None, color=None):

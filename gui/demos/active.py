@@ -47,12 +47,13 @@ class BaseScreen(Screen):
         self.vslider = Slider(wri, 2, 2, callback=self.slider_cb,
                              bdcolor=RED, slotcolor=BLUE,
                              legends=('0.0', '0.5', '1.0'), value=0.5)
-
+        #Label(wri, 2, self.vslider.mcol, 'FF')
         col = 80
         row = 15
         self.hslider = HorizSlider(wri, row, col, callback=self.slider_cb,
                                    bdcolor=GREEN, slotcolor=BLUE,
                                    legends=('0.0', '0.5', '1.0'), value=0.7)
+        Label(wri, self.hslider.mrow, self.hslider.mcol, 'FF')
         row += 30
         self.scale = Scale(wri, row, col, width = 150, tickcb = tickcb,
                 pointercolor=RED, fontcolor=YELLOW, bdcolor=CYAN,
