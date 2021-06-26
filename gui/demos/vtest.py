@@ -35,28 +35,32 @@ class BackScreen(Screen):
         Label(wri, 2, 2, 'Ensure back refreshes properly')
         CloseButton(wri)
 
-# Create a random vector. Interpolate between current vector and the new one.
-# Change pointer color dependent on magnitude.
+
+# Update a pointer with a vector. Change pointer color dependent on magnitude.
+def vset(ptr, v):
+    mag = abs(v)
+    if mag < 0.3:
+        ptr.value(v, BLUE)
+    elif mag < 0.7:
+        ptr.value(v, GREEN)
+    else:
+        ptr.value(v, RED)
+
+def get_vec():  # Return a random vector
+    mag = urandom.getrandbits(16) / 2**16  # 0..1 (well, almost 1)
+    phi = pi * urandom.getrandbits(16) / 2**15  # 0..2*pi
+    return rect(mag, phi)
+
 async def ptr_test(dial):
-    ptr = Pointer(dial)
-    v = 0j
+    ptr0 = Pointer(dial)
+    ptr1 = Pointer(dial)
     steps = 20  # No. of interpolation steps
-    # BUG getting a weird visual flicker on occasion, with yellow
-    # being briefly displayed. Where is that coming from?
-    # Does not seem to be affected by max value. TODO
-    grv = lambda : urandom.getrandbits(16) / 2**15 - 1  # Random: range -1.0 to +0.999
     while True:
-        v1 = grv() + 1j * grv()  # Random vector
-        dv = (v1 - v) / steps  # Interpolation vector
+        dv0 = (get_vec() - ptr0.value()) / steps  # Interpolation vectors
+        dv1 = (get_vec() - ptr1.value()) / steps
         for _ in range(steps):
-            v += dv
-            mag = abs(v)
-            if mag < 0.3:
-                ptr.value(v, BLUE)
-            elif mag < 0.7:
-                ptr.value(v, GREEN)
-            else:
-                ptr.value(v, RED)
+            vset(ptr0, ptr0.value() + dv0)
+            vset(ptr1, ptr1.value() + dv1)
             await asyncio.sleep_ms(200)
 
 # Analog clock demo.
@@ -77,6 +81,7 @@ async def aclock(dial, lbldate, lbltim):
 
     while True:
         t = time.localtime()
+        # Maths rotates vectors counterclockwise, hence - signs.
         hrs.value(hstart * uv(-t[3] * pi/6 - t[4] * pi / 360), CYAN)
         mins.value(mstart * uv(-t[4] * pi/30), CYAN)
         secs.value(sstart * uv(-t[5] * pi/30), RED)
@@ -99,10 +104,10 @@ class VScreen(Screen):
         # Set up random vector display with two pointers
         dial = Dial(wri, 2, 2, height = 100, ticks = 12, fgcolor = YELLOW, style=Dial.COMPASS)
         self.reg_task(ptr_test(dial))
-        self.reg_task(ptr_test(dial))
         # Set up clock display: instantiate labels
-        lbldate = Label(wri, 110, 2, 200, **labels)
-        lbltim = Label(wri, 150, 2, 80, **labels)
+        gap = 4
+        lbldate = Label(wri, dial.mrow + gap, 2, 200, **labels)
+        lbltim = Label(wri, lbldate.mrow + gap, 2, 80, **labels)
         dial = Dial(wri, 2, 120, height = 100, ticks = 12, fgcolor = GREEN, pip = GREEN)
         self.reg_task(aclock(dial, lbldate, lbltim))
 

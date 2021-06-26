@@ -1,60 +1,54 @@
-# st7735r144_setup.py For my PCB with 1.44 inch 128*128 TFT Customise for your hardware config
+# ili9341_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2020 Peter Hinch
+# Copyright (c) 2021 Peter Hinch
 
 # As written, supports:
-# Adfruit 1.44 inch Color TFT LCD display with MicroSD Card Breakout:
-# https://www.adafruit.com/product/2088
+# ili9341 240x320 displays on Pi Pico
+# Edit the driver import for other displays.
 
-# WIRING (Adafruit pin nos and names).
-# Pyb   SSD
-# Gnd   Gnd
-# 3V3   Vcc
-# Y11   RESET
-# Y12   D/C
-# W32   TFT_CS
-# Y8    MOSI
-# Y6    SCK
-# Vin   LITE (10) Backlight
+# Demo of initialisation procedure designed to minimise risk of memory fail
+# when instantiating the frame buffer. The aim is to do this as early as
+# possible before importing other modules.
 
-# Switch wiring
-# X1 Next
-# X2 Sel
-# X3 Prev
-# X4 Increase
-# X5 Decrease
+# WIRING
+# Pico      Display
+# GPIO Pin
+# 3v3  36   Vin
+# IO6   9   CLK  Hardware SPI0
+# IO7  10   DATA (AKA SI MOSI)
+# IO8  11   DC
+# IO9  12   Rst
+# Gnd  13   Gnd
+# IO10 14   CS
 
-import machine
+# Pushbuttons are wired between the pin and Gnd
+# Pico pin  Meaning
+# 16        Operate current control
+# 17        Decrease value of current control
+# 18        Select previous control
+# 19        Select next control
+# 20        Increase value of current control
+
+from machine import Pin, SPI, freq
 import gc
 
-from machine import Pin, SPI
-import gc
-import time
-
-from drivers.st7735r.st7735r144_4bit import ST7735R as SSD
-pp = Pin('EN_3V3')
-pp(1)
-time.sleep(1)
-
-pdc = Pin('Y12', Pin.OUT_PP, value=0)
-pcs = Pin('W32', Pin.OUT_PP, value=1)
-prst = Pin('Y11', Pin.OUT_PP, value=1)
-spi = SPI(2, baudrate=6_000_000)
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
+freq(250_000_000)  # RP2 overclock
+# Create and export an SSD instance
+pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
+prst = Pin(9, Pin.OUT, value=1)
+pcs = Pin(10, Pin.OUT, value=1)
+spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-ssd = SSD(spi, pcs, pdc, prst)  # Create a display instance
-from gui.core.ugui import Display
+ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
+from gui.core.ugui import Display
 # Create and export a Display instance
 # Define control buttons
-nxt = Pin(Pin.board.X5, Pin.IN, Pin.PULL_UP)  # Move to next control
-sel = Pin(Pin.board.X1, Pin.IN, Pin.PULL_UP)  # Operate current control
-prev = Pin(Pin.board.X4, Pin.IN, Pin.PULL_UP)  # Move to previous control
-increase = Pin(Pin.board.X2, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(Pin.board.X3, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
+sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
+prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
+increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
+decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
-
-
-
-
-
