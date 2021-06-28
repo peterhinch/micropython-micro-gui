@@ -49,9 +49,9 @@ from gui.core.ugui import Display
 # Define control buttons
 nxt = Pin(Pin.board.X5, Pin.IN, Pin.PULL_UP)  # Move to next control
 sel = Pin(Pin.board.X1, Pin.IN, Pin.PULL_UP)  # Operate current control
-prev = Pin(Pin.board.X4, Pin.IN, Pin.PULL_UP)  # Move to previous control
+prev = Pin(Pin.board.X3, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(Pin.board.X2, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(Pin.board.X3, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+decrease = Pin(Pin.board.X4, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
 
 

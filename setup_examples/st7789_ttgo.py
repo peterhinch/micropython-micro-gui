@@ -98,11 +98,11 @@ ssd = SSD(spi, height=135, width=240, dc=pdc, cs=pcs, rst=prst, disp_mode=LANDSC
 from gui.core.ugui import Display
 # Create and export a Display instance
 # Define control buttons
-nxt = Pin(36, Pin.IN, Pin.PULL_UP)  # Move to next control
-sel = Pin(37, Pin.IN, Pin.PULL_UP)  # Operate current control
+nxt = Pin(32, Pin.IN, Pin.PULL_UP)  # Move to next control
+sel = Pin(36, Pin.IN, Pin.PULL_UP)  # Operate current control
 prev = Pin(38, Pin.IN, Pin.PULL_UP)  # Move to previous control
-increase = Pin(39, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(32, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+increase = Pin(37, Pin.IN, Pin.PULL_UP)  # Increase control's value
+decrease = Pin(39, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
 
 # optional

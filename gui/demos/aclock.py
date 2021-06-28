@@ -38,7 +38,7 @@ async def aclock(dial, lbldate, lbltim):
             return 'nd'
         if n in (3, 23):
             return 'rd'
-        return th
+        return 'th'
 
     days = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
     months = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul',
