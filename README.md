@@ -14,7 +14,10 @@ It is compatible with all display drivers for
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
 to a wide range of displays. It is also portable between hosts.
 
-![Image](./images/rp2_test_fixture.JPG)
+![Image](./images/rp2_test_fixture.JPG) Raspberry Pico/ILI9341.
+
+![Image](./images/ttgo.JPG) TTGO T-Display. Add a joystick switch and an SIL
+resistor for a simple, inexpensive, WiFi capable system.
 
 # Rationale
 
