@@ -19,6 +19,9 @@ to a wide range of displays. It is also portable between hosts.
 ![Image](./images/ttgo.JPG) TTGO T-Display. Add a joystick switch and an SIL
 resistor for a simple, inexpensive, WiFi capable system.
 
+An alternative interface consists of two pushbuttons and an encoder such as
+[this one](https://www.adafruit.com/product/377).
+
 # Rationale
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
@@ -115,7 +118,7 @@ of some display drivers.
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.1 [Class Curve](./README.md#2231-class-curve)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.2 [Class PolarCurve](./README.md#2232-class-polarcurve)  
  22.4 [Class TSequence](./README.md#224-class-tsequence) Plotting realtime, time sequential data.  
-[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, use of graphics primitives  
+[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
 
@@ -385,6 +388,8 @@ files in `gui/core` are:
 The `gui/primitives` directory contains the following files:  
  * `switch.py` Interface to physical pushbuttons.
  * `delay_ms.py` A software triggerable timer.
+ * `encoder.py` Driver for a quadrature encoder. This offers an alternative
+ interface - see [Appendix 1](./README.md#appendix-1-application-design).
 
 The `gui/demos` directory contains a variety of demos and tests described
 below.
@@ -2201,6 +2206,16 @@ preferred.
 The apparently obvious solution of designing a vertical `Scale` is tricky owing
 to the fact that the length of the internal text can be substantial and
 variable.
+
+## Encoder interface
+
+This alternative interface comprises just two buttons `Next` and `Prev`.
+Selection and Increase/Decrease is handled by an encoder such as
+[this one](https://www.adafruit.com/product/377). Selection occurs when the
+knob is pressed, and movement when it is rotated. This is more intuitive,
+particularly with horizontally oriented controls.
+
+TODO wiring details.
 
 ## Screen layout
 

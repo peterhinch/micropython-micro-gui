@@ -38,15 +38,15 @@ _LAST = const(3)
 # Wrapper for ssd providing buttons and framebuf compatible methods
 class Display:
 
-    def __init__(self, objssd, nxt, sel, prev=None, up=None, down=None):
+    def __init__(self, objssd, nxt, sel, prev=None, up=None, down=None, encoder=False):
         global display, ssd
         self._next = Switch(nxt)
         self._sel = Switch(sel)
         self._last = None  # Last switch pressed.
         # Mandatory buttons
         # Call current screen bound method
-        self._next.close_func(self._closure, (self._next, Screen.next_ctrl))
-        self._sel.close_func(self._closure, (self._sel, Screen.sel_ctrl))
+        self._next.close_func(self._closure, (self._next, Screen.ctrl_move, _NEXT))
+        self._sel.close_func(self._closure, (self._sel, Screen.sel_ctrl, 0))
         self._sel.open_func(Screen.unsel)
 
         self.height = objssd.height
@@ -56,26 +56,30 @@ class Display:
         self._prev = None
         if prev is not None:
             self._prev = Switch(prev)
-            self._prev.close_func(self._closure, (self._prev, Screen.prev_ctrl))
-        # Up and down methods get the button as an arg.
-        self._up = None
-        if up is not None:
-            self._up = Switch(up)
-            self._up.close_func(self._closure, (self._up, self.do_up))
-        self._down = None
-        if down is not None:
-            self._down = Switch(down)
-            self._down.close_func(self._closure, (self._down, self.do_down))
+            self._prev.close_func(self._closure, (self._prev, Screen.ctrl_move, _PREV))
+        if encoder:
+            if up is None or down is None:
+                raise ValueError('Must specify pins for encoder.')
+            from gui.primitives.encoder import Encoder
+            self._enc = Encoder(up, down, div=encoder, callback=Screen.adjust)
+        else:
+            # Up and down methods get the button as an arg.
+            if up is not None:
+                sup = Switch(up)
+                sup.close_func(self._closure, (sup, Screen.adjust, 1))
+            if down is not None:
+                sdown = Switch(down)
+                sdown.close_func(self._closure, (sdown, Screen.adjust, -1))
         self._is_grey = False  # Not greyed-out
         display = self  # Populate globals
         ssd = objssd
 
     # Reject button presses where a button is already pressed.
     # Execute if initialising, if same switch re-pressed or if last switch released
-    def _closure(self, switch, func):
+    def _closure(self, switch, func, arg):
         if (self._last is None) or (self._last == switch) or self._last():
             self._last = switch
-            func()
+            func(switch, arg)
 
     def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False):
         sl = writer.stringlen(text)
@@ -93,12 +97,6 @@ class Display:
         writer.setcolor(fgcolor, bgcolor)
         writer.printstring(txt, invert)
         writer.setcolor()  # Restore defaults
-
-    def do_up(self):
-        Screen.up_ctrl(self._up)
-
-    def do_down(self):
-        Screen.down_ctrl(self._down)
 
     # Greying out has only one option given limitation of 4-bit display driver
     # It would be possible to do better with RGB565 but would need inverse transformation
@@ -204,35 +202,27 @@ class Screen:
     is_shutdown = Event()
 
     @classmethod
-    def next_ctrl(cls):
+    def ctrl_move(cls, _, v):
         if cls.current_screen is not None:
-            cls.current_screen.move(_NEXT)
+            cls.current_screen.move(v)
 
     @classmethod
-    def prev_ctrl(cls):
-        if cls.current_screen is not None:
-            cls.current_screen.move(_PREV)
-
-    @classmethod
-    def sel_ctrl(cls):
+    def sel_ctrl(cls, b, _):
         if cls.current_screen is not None:
             cls.current_screen.do_sel()
-
 
     @classmethod
     def unsel(cls):
         if cls.current_screen is not None:
             cls.current_screen.unsel_i()
 
+    # Adjust the value of a widget. If an encoder is used, button arg
+    # is an int (discarded), val is the delta. If using buttons, 1st 
+    # arg is the button, delta is +1 or -1
     @classmethod
-    def up_ctrl(cls, button):
+    def adjust(cls, button, val):
         if cls.current_screen is not None:
-            cls.current_screen.do_up(button)
-
-    @classmethod
-    def down_ctrl(cls, button):
-        if cls.current_screen is not None:
-            cls.current_screen.do_down(button)
+            cls.current_screen.do_adj(button, val)
 
     # Move currency to a specific widget (e.g. ButtonList)
     @classmethod
@@ -440,19 +430,12 @@ class Screen:
         if co is not None:
             co.unsel()
 
-    def do_up(self, button):
+    def do_adj(self, button, val):
         co = self.get_obj()
-        if co is not None and hasattr(co, 'do_up'):
-            co.do_up(button)  # Widget handles up/down
+        if co is not None and hasattr(co, 'do_adj'):
+            co.do_adj(button, val)  # Widget can handle up/down
         else:
-            Screen.current_screen.move(_FIRST)
-
-    def do_down(self, button):
-        co = self.get_obj()
-        if co is not None and hasattr(co, 'do_down'):
-            co.do_down(button)
-        else:
-            Screen.current_screen.move(_LAST)
+            Screen.current_screen.move(_FIRST if val < 0 else _LAST)
 
     # Methods optionally implemented in subclass
     def on_open(self): 
@@ -710,21 +693,17 @@ class LinearIO(Widget):
             # but subclass can be defeat this with WHITE or another color
             self.prcolor = YELLOW if prcolor is None else prcolor
 
-    def do_up(self, button):
-        asyncio.create_task(self.btnhan(button, 1))
-
-    def do_down(self, button):
-        asyncio.create_task(self.btnhan(button, -1))
+    # Adjust widget's value. Args: button pressed, amount of increment
+    def do_adj(self, button, val):
+        encoder = isinstance(button, int)
+        d = self.min_delta * 0.1 if self.precision else self.min_delta
+        self.value(self.value() + val * d)
+        if not encoder:
+            asyncio.create_task(self.btnhan(button, val, d))
 
     # Handle increase and decrease buttons. Redefined by textbox.py, scale_log.py
-    async def btnhan(self, button, up):
-        if self.precision:
-            d = self.min_delta * 0.1
-            maxd = self.max_delta
-        else:
-            d = self.min_delta
-            maxd = d * 4  # Why move fast in precision mode?
-        self.value(self.value() + up * d)
+    async def btnhan(self, button, up, d):
+        maxd = self.max_delta if self.precision else d * 4  # Why move fast in precision mode?
         t = ticks_ms()
         while not button():
             await asyncio.sleep_ms(0)  # Quit fast on button release

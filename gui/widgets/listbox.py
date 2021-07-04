@@ -78,16 +78,15 @@ class Listbox(Widget):
                     self.value(v)
             return v
 
-    def do_up(self, _):
-        if v := self._value:
-            self.value(v - 1)
+    def do_adj(self, _, val):
+        v = self._value
+        if val > 0:
+            if v:
+                self.value(v - 1)
+        elif val < 0:
+            if v < len(self.elements) - 1:
+                self.value(v + 1)
         if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
-            self.do_sel()
-
-    def do_down(self, _):
-        if (v := self._value) < len(self.elements) - 1:
-            self.value(v + 1)
-        if (self.also & Listbox.ON_MOVE):
             self.do_sel()
 
     # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes

@@ -101,9 +101,14 @@ from gui.core.ugui import Display
 nxt = Pin(32, Pin.IN, Pin.PULL_UP)  # Move to next control
 sel = Pin(36, Pin.IN, Pin.PULL_UP)  # Operate current control
 prev = Pin(38, Pin.IN, Pin.PULL_UP)  # Move to previous control
-increase = Pin(37, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(39, Pin.IN, Pin.PULL_UP)  # Decrease control's value
-display = Display(ssd, nxt, sel, prev, increase, decrease)
+encoder = 5  # Divide by 5
+if encoder:
+    increase = Pin(25, Pin.IN, Pin.PULL_UP)  # Encoder x and y pins
+    decrease = Pin(33, Pin.IN, Pin.PULL_UP)
+else:
+    increase = Pin(37, Pin.IN, Pin.PULL_UP)  # Increase control's value
+    decrease = Pin(39, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+display = Display(ssd, nxt, sel, prev, increase, decrease, encoder)
 
 # optional
 # b1 = Pin(BUTTON1, Pin.IN)

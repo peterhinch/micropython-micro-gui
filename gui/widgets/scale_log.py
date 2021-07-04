@@ -23,6 +23,7 @@ dolittle = lambda *_ : None
 
 # Start value is 1.0. User applies scaling to value and ticks callback.
 class ScaleLog(LinearIO):
+    encoder_rate = 5
     def __init__(self, writer, row, col, *,
                  decades=5, height=0, width=160,
                  bdcolor=None, fgcolor=None, bgcolor=None,
@@ -140,6 +141,14 @@ class ScaleLog(LinearIO):
                 self.callback(self, *self.args)
         return self._value
 
+
+    # Adjust widget's value. Args: button pressed, amount of increment
+    def do_adj(self, button, val):
+        if isinstance(button, int):  # Using an encoder
+            delta = self.delta * self.encoder_rate * 0.1 if self.precision else self.delta * self.encoder_rate
+            self.value(self.value() * (1 + delta)**val)
+        else:
+            asyncio.create_task(self.btnhan(button, val, d))
 
     async def btnhan(self, button, up):
         up = up == 1
