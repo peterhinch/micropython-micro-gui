@@ -82,6 +82,8 @@ of some display drivers.
  2.3 [Colors](./README.md#23-colors)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3.1 [Monochrome displays](./README.md#231-monochrome-displays)  
 3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
+ 3.1 [SSD class](./README.md#31-ssd-class) Instantiation in hardware_setup.  
+ 3.2 [Display class](./README.md#32-display-class) Instantiation in hardware_setup.  
 4. [Screen class](./README.md#4-screen-class) Full screen window.  
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
@@ -193,14 +195,17 @@ The GUI requires from 2 to 5 pushbuttons for control. These are:
  4. `Increase` Move within the widget (i.e. adjust its value).
  5. `Decrease` Move within the widget.
 
+An alternative is to replace buttons 4 and 5 with a quadrature encoder knob
+such as [this one](https://www.adafruit.com/product/377).
+
 Many widgets such as `Pushbutton` or `Checkbox` objects require only the
 `Select` button to operate: it is possible to design an interface with a subset
 of `micro-gui` widgets which requires only the first two buttons.
 
 Widgets such as `Listbox` objects, dropdown lists (`Dropdown`), and those for
-floating point data entry require the `Increase` and `Decrease` buttons to
-select a data item or to adjust the linear value. This is discussed in
-[Floating Point Widgets](./README.md#112-floating-point-widgets).
+floating point data entry require the `Increase` and `Decrease` buttons (or an
+encoder) to select a data item or to adjust the linear value. This is discussed
+in [Floating Point Widgets](./README.md#112-floating-point-widgets).
 
 The currently selected `Widget` is identified by a white border: the `focus`
 moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
@@ -248,9 +253,17 @@ increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease)
 ```
+Where an encoder replaces the `increase` and `decrease` buttons the final line
+only needs to be changed to read:
+```python
+display = Display(ssd, nxt, sel, prev, increase, decrease, 5)
+```
+The final arg specifies the sensitivity of the attached encoder, the higher the
+value the more the knob has to be turned for a desired effect. A value of 1
+provides the highest sensitivity, being the native rate of the encoder.
 
-Display drivers are documented
-[here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
+Instantiation of `SSD` and `Display` classes is detailed in
+[section 3](./README.md#3-the-ssd-and-display-objects).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -322,13 +335,13 @@ The consequence of inadequate speed is that brief button presses can be missed.
 This is because display update blocks for tens of milliseconds, during which
 time the pushbuttons are not polled. Blocking is much reduced by item 3 above.
 
-On the TTGO T-Display I found it necessary to use physical pullup resistors on
-the pushbutton GPIO lines. According to the
+On the TTGO T-Display it is necessary to use physical pullup resistors on the
+pushbutton GPIO lines. According to the
 [ESP32 gurus](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/)
 pins 36-39 do not have pullup support.
 
 On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
-bytecode: in this configuration running the "various" demo there was 29K of
+bytecode: in this configuration running the `various.py` demo there was 29K of
 free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
 RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
@@ -337,7 +350,7 @@ RAM usage. A smaller display or a Pyboard D would offer more headroom.
 ## 1.9 Firmware and dependencies
 
 Firmware should be V1.15 or later. The source tree includes all dependencies.
-These are listed to enable users to check for newer versions:
+These are listed to enable users to check for newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
@@ -445,23 +458,24 @@ Some of these require larger screens. Required sizes are specified as
 
 ## 1.12 Floating Point Widgets
 
-The challenge is to devise a way, with just two pushbuttons, of adjusting a
-data value which may have an extremely large dynamic range. This is the ratio
-of the data value's total range to the smallest adjustment that can be made.
-The mechanism currently implemented enables a precision of 0.05%.
+The challenge is to devise a way, with two pushbuttons or an encoder, of
+adjusting a data value which may have an extremely large dynamic range. This is
+the ratio of the data value's total range to the smallest adjustment that can
+be made. The mechanism currently implemented enables a precision of 0.05%.
 
 Floating point widgets respond to a brief press of the `increase` or `decrease`
 buttons by adjusting the value by a small amount. A continued press causes the
 value to be repeatedly adjusted, with the amount of the adjustment increasing
 with time. This enables the entire range of the control to be accessed quickly,
 while allowing small changes of 0.5%. This works well. In many cases the level
-of precision will suffice.
+of precision will suffice. An encoder provides similar performance.
 
 Fine adjustments may be achieved by pressing the `select` button for at least
 one second. The GUI will respond by changing the border color from white
 (i.e. has focus) to yellow. In this mode a brief press of `increase` or
-`decrease` will have a reduced effect (0.05%). The fine mode may be cancelled
-by pressing `select` or by moving the focus to another control.
+`decrease` or small movement of an encoder will have a reduced effect (0.05%).
+Fine mode may be cancelled by pressing `select` or by moving the focus to
+another control.
 
 In the case of slider and knob controls the precision of fine mode exceeds that
 of the visual appearance of the widget: fine changes can be too small to see.
@@ -544,8 +558,8 @@ bound methods. Screens typically have a `CloseButton` widget. This is a special
 physical display and closes the current screen, showing the one below. If used
 on the bottom level `Screen` (as above) it closes the application.
 
-The `wri` instance of `CWriter` associates a widget with a font. Constructors
-for all widgets have three mandatory positional args. These are a `CWriter`
+The `CWriter` instance `wri` associates a widget with a font. Constructors for
+all widgets have three mandatory positional args. These are a `CWriter`
 instance followed by `row` and `col`. These args are followed by a number of
 optional keyword args. These have (hopefully) sensible defaults enabling you to
 get started easily.
@@ -562,7 +576,7 @@ response to user input.
 A callback function receives positional arguments. The first is a reference to
 the object raising the callback. Subsequent arguments are user defined, and are
 specified as a tuple or list of items. Callbacks and their argument lists are
-optional: a default null function and empty list are provided. Callbacks may
+optional: a default null function and empty tuple are provided. Callbacks may
 optionally be written as bound methods. This facilitates communication between
 widgets.
 
@@ -596,13 +610,16 @@ PALE_YELLOW = create_color(12, 150, 150, 0)  # index, r, g, b
 If a 4-bit driver is in use, the color `rgb(150, 150, 0)` will be assigned to
 "spare" color number 12. Any color number in range `0 <= n <= 15` may be
 used, implying that predefined colors may be reassigned. It is recommended
-that `BLACK` (0) and `WHITE` (15) are not changed; `GREY` (6) and `YELLOW` (5)
-are also GUI defaults. If an 8-bit or larger driver is in use, the first
-`index` arg is ignored and there is no restriction on the number of colors that
-may be created.
+that `BLACK` (0) and `WHITE` (15) are not changed. `GREY` (6) and `YELLOW` (5)
+are GUI defaults for "greyed out" widgets and for "precision mode" borders, so
+changing these will have obvious effects.
 
-Regardless of the display driver the `PALE_YELLOW` variable may be used to
-refer to the color. An example of custom color definition may be found in
+If an 8-bit or larger driver is in use, the first `index` arg is ignored and
+there is no practical restriction on the number of colors that may be created.
+
+In the above example, regardless of the display driver, the `PALE_YELLOW`
+variable may be used to refer to the color. An example of custom color
+definition may be found in
 [this nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/4ef0e20da27ef7c0b5c34136dcb372200f0e5e66/gui/demos/color15.py#L92).
 
 ###### [Contents](./README.md#0-contents)
@@ -619,8 +636,8 @@ display such as an OLED. On a Sharp display it indicates reflection.
 
 There is an issue regarding ePaper displays discussed
 [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#312-monochrome-displays).
-I don't consider ePaper displays as suitable for I/O because of their slow
-refresh time.
+I don't consider ePaper displays suitable for I/O because of their slow refresh
+time.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -630,15 +647,46 @@ The following code, issued as the first executable lines of an application,
 initialises the display.
 ```python
 import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen, ssd, display
+from gui.core.ugui import Screen, ssd, display  # display is seldom needed
 ```
-It creates singleton instances of `SSD` and `Display` classes. Normal GUI
-applications only need to import `ssd`. This refererence to the display driver
-is used to initialise `Writer` objects. Bound variables `ssd.height` and
-`ssd.width` may be read to determine the dimensions of the display hardware.
+The `hardware_setup` file creates singleton instances of `SSD` and `Display`
+classes. These instances are made available via `ugui`. Normal GUI applications
+only need to import `ssd`. This refererence to the display driver is used to
+initialise `Writer` objects. Bound variables `ssd.height` and `ssd.width` may
+be read to determine the dimensions of the display hardware.
 
 The `display` object is only needed in applications which use graphics
-primitives to write directly to the screen. See Appendix 1.
+primitives to write directly to the screen. See
+[Appendix 1 Application design](./README.md#appendix-1-application-design).
+
+## 3.1 SSD class
+
+This is instantiated in `hardware_setup.py`. The specific class must match the
+display hardware in use. Display drivers are documented
+[here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
+
+## 3.2 Display class
+
+This is instantiated in `hardware_setup.py`. It registers the `SSD` instance
+along with the `Pin` instances used for input; also whether an encoder is used.
+Pins are arbitrary, but should be defined as inputs with pullups. Pushbuttons
+are connected between `Gnd` and the relevant pin.
+
+The constructor takes the following args:  
+ 1. `objssd` The `SSD` instance. A reference to the display driver.
+ 2. `nxt` A `Pin` instance for the `next` button.
+ 3. `sel` A `Pin` instance for the `select` button.
+ 4. `prev=None` A `Pin` instance for the `previous` button (if used).
+ 5. `up=None` A `Pin` instance for the `increase` button (if used).
+ 6. `down=None` A `Pin` instance for the `decrease` button (if used).
+ 7. `encoder=False` If an encoder is used, an integer must be passed. This
+ represents the division ratio. A value of 1 provides the native rate of the
+ encoder. I found the Adafruit encoder overly sensitive. A value of 5 slows it
+ down improving usability.
+
+If an encoder is used, it should be connected to the pins assigned to
+`increase` and `decrease`. If the direction of movement is wrong, these pins
+should be transposed.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -667,14 +715,15 @@ In normal use the following methods only are required:
  defined, screen.
  * `back(cls)` Restore previous screen.
 
-These are uncommon:__
+These are uncommon:  
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
  `CloseButton` instance.
  * `show(cls, force)`. This causes the screen to be redrawn. If `force` is
  `False` unchanged widgets are not refreshed. If `True`, all visible widgets
  are re-drawn. Explicit calls to this should never be needed.
 
-See `demos/plot.py` for an example of multi-screen design.
+See `demos/plot.py` for an example of multi-screen design, or
+`screen_change.py` for a minimal example demostrating the coding technique.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -698,13 +747,13 @@ See `demos/plot.py` for examples of usage of `after_open`.
  instance or a coroutine.
 
 This is a convenience method which provides for the automatic cancellation of
-tasks. If a screen runs independent coros it can opt to register these. If the
+tasks. If a screen runs independent tasks it can opt to register these. If the
 screen is overlaid by another, tasks registered with `on_change` `True` are
 cancelled. If the screen is closed, all tasks registered to it are cancelled
 regardless of the state of `on_change`. On shudown, any tasks registered to the
 base screen are cancelled.
 
-For finer control applications can ignore this method and handle cancellation
+For finer control, applications can ignore this method and handle cancellation
 explicitly in code.
 
 ###### [Contents](./README.md#0-contents)
@@ -2209,13 +2258,23 @@ variable.
 
 ## Encoder interface
 
-This alternative interface comprises just two buttons `Next` and `Prev`.
-Selection and Increase/Decrease is handled by an encoder such as
-[this one](https://www.adafruit.com/product/377). Selection occurs when the
-knob is pressed, and movement when it is rotated. This is more intuitive,
-particularly with horizontally oriented controls.
+This alternative interface comprises two buttons `Next` and `Prev` with an
+an encoder such as [this one](https://www.adafruit.com/product/377). Selection
+occurs when the knob is pressed, and movement when it is rotated. This can be
+more intuitive, particularly with horizontally oriented controls.
 
-TODO wiring details.
+This is the pinout of the Adafruit encoder as viewed from the top, with
+connections to pins passed to the `Display` constructor as `sel` (select), `up`
+(increase) and `down` (decrease).
+
+| Left     | Right  |
+|:--------:|:------:|
+| Increase | Gnd    |
+| Gnd      | No pin |
+| Decrease | Select |
+
+If an encoder operates in the wrong direction, `Increase` and `Decrease` pins
+should be transposed (physically or logically in `hardware_setup.py`).
 
 ## Screen layout
 
@@ -2243,7 +2302,7 @@ approach.
 
 ## Use of graphics primitives
 
-See [demo primitives.py](./gui/demos/primitives.py).
+See demo [primitives.py](./gui/demos/primitives.py).
 
 These notes are for those wishing to draw directly to the `Screen` instance.
 This is done by providing the user `Screen` class with an `after_open()` method
