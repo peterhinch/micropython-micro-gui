@@ -26,7 +26,7 @@ class BaseScreen(Screen):
         col = 2
         row = 2
         self.lbl = Label(wri, row + 45, col + 50, 35, bdcolor=RED, bgcolor=DARKGREEN)
-        # Instntiate Label first, because Slider callback will run now.
+        # Instantiate Label first, because Slider callback will run now.
         # See linked_sliders.py for another approach.
         Slider(wri, row, col, callback=self.slider_cb,
                bdcolor=RED, slotcolor=BLUE,

@@ -54,6 +54,7 @@ class Meter(Widget):
             x1 = self.col + width
             y0 = self.row
             y1 = self.row + height
+            self.preshow(x0, y1, width, height)  # Subclass draws regions
             if self.divisions > 0:
                 dy = height / (self.divisions) # Tick marks
                 for tick in range(self.divisions + 1):
@@ -66,3 +67,6 @@ class Meter(Widget):
             else:
                 w = width / 2
                 display.fill_rect(int(x0 + w - 2), y, 4, y1 - y, self.ptcolor)
+
+    def preshow(self, x, y, width, height):
+        pass  # For subclass

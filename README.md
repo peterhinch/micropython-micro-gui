@@ -903,9 +903,11 @@ Keyword only args:
  LED. An integer will create a `Label` of that width for later use.
 
 Methods:
- 1. `color` arg `c=None` Change the LED color to `c`. If `c` is `None` the LED
+ 1. `value` arg `val=None` If `True` is passed, lights the `LED` in its current
+ color. `False` extinguishes it. `None` has no effect. Returns current value.
+ 2. `color` arg `c=None` Change the LED color to `c`. If `c` is `None` the LED
  is turned off (rendered in the background color).
- 2. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
+ 3. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
     * `text=None` The text to display. If `None` displays last value.
     * ` invert=False` If true, show inverse text.
     * `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
