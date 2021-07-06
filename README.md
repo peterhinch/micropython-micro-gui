@@ -686,7 +686,7 @@ The constructor takes the following args:
 
 If an encoder is used, it should be connected to the pins assigned to
 `increase` and `decrease`. If the direction of movement is wrong, these pins
-should be transposed.
+should be transposed (physically or in code).
 
 ###### [Contents](./README.md#0-contents)
 
