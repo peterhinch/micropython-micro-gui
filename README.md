@@ -1462,9 +1462,8 @@ simple to implement.
 Regions may be modified, added or removed programmatically.
 
 Constructor args and methods are as per `Meter`. The `Tstat` class adds the
-following methods:
- 1. `add_region` Args:
- 2. `del_region` Arg: a `Region` instance. Deletes the region.
+following method:
+ 1. `del_region` Arg: a `Region` instance. Deletes the region.
 
 ### 16.1.1 Region class
 
@@ -1491,14 +1490,14 @@ change such that it enters or exits the region. Alternatively it might change
 from being below the region to above it: this is described as a transit. The
 following cover all possible options.
 
- * `EX_WB_IA` Exit region. Was below. Is above.
- * `EX_WB_IB` Exit, was below, is below
+ * `EX_WB_IA` Exit region. Was below before it entered. Is now above.
+ * `EX_WB_IB` Exit, was below, is below.
  * `EX_WA_IA` Exit, was above, is above.
- * `EX_WA_IB` Exit, was above, is below
- * `T_IA` Transit, is above
- * `T_IB` Transit, is below
- * `EN_WA` Entry, was above
- * `EN_WB` Entry, was below
+ * `EX_WA_IB` Exit, was above, is below.
+ * `T_IA` Transit, is above (was below by definition of a transit).
+ * `T_IB` Transit, is below.
+ * `EN_WA` Entry, was above.
+ * `EN_WB` Entry, was below.
 
 The following, taken from `gui.demos.tstat.py` is an example of a thermostat
 callback with hysteresis:
@@ -1511,7 +1510,7 @@ callback with hysteresis:
         elif reason == reg.EX_WB_IA or reason == reg.T_IA:
             self.led.value(False)
 ```
-Values for these constants allow for them to be combined with the bitwise `or`
+Values for these constants enable them to be combined with the bitwise `or`
 operator if you prefer that coding style:
 ```python
 if reason & (reg.EX_WA_IB | reg.T_IB):  # Leaving region heading down
