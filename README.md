@@ -103,6 +103,8 @@ of some display drivers.
 14. [DialogBox class](./README.md#14-dialogbox-class) Pop-up modal dialog boxes.  
 15. [Textbox widget](./README.md#15-textbox-widget) Scrolling text display.  
 16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter.  
+ 16.1 [Tstat widget](./README.md#161-tstat-widget) Meter subclass enables thermostats, alarms etc.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16.1.1 [Region class](./README.md#1611-region-class)  
 17. [Slider and HorizSlider widgets](./README.md#17-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
 18. [Scale widget](./README.md#18-scale-widget) High precision float entry and display.  
 19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
@@ -1447,6 +1449,76 @@ and below the `Meter` to display the top and bottom legends.
 
 ###### [Contents](./README.md#0-contents)
 
+## 16.1 Tstat widget
+
+This subclass of `Meter` supports one or more `Region` instances. Visually
+these appear as colored bands on the scale. If the meter's value enters, leaves
+or crosses one of these bands a callback is triggered which receives an arg
+indicating the nature of the change which caused the trigger. For example an
+alarm might be triggered on entry or traverse through a region from below, and
+cleared by an exit or traverse from above. Hysteresis as used in thermostats is
+simple to implement.
+
+Regions may be modified, added or removed programmatically.
+
+Constructor args and methods are as per `Meter`. The `Tstat` class adds the
+following methods:
+ 1. `add_region` Args:
+ 2. `del_region` Arg: a `Region` instance. Deletes the region.
+
+### 16.1.1 Region class
+
+Instantiating a `Region` associates it with a `Tstat`. Constructor args are as
+follows:
+
+ * `tstat` The `Tstat` instance.
+ * `vlo` Low value (0 <= `vlo` <= 1.0).
+ * `vhi` High value (`vlo` < `vhi` <= 1.0).
+ * `color` For visible band.
+ * `callback` This receives two args, `reg` being the `Region` instance and
+`reason`, an integer indicating why the callback occurred (see below).
+ * `args=()` Optional additional tuple of positional args for the callback.
+
+Method:
+ * `adjust` Args: `vlo`, `vhi`. Change the range of the `Region`. Constraints
+ are as per the above constructor args.
+
+Class variables (constants).
+
+These define the reasons why a callback occurred. A change in the `Tstat` value
+or an adjustment of the `Region` values can trigger a callback. The value might
+change such that it enters or exits the region. Alternatively it might change
+from being below the region to above it: this is described as a transit. The
+following cover all possible options.
+
+ * `EX_WB_IA` Exit region. Was below. Is above.
+ * `EX_WB_IB` Exit, was below, is below
+ * `EX_WA_IA` Exit, was above, is above.
+ * `EX_WA_IB` Exit, was above, is below
+ * `T_IA` Transit, is above
+ * `T_IB` Transit, is below
+ * `EN_WA` Entry, was above
+ * `EN_WB` Entry, was below
+
+The following, taken from `gui.demos.tstat.py` is an example of a thermostat
+callback with hysteresis:
+```python
+    def ts_cb(self, reg, reason):
+        # Turn on if T drops below low threshold when it had been above high threshold. Or
+        # in the case of a low going drop so fast it never registered as being within bounds
+        if reason == reg.EX_WA_IB or reason == reg.T_IB:
+            self.led.value(True)
+        elif reason == reg.EX_WB_IA or reason == reg.T_IA:
+            self.led.value(False)
+```
+Values for these constants allow for them to be combined with the bitwise `or`
+operator if you prefer that coding style:
+```python
+if reason & (reg.EX_WA_IB | reg.T_IB):  # Leaving region heading down
+```
+
+###### [Contents](./README.md#0-contents)
+
 # 17. Slider and HorizSlider widgets
 
 ```python
@@ -1739,6 +1811,10 @@ Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
+ 
+Class variable:
+ * `encoder_rate=5` If the hardware uses an encoder, this determines the rate
+ of change when the value is adjusted. Increase to raise the rate.
 
 For example code see `gui/demos/active.py`.
 

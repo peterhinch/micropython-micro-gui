@@ -21,7 +21,9 @@ class Region:
     EN_WA = 64  # Entry, was above
     EN_WB = 128  # Entry, was below
 
-    def __init__(self, tstat, vlo, vhi, color, callback, args):
+    def __init__(self, tstat, vlo, vhi, color, callback, args=()):
+        tstat.regions.add(self)
+        tstat.draw = True
         self.tstat = tstat
         if vlo >= vhi:
             raise ValueError('TStat Region: vlo must be <= vhi')
@@ -103,10 +105,8 @@ class Tstat(Meter):
         self.regions = set()
         super().__init__(*args, **kwargs)
 
-    def add_region(self, vlo, vhi, color, callback, args=()):
-        reg = Region(self, vlo, vhi, color, callback, args)
-        self.regions.add(reg)
-        return reg
+    def del_region(self, reg):
+        self.regions.discard(reg)
 
     # Called by subclass prior to drawing scale and data
     def preshow(self, x, y, width, height):
