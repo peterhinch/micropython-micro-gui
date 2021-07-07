@@ -572,6 +572,9 @@ class Widget:
                 self.callback(self, *self.args)
         return self._value
 
+    def __call__(self, val=None):
+        return self.value(val)
+
     # Some widgets (e.g. Dial) have an associated Label
     def text(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
         if hasattr(self, 'label'):

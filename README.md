@@ -438,6 +438,7 @@ minimal and aim to demonstrate a single technique.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
  screen layout using widget metrics. Has a simple `uasyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
+ * `tstat.py` A demo of the `Tstat` class.
 
 ### 1.11.2 Test scripts
 
@@ -893,7 +894,7 @@ Constructor mandatory positional args:
 
 Keyword only args:
 
- * `height=12` Height of LED.
+ * `height=30` Height of LED.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -901,21 +902,16 @@ Keyword only args:
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
  shown in the foreground color. If a color is passed, it is used.
- * `label=None`  A text string will cause a `Label` to be drawn below the
- LED. An integer will create a `Label` of that width for later use.
+ * `color=RED` Color when illuminated (i.e. if `value` is `True`.
 
 Methods:
  1. `value` arg `val=None` If `True` is passed, lights the `LED` in its current
  color. `False` extinguishes it. `None` has no effect. Returns current value.
  2. `color` arg `c=None` Change the LED color to `c`. If `c` is `None` the LED
  is turned off (rendered in the background color).
- 3. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
-    * `text=None` The text to display. If `None` displays last value.
-    * ` invert=False` If true, show inverse text.
-    * `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
-    * `bgcolor=None` Background color, as per foreground.
-    * `bdcolor=None` Border color. As per above except that if `False` is
-    passed, no border is displayed. This clears a previously drawn border.  
+
+Note that `__call__` is a synonym for `value`. An `LED` instance can be
+controlled with `led(True)` or `led(False)`.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -983,8 +979,9 @@ Constructor mandatory positional args:
 
 Optional keyword only arguments:
  * `shape=RECTANGLE` Must be `CIRCLE`, `RECTANGLE` or `CLIPPED_RECT`.
- * `height=20` Height of the bounding box.
- * `width=50` Width of the bounding box.
+ * `width=50` Width of button. If `text` is supplied and `width` is too low to
+ accommodate the text, it will be increased to enable the text to fit.
+ * `height=20` Height. In `CIRCLE` case any passed value is ignored.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -1451,19 +1448,24 @@ and below the `Meter` to display the top and bottom legends.
 
 ## 16.1 Tstat widget
 
-This subclass of `Meter` supports one or more `Region` instances. Visually
-these appear as colored bands on the scale. If the meter's value enters, leaves
-or crosses one of these bands a callback is triggered which receives an arg
-indicating the nature of the change which caused the trigger. For example an
-alarm might be triggered on entry or traverse through a region from below, and
-cleared by an exit or traverse from above. Hysteresis as used in thermostats is
-simple to implement.
+This subclass of `Meter` is also a `passive` widget but provides for callbacks
+which run in response to specific changes in the object's value.
+
+The class supports one or more `Region` instances. Visually these appear as
+colored bands on the scale. If the meter's value enters, leaves or crosses one
+of these bands a callback is triggered. This receives an arg indicating the
+nature of the change which caused the trigger. For example an alarm might be
+triggered when the value, initially below the region, enters it or crosses it.
+The alarm might be cleared on exit or if crossed from above. Hysteresis as used
+in thermostats is simple to implement. Examples of these techniques may be
+found in `gui.demos.tstat.py`.
 
 Regions may be modified, added or removed programmatically.
 
 Constructor args and methods are as per `Meter`. The `Tstat` class adds the
 following method:
- 1. `del_region` Arg: a `Region` instance. Deletes the region.
+ 1. `del_region` Arg: a `Region` instance. Deletes the region. No callback will
+ run.
 
 ### 16.1.1 Region class
 
@@ -1515,6 +1517,10 @@ operator if you prefer that coding style:
 ```python
 if reason & (reg.EX_WA_IB | reg.T_IB):  # Leaving region heading down
 ```
+On instantiation of a `Region` callbacks do not run. The desirability of this
+is application dependent. If the user `Screen` is provided with an `after_open`
+method, this can be used to assign a value to the `Tstat` to cause region
+callbacks to run as appropriate.
 
 ###### [Contents](./README.md#0-contents)
 
