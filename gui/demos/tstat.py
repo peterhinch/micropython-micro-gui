@@ -25,9 +25,10 @@ from gui.core.colors import *
 class BaseScreen(Screen):
 
     def __init__(self):
-        def btncb(btn, reg, low, high):
+        def btncb(btn, reg, low, high):  # Button callbck
             reg.adjust(low, high)
-        def rats(btn, ts, reg):
+
+        def delete_alarm(btn, ts, reg):
             ts.del_region(reg)
 
         super().__init__()
@@ -39,7 +40,7 @@ class BaseScreen(Screen):
                legends=('0.0', '0.5', '1.0'))
         self.ts = Tstat(wri, row, sl.mcol + 5, divisions = 4, ptcolor=YELLOW, height=100, width=15,
                         style=Tstat.BAR, legends=('0.0', '0.5', '1.0'))
-        reg = Region(self.ts, 0.4, 0.6, MAGENTA, self.ts_cb)
+        reg = Region(self.ts, 0.4, 0.55, MAGENTA, self.ts_cb)
         al = Region(self.ts, 0.9, 1.0, RED, self.al_cb)
         col = self.ts.mcol + 5
         self.lbl = Label(wri, row, col, 35, bdcolor=RED, bgcolor=BLACK)
@@ -48,14 +49,14 @@ class BaseScreen(Screen):
         self.grn = LED(wri, self.led.mrow + 5, col, height=20, color=GREEN, bdcolor=BLACK)
         col = self.lbl.mcol + 5
         btn = Button(wri, row + 30, col, width=0,
-                     text='down', litcolor=RED, bgcolor=DARKGREEN,
+                     text='down', litcolor=RED,
                      callback=btncb, args=(reg, 0.2, 0.3))
         btn1 = Button(wri, btn.mrow + 5, col, width=btn.width,
-               text='up', litcolor=RED, bgcolor=DARKGREEN,
+               text='up', litcolor=RED,
                callback=btncb, args=(reg, 0.5, 0.6))
         Button(wri, btn1.mrow + 5, col, width=btn.width,
-               text='del', litcolor=RED, bgcolor=DARKGREEN,
-               callback=rats, args=(self.ts, al))
+               text='del', litcolor=RED,
+               callback=delete_alarm, args=(self.ts, al))
         CloseButton(wri)
 
     def after_open(self):

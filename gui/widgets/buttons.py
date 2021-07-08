@@ -25,18 +25,14 @@ class Button(Widget):
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, False, True)
         self.shape = shape
         self.radius = height // 2
-        self.fill = bgcolor is not None  # Draw background if color specified
         self.litcolor = litcolor
         self.textcolor = self.fgcolor if textcolor is None else textcolor
-        self.orig_fgcolor = self.fgcolor
-        self.orig_bgcolor = self.bgcolor
         self.text = text
         self.callback = callback
         self.callback_args = args
         self.onrelease = onrelease
         if self.litcolor is not None:
             self.delay = Delay_ms(self.shownormal)
-        self.litcolor = litcolor if self.fgcolor is not None else None
 
     def show(self):
         if self.screen is not Screen.current_screen:
@@ -53,8 +49,7 @@ class Button(Widget):
         if self.shape == CIRCLE:  # Button coords are of top left corner of bounding box
             x += self.radius
             y += self.radius
-            if self.fill:
-                display.fillcircle(x, y, self.radius, self.bgcolor)
+            display.fillcircle(x, y, self.radius, self.bgcolor)
             display.circle(x, y, self.radius, self.fgcolor)
             if len(self.text):
                 display.print_centred(self.writer, x, y, self.text, self.textcolor, self.bgcolor)
@@ -62,14 +57,12 @@ class Button(Widget):
             xc = x + w // 2
             yc = y + h // 2
             if self.shape == RECTANGLE: # rectangle
-                if self.fill:
-                    display.fill_rect(x, y, w, h, self.bgcolor)
+                display.fill_rect(x, y, w, h, self.bgcolor)
                 display.rect(x, y, w, h, self.fgcolor)
                 if len(self.text):
                     display.print_centred(self.writer, xc, yc, self.text, self.textcolor, self.bgcolor)
             elif self.shape == CLIPPED_RECT: # clipped rectangle
-                if self.fill:
-                    display.fill_clip_rect(x, y, w, h, self.bgcolor)
+                display.fill_clip_rect(x, y, w, h, self.bgcolor)
                 display.clip_rect(x, y, w, h, self.fgcolor)
                 if len(self.text):
                     display.print_centred(self.writer, xc, yc, self.text, self.textcolor, self.bgcolor)
@@ -80,7 +73,7 @@ class Button(Widget):
         # control caused a screen change while timer running.
         while self.screen is not Screen.current_screen:
             await asyncio.sleep_ms(500)
-        self.bgcolor = self.orig_bgcolor
+        self.bgcolor = self.def_bgcolor
         self.draw = True  # Redisplay
 
     def do_sel(self): # Select was pushed
@@ -186,7 +179,7 @@ class RadioButtons:
         self.lstbuttons.append(button)
         button.callback = self._callback
         active = len(self.lstbuttons) == self.selected + 1
-        button.bgcolor = self.highlight if active else button.orig_bgcolor
+        button.bgcolor = self.highlight if active else button.def_bgcolor
         if active:
             self.current = button
         return button
@@ -209,6 +202,6 @@ class RadioButtons:
                 but.bgcolor = self.highlight
                 self.current = button
             else:
-                but.bgcolor = but.orig_bgcolor
+                but.bgcolor = but.def_bgcolor
             but.draw = True
         self.user_callback(button, *args) # user gets button with args they specified

@@ -147,8 +147,8 @@ class ScaleLog(LinearIO):
         if isinstance(button, int):  # Using an encoder
             delta = self.delta * self.encoder_rate * 0.1 if self.precision else self.delta * self.encoder_rate
             self.value(self.value() * (1 + delta)**val)
-        else:
-            asyncio.create_task(self.btnhan(button, val, d))
+        else:  # val == 1 or -1
+            asyncio.create_task(self.btnhan(button, val))
 
     async def btnhan(self, button, up):
         up = up == 1

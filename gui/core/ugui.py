@@ -539,7 +539,8 @@ class Widget:
         self.draw = True  # Signals that obect must be redrawn
         self._value = value
 
-        # Current colors
+        # Set colors. Writer colors cannot be None:
+        #  bg == 0, fg == 1 are ultimate (monochrome) defaults.
         if fgcolor is None:
             fgcolor = writer.fgcolor
         if bgcolor is None:

@@ -1,9 +1,12 @@
 # micropython-micro-gui
 
-This is a lightweight, portable, MicroPython GUI library for displays with
-drivers subclassed from `framebuf`. It allows input via pushbuttons or via a
-switch joystick. Written in Python it runs under a standard MicroPython
-firmware build.
+This is a lightweight, portable, MicroPython GUI library for displays having
+drivers subclassed from `framebuf`. Written in Python it runs under a standard
+MicroPython firmware build. Options for data input comprise
+ * Via from two to five pushbuttons depending on the application.
+ * Via a switch-based navigation joystick.
+ * Via two pushbuttons and a rotary encoder such as
+[this one](https://www.adafruit.com/product/377).
 
 It is larger and more complex than `nano-gui` owing to the support for input.
 It enables switching between screens and launching modal windows. In addition
@@ -19,9 +22,6 @@ to a wide range of displays. It is also portable between hosts.
 ![Image](./images/ttgo.JPG) TTGO T-Display. Add a joystick switch and an SIL
 resistor for a simple, inexpensive, WiFi capable system.
 
-An alternative interface consists of two pushbuttons and an encoder such as
-[this one](https://www.adafruit.com/product/377).
-
 # Rationale
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
@@ -30,7 +30,7 @@ and the need for calibration (although the
 factory calibrated). Another problem is that there are various types of touch
 controller, magnifying the difficulty of writing a portable GUI.
 
-Pushbutton input works well and yields astonishingly low cost solutions. A
+The input options work well and yield astonishingly low cost solutions. A
 network-connected board with a 135x240 color display can be built for under £20
 ($20?) using the
 [TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50044&Id=1126). The
