@@ -1448,8 +1448,17 @@ and below the `Meter` to display the top and bottom legends.
 
 ## 16.1 Tstat widget
 
-This subclass of `Meter` is also a `passive` widget but provides for callbacks
-which run in response to specific changes in the object's value.
+```python
+from gui.widgets.tstat import Tstat
+```
+![Image](./images/tstat.JPG)  
+This example has two data sensitive regions, a control region with hysteresis
+and an alarm region.
+
+The `Tstat` subclass of `Meter` is a `passive` widget with callbacks which run
+in response to specific changes in the object's value. Notionally based on a
+thermostat, it can implement objects with a variety of data-dependent behaviour
+including alarms and controls having hysteresis.
 
 The class supports one or more `Region` instances. Visually these appear as
 colored bands on the scale. If the meter's value enters, leaves or crosses one
