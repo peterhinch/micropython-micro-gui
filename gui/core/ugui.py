@@ -336,7 +336,6 @@ class Screen:
         self.selected_obj = None  # Index of currently selected object
         self.displaylist = []  # All displayable objects
         self.tasks = []  # Instance can register tasks for cancellation
-        self.modal = False
         self.height = ssd.height  # Occupies entire display
         self.width = ssd.width
         self.row = 0
@@ -349,8 +348,8 @@ class Screen:
 
     def _do_open(self, old_screen): # Window overrides
         dev = display.usegrey(False)
-        # If opening a Screen from an Window just blank and redraw covered area
-        if old_screen is not None and old_screen.modal:
+        # If opening a Screen from a Window just blank and redraw covered area
+        if isinstance(old_screen, Window):
             x0, y0, x1, y1, w, h = old_screen._list_dims()
             dev.fill_rect(x0, y0, w, h, BGCOLOR) # Blank to screen BG
             for obj in [z for z in self.displaylist if z.overlaps(x0, y0, x1, y1)]:
@@ -483,7 +482,6 @@ class Window(Screen):
         self.height = height
         self.width = width
         self.draw_border = draw_border
-        self.modal = True
         self.fgcolor = fgcolor if fgcolor is not None else WHITE
         self.bgcolor = bgcolor if bgcolor is not None else BGCOLOR
 
