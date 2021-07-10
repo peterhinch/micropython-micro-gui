@@ -11,6 +11,7 @@ from gui.core.writer import CWriter
 from gui.widgets.menu import Menu
 from gui.widgets.buttons import CloseButton
 from gui.core.colors import *
+from gui.widgets.dialog import DialogBox
 
 class BaseScreen(Screen):
 
@@ -19,7 +20,13 @@ class BaseScreen(Screen):
             print('Top level callback', n)
 
         def cb_sm(lb, n):
+            kwargs = {'writer' : wri, 'row': 60, 'col' : 2,
+                    'elements' : (('Yes', GREEN), ('No', RED), ('Foo', YELLOW)),
+                    'label' : 'Test dialog',
+                    }
             print('Submenu callback', lb.value(), lb.textvalue(), n)
+            if lb.value() == 0:
+                Screen.change(DialogBox, kwargs = kwargs)
 
         super().__init__()
         mnu = (('Gas', cb_sm, (0,), ('Argon','Neon','Xenon','Radon')),

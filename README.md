@@ -61,6 +61,8 @@ Code is new and issues are likely: please report any found. The project is
 under development so check for updates. I also plan to upgrade the performance
 of some display drivers.
 
+The encoder interface is under development and currently is rather erratic.
+
 # 0. Contents
 
 1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
@@ -104,9 +106,8 @@ of some display drivers.
 13. [Dropdown widget](./README.md#13-dropdown-widget) Dropdown lists.  
 14. [DialogBox class](./README.md#14-dialogbox-class) Pop-up modal dialog boxes.  
 15. [Textbox widget](./README.md#15-textbox-widget) Scrolling text display.  
-16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter.  
- 16.1 [Tstat widget](./README.md#161-tstat-widget) Meter subclass enables thermostats, alarms etc.  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16.1.1 [Region class](./README.md#1611-region-class)  
+16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter, with data driven callbacks.  
+ 16.1 [Region class](./README.md#161-region-class)  
 17. [Slider and HorizSlider widgets](./README.md#17-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
 18. [Scale widget](./README.md#18-scale-widget) High precision float entry and display.  
 19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
@@ -767,7 +768,10 @@ explicitly in code.
 
 This is a `Screen` subclass providing for modal windows. As such it has
 positional and dimension information. Usage consists of writing a user class
-subclassed from `Window`. Example code is in `demos/screens.py`.
+subclassed from `Window`. Example code is in `demos/screens.py`. Code in a
+window must not attempt to open another `Window` or `Screen`. Doing so will
+raise a `ValueError`. Modal behaviour means that the only valid screen change
+is a return to the calling screen.
 
 ## 5.1 Constructor
 
@@ -1392,13 +1396,32 @@ the oldest (topmost) being discarded as required.
 
 # 16. Meter widget
 
+This `passive` widget displays a single floating point value on a vertical
+linear scale. Optionally it can support data dependent callbacks.
 ```python
 from gui.widgets.meter import Meter
 ```
 ![Image](./images/meter.JPG)
-
 The two styles of `meter`, both showing a value of 0.65. This `passive` widget
 provides a vertical linear meter display of values scaled between 0.0 and 1.0.
+In these examples each meter simply displays a data value.
+
+![Image](./images/tstat.JPG)  
+This example has two data sensitive regions, a control region with hysteresis
+and an alarm region. Callbacks can run in response to specific changes in the
+`Meter`'s value emulating data-dependent behaviour including alarms and
+controls (like thermostats) having hysteresis.
+
+The class supports one or more `Region` instances. Visually these appear as
+colored bands on the scale. If the meter's value enters, leaves or crosses one
+of these bands a callback is triggered. This receives an arg indicating the
+nature of the change which caused the trigger. For example an alarm might be
+triggered when the value, initially below the region, enters it or crosses it.
+The alarm might be cleared on exit or if crossed from above. Hysteresis as used
+in thermostats is simple to implement. Examples of these techniques may be
+found in `gui.demos.tstat.py`.
+
+Regions may be modified, added or removed programmatically.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1435,55 +1458,45 @@ Methods:
  Returns the current value.  
  2. `text` Updates the label if present (otherwise throws a `ValueError`). Args:
     * `text=None` The text to display. If `None` displays last value.
-    * ` invert=False` If true, show inverse text.
+    * `invert=False` If true, show inverse text.
     * `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
     * `bgcolor=None` Background color, as per foreground.
     * `bdcolor=None` Border color. As per above except that if `False` is
     passed, no border is displayed. This clears a previously drawn border.  
+ 3. `del_region` Arg: a `Region` instance. Deletes the region. No callback will
+ run.
 
 ### Legends
 
 Depending on the font in use for legends additional space may be required above
 and below the `Meter` to display the top and bottom legends.
 
-###### [Contents](./README.md#0-contents)
-
-## 16.1 Tstat widget
+### Example of use of Regions
 
 ```python
-from gui.widgets.tstat import Tstat
+# Instantiate Meter
+ts = Meter(wri, row, sl.mcol + 5, ptcolor=YELLOW, height=100, width=15,
+           style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
+# Instantiate two Regions and associate with the Meter instance.
+reg = Region(ts, 0.4, 0.55, MAGENTA, ts_cb)
+al = Region(ts, 0.9, 1.0, RED, al_cb)
 ```
-![Image](./images/tstat.JPG)  
-This example has two data sensitive regions, a control region with hysteresis
-and an alarm region.
+The callback `ts_cb` will run in response to data values between 0.4 and 0.55:
+if the value enters that range having been outside it, if it leaves the range,
+or if successive values are either side of the range. The `al_cb` callback
+behaves similarly for data values between 0.9 and 1.0.
 
-The `Tstat` subclass of `Meter` is a `passive` widget with callbacks which run
-in response to specific changes in the object's value. Notionally based on a
-thermostat, it can implement objects with a variety of data-dependent behaviour
-including alarms and controls having hysteresis.
+###### [Contents](./README.md#0-contents)
 
-The class supports one or more `Region` instances. Visually these appear as
-colored bands on the scale. If the meter's value enters, leaves or crosses one
-of these bands a callback is triggered. This receives an arg indicating the
-nature of the change which caused the trigger. For example an alarm might be
-triggered when the value, initially below the region, enters it or crosses it.
-The alarm might be cleared on exit or if crossed from above. Hysteresis as used
-in thermostats is simple to implement. Examples of these techniques may be
-found in `gui.demos.tstat.py`.
+## 16.1 Region class
 
-Regions may be modified, added or removed programmatically.
+```python
+from gui.widgets.region import Region
+```
+Instantiating a `Region` associates it with a supporting widget (currently only
+a `Meter`). Constructor positional args are as follows:
 
-Constructor args and methods are as per `Meter`. The `Tstat` class adds the
-following method:
- 1. `del_region` Arg: a `Region` instance. Deletes the region. No callback will
- run.
-
-### 16.1.1 Region class
-
-Instantiating a `Region` associates it with a `Tstat`. Constructor args are as
-follows:
-
- * `tstat` The `Tstat` instance.
+ * `tstat` The parent instance.
  * `vlo` Low value (0 <= `vlo` <= 1.0).
  * `vhi` High value (`vlo` < `vhi` <= 1.0).
  * `color` For visible band.

@@ -252,6 +252,8 @@ class Screen:
         if forward:
             if isinstance(cls_new_screen, type):
                 # Instantiate new screen. __init__ must terminate
+                if cs_old is not None and cs_old.__name__ == 'Window':
+                    raise ValueError('Windows are modal.')
                 new_screen = cls_new_screen(*args, **kwargs)
             else:
                 raise ValueError('Must pass Screen class or subclass (not instance)')

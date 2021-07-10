@@ -25,6 +25,7 @@ import uasyncio as asyncio
 import utime
 import gc
 
+defaults['focus'] = YELLOW
 
 class FooScreen(Screen):
     def __init__(self):

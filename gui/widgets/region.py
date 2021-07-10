@@ -1,4 +1,4 @@
-# tstat.py Extension to nanogui providing the Tstat class
+# region.py Extension to nanogui providing the Region class
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
@@ -100,28 +100,3 @@ class Region:
                 self.wa = v < vlo
             # If it was in old region treat as if leaving it
             self.check(v)
-
-
-class Tstat(Meter):
-    def __init__(self, *args, **kwargs):
-        self.regions = set()
-        super().__init__(*args, **kwargs)
-
-    def del_region(self, reg):
-        self.regions.discard(reg)
-        self.draw = True
-
-    # Called by subclass prior to drawing scale and data
-    def preshow(self, x, y, width, height):
-        for r in self.regions:
-            ht = round(height * (r.vhi - r.vlo))
-            y1 = y - round(height * r.vhi)
-            display.fill_rect(x, y1, width, ht, r.color)
-
-    def value(self, n=None, color=None):
-        if n is None:
-            return super().value()
-        v = super().value(n, color)
-        for r in self.regions:
-            r.check(v)
-        return v

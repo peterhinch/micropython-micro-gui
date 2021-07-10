@@ -1,7 +1,7 @@
 # colors.py Micropython GUI library for TFT displays: colors and shapes
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019 Peter Hinch
+# Copyright (c) 2019-2021 Peter Hinch
 from hardware_setup import SSD
 
 # Code can be portable between 4-bit and other drivers by calling create_color
@@ -49,8 +49,6 @@ else:
 # Color used when clearing the screen
 BGCOLOR = BLACK
 
-# RA8875 defines colors as 3-tuples with greying-out operating on those.
-# Should we assign GREY to any color > 0?
 CIRCLE = 1
 RECTANGLE = 2
 CLIPPED_RECT = 3

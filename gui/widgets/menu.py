@@ -11,9 +11,9 @@ from gui.widgets.buttons import Button
 from gui.widgets.listbox import Listbox
 from gui.core.colors import *
 
+# A SubMenu is a Window containing a Listbox
 # Next and Prev close the listbox without running the callback. This is
 # handled by Screen .move bound method
-# A SubMenu is a Window containing a Listbox
 class SubMenu(Window):
 
     def __init__(self, menu, button, elements, cb, args):  # menu is parent Menu
@@ -39,6 +39,8 @@ class SubMenu(Window):
         Screen.back()
         self.cb(obj_listbox, *self.args) # CB can access obj_listbox.value() or .textvalue()
 
+# A Menu is a set of Button objects at the top of the screen. On press, Buttons either run the
+# user callback or instantiate a SubMenu
 class Menu:
 
     def __init__(self, writer, *, height=25, bgcolor=None, fgcolor=None, textcolor=None, select_color=DARKBLUE, args):   # ((text, cb, (args,)),(text, cb, (args,), (elements,)), ...)

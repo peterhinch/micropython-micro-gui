@@ -13,7 +13,8 @@ from gui.core.ugui import Screen, ssd
 from gui.widgets.buttons import Button, CloseButton
 from gui.widgets.sliders import Slider
 from gui.widgets.label import Label
-from gui.widgets.tstat import Tstat, Region
+from gui.widgets.meter import Meter
+from gui.widgets.region import Region
 from gui.widgets.led import LED
 from gui.core.writer import CWriter
 
@@ -38,8 +39,8 @@ class BaseScreen(Screen):
         sl = Slider(wri, row, col, callback=self.slider_cb,
                bdcolor=RED, slotcolor=BLUE,
                legends=('0.0', '0.5', '1.0'))
-        self.ts = Tstat(wri, row, sl.mcol + 5, divisions = 4, ptcolor=YELLOW, height=100, width=15,
-                        style=Tstat.BAR, legends=('0.0', '0.5', '1.0'))
+        self.ts = Meter(wri, row, sl.mcol + 5, ptcolor=YELLOW, height=100, width=15,
+                        style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
         reg = Region(self.ts, 0.4, 0.55, MAGENTA, self.ts_cb)
         al = Region(self.ts, 0.9, 1.0, RED, self.al_cb)
         col = self.ts.mcol + 5

@@ -34,6 +34,7 @@ class Meter(Widget):
                 yl -= dy
                 mcol = max(mcol, l.mcol)
             self.mcol = mcol - 2  # For metrics. Legends never have border.
+        self.regions = set()
         self.value(value)
 
     def value(self, n=None, color=None):
@@ -42,6 +43,8 @@ class Meter(Widget):
         n = super().value(min(1, max(0, n)))
         if color is not None:
             self.ptcolor = color
+        for r in self.regions:
+            r.check(n)
         return n
         
     def show(self):
@@ -54,7 +57,10 @@ class Meter(Widget):
             x1 = self.col + width
             y0 = self.row
             y1 = self.row + height
-            self.preshow(x0, y1, width, height)  # Subclass draws regions
+            for r in self.regions:
+                ht = round(height * (r.vhi - r.vlo))
+                yr = y1 - round(height * r.vhi)
+                display.fill_rect(x0, yr, width, ht, r.color)
             if self.divisions > 0:
                 dy = height / (self.divisions) # Tick marks
                 for tick in range(self.divisions + 1):
@@ -68,5 +74,6 @@ class Meter(Widget):
                 w = width / 2
                 display.fill_rect(int(x0 + w - 2), y, 4, y1 - y, self.ptcolor)
 
-    def preshow(self, x, y, width, height):
-        pass  # For subclass
+    def del_region(self, reg):
+        self.regions.discard(reg)
+        self.draw = True
