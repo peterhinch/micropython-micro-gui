@@ -14,26 +14,24 @@ dolittle = lambda *_ : None
 # handled by Screen .move bound method
 class _ListDialog(Window):
 
-    def __init__(self, writer, row, col, dropdown, textwidth):
-        dd = dropdown
-        elements = dd.elements
+    def __init__(self, writer, row, col, dd):  # dd is parent dropdown
         # Need to determine Window dimensions from size of Listbox, which
         # depends on number and length of elements.
-        entry_height, lb_height, textwidth = Listbox.dimensions(writer, elements)
+        entry_height, lb_height, textwidth = Listbox.dimensions(writer, dd.elements)
         lb_width = textwidth + 2
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
         super().__init__(row, col, ap_height, ap_width)
-        self.listbox = Listbox(writer, row + 3, col + 3, elements = elements, width = lb_width,
+        self.listbox = Listbox(writer, row + 3, col + 3, elements = dd.elements, width = lb_width,
                                fgcolor = dd.fgcolor, bgcolor = dd.bgcolor, bdcolor=False, 
                                fontcolor = dd.fontcolor, select_color = dd.select_color,
                                value = dd.value(), callback = self.callback)
-        self.dropdown = dd
+        self.dd = dd
 
     def callback(self, obj_listbox):
         Screen.back()
-        self.dropdown.value(obj_listbox.value()) # Update it
+        self.dd.value(obj_listbox.value()) # Update it
 
 
 class Dropdown(Widget):
@@ -88,5 +86,5 @@ class Dropdown(Widget):
 
     def do_sel(self):  # Select was pushed
         if len(self.elements) > 1:
-            args = (self.writer, self.row - 2, self.col - 2, self, self.textwidth)
+            args = (self.writer, self.row - 2, self.col - 2, self)
             Screen.change(_ListDialog, args = args)
