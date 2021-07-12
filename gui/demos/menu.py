@@ -29,8 +29,8 @@ class BaseScreen(Screen):
                 Screen.change(DialogBox, kwargs = kwargs)
 
         super().__init__()
-        mnu = (('Gas', cb_sm, (0,), ('Argon','Neon','Xenon','Radon')),
-               ('Metal', cb_sm, (1,), ('Caesium', 'Lithium', 'Sodium', 'Potassium')),
+        mnu = (('Gas', cb_sm, (0,), ('Helium','Neon','Argon','Krypton','Xenon','Radon')),
+               ('Metal', cb_sm, (1,), ('Lithium', 'Sodium', 'Potassium','Rubidium','Caesium')),
                ('View', cb, (2,)))
         wri = CWriter(ssd, freesans20, GREEN, BLACK, verbose=False)
         Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)

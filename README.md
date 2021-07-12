@@ -61,8 +61,6 @@ Code is new and issues are likely: please report any found. The project is
 under development so check for updates. I also plan to upgrade the performance
 of some display drivers.
 
-The encoder interface is under development and currently is rather erratic.
-
 # 0. Contents
 
 1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
@@ -113,18 +111,19 @@ The encoder interface is under development and currently is rather erratic.
 19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
 20. [Dial widget](./README.md#20-dial-widget) Display multiple vectors.  
 21. [Knob widget](./README.md#21-knob-widget) Rotary potentiometer float entry.  
-22. [Graph plotting](./README.md#22-graph-plotting) Widgets for Cartesian and polar graphs.  
- 22.1 [Concepts](./README.md#221-concepts)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.1 [Graph classes](./README.md#2211-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.2 [Curve classes](./README.md#2212-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.1.3 [Coordinates](./README.md#2213-coordinates)  
- 22.2 [Graph classes](./README.md#221-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.1 [Class CartesianGraph](./README.md#2221-class-cartesiangraph)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.2.2 [Class PolarGraph](./README.md#2222-class-polargraph)  
- 22.3 [Curve classes](./README.md#223-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.1 [Class Curve](./README.md#2231-class-curve)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;22.3.2 [Class PolarCurve](./README.md#2232-class-polarcurve)  
- 22.4 [Class TSequence](./README.md#224-class-tsequence) Plotting realtime, time sequential data.  
+22. [Menu class](./README.md#22-menu-class)  
+23. [Graph plotting](./README.md#22-graph-plotting) Widgets for Cartesian and polar graphs.  
+ 23.1 [Concepts](./README.md#231-concepts)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.1 [Graph classes](./README.md#2311-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.2 [Curve classes](./README.md#2312-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.3 [Coordinates](./README.md#2313-coordinates)  
+ 23.2 [Graph classes](./README.md#231-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.2.1 [Class CartesianGraph](./README.md#2321-class-cartesiangraph)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.2.2 [Class PolarGraph](./README.md#2322-class-polargraph)  
+ 23.3 [Curve classes](./README.md#233-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.1 [Class Curve](./README.md#2331-class-curve)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.2 [Class PolarCurve](./README.md#2332-class-polarcurve)  
+ 23.4 [Class TSequence](./README.md#234-class-tsequence) Plotting realtime, time sequential data.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
@@ -441,7 +440,7 @@ minimal and aim to demonstrate a single technique.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
  screen layout using widget metrics. Has a simple `uasyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
- * `tstat.py` A demo of the `Tstat` class.
+ * `tstat.py` A demo of the `Meter` class with data sensitive regions.
 
 ### 1.11.2 Test scripts
 
@@ -616,17 +615,32 @@ PALE_YELLOW = create_color(12, 150, 150, 0)  # index, r, g, b
 If a 4-bit driver is in use, the color `rgb(150, 150, 0)` will be assigned to
 "spare" color number 12. Any color number in range `0 <= n <= 15` may be
 used, implying that predefined colors may be reassigned. It is recommended
-that `BLACK` (0) and `WHITE` (15) are not changed. `GREY` (6) and `YELLOW` (5)
-are GUI defaults for "greyed out" widgets and for "precision mode" borders, so
-changing these will have obvious effects.
-
-If an 8-bit or larger driver is in use, the first `index` arg is ignored and
-there is no practical restriction on the number of colors that may be created.
+that `BLACK` (0) and `WHITE` (15) are not changed. If an 8-bit or larger driver
+is in use, the color umber is ignored and there is no practical restriction on
+the number of colors that may be created.
 
 In the above example, regardless of the display driver, the `PALE_YELLOW`
 variable may be used to refer to the color. An example of custom color
 definition may be found in
 [this nano-gui demo](https://github.com/peterhinch/micropython-nano-gui/blob/4ef0e20da27ef7c0b5c34136dcb372200f0e5e66/gui/demos/color15.py#L92).
+
+There are five default colors which are defined by a `color_map` list. These
+may be reassigned in user code. For example the following will cause the border
+of any control with the focus to be red:
+```python
+from colors import *
+color_map[FOCUS] = RED
+```
+The `color_map` index constants and default colors (defined in `colors.py`)
+are:
+
+| Index     | Color  | Purpose                                   |
+|:---------:|:------:|:-----------------------------------------:|
+| FOCUS     | WHITE  | Border of control with focus              |
+| PRECISION | YELLOW | Border in precision mode                  |
+| FG        | WHITE  | Window foreground default                 |
+| BG        | BLACK  | Background default including screen clear |
+| GREY_OUT  | GREY   | Color to render greyed-out controls       |
 
 ###### [Contents](./README.md#0-contents)
 
@@ -678,21 +692,34 @@ along with the `Pin` instances used for input; also whether an encoder is used.
 Pins are arbitrary, but should be defined as inputs with pullups. Pushbuttons
 are connected between `Gnd` and the relevant pin.
 
-The constructor takes the following args:  
+The constructor takes the following positional args:  
  1. `objssd` The `SSD` instance. A reference to the display driver.
  2. `nxt` A `Pin` instance for the `next` button.
  3. `sel` A `Pin` instance for the `select` button.
  4. `prev=None` A `Pin` instance for the `previous` button (if used).
- 5. `up=None` A `Pin` instance for the `increase` button (if used).
- 6. `down=None` A `Pin` instance for the `decrease` button (if used).
- 7. `encoder=False` If an encoder is used, an integer must be passed. This
- represents the division ratio. A value of 1 provides the native rate of the
- encoder. I found the Adafruit encoder overly sensitive. A value of 5 slows it
- down improving usability.
+ 5. `incr=None` A `Pin` instance for the `increase` button (if used).
+ 6. `decr=None` A `Pin` instance for the `decrease` button (if used).
+ 7. `encoder=False` If an encoder is used, an integer must be passed.
+
+Class variables:  
+ * `verbose=True` Causes a message to be printed indicating whether an encoder
+ was specified.
+ 
+#### Encoder usage
 
 If an encoder is used, it should be connected to the pins assigned to
 `increase` and `decrease`. If the direction of movement is wrong, these pins
 should be transposed (physically or in code).
+
+To specify to the GUI that an encoder is in use an integer should be passed to
+the `Display` constructor `encoder` arg. Its value represents the division
+ratio. A value of 1 defines the native rate of the encoder; if the native rate
+is 32 pulses per revolution, a value of 4 would yield a virtual device with
+8 pulses per rev. I found the Adafruit encoder to be too sensitive. A value of 5 
+improved usability.
+
+If an encoder is used but the `encoder` arg is `False`, response to the encoder
+will be erratic.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -2078,7 +2105,50 @@ value changes. This enables dynamic color change.
 
 ###### [Contents](./README.md#0-contents)
 
-# 22. Graph Plotting
+# 22 Menu class
+
+```python
+from gui.widgets.menu import Menu
+```
+
+This enables the creation of single or two level menus. The top level of the
+menu consists of a row of `Button` instances at the top of the screen. Each
+button can either call a callback or instantiate a dropdown list comprising the
+second menu level.
+
+Constructor mandatory positional arg:  
+ 1. `writer` The `Writer` instance (defines font) to use.
+
+Keyword only args:  
+ * `height=25` Height of top level menu buttons.
+ * `bgcolor=None`
+ * `fgcolor=None`
+ * `textcolor=None`
+ * `select_color=DARKBLUE`
+ * `args` This should be a tuple containing a tuple of args for each entry in
+ the top level menu. Each tuple should be of one of two forms:
+  1. `(text, cb, (args,))` A single-level entry: the top level `Button` with
+  text `text` runs the callback `cb` with positional args defined by the
+  supplied tuple (which may be `()`). The callback receives an initial arg
+  being the `Button` instance.
+  2. `(text, cb, (args,), (elements,))` In this instance the top level `Button`
+  triggers a dropdown list comprising a tuple of strings in `elements`. The
+  callback `cb` is triggered if the user selects an entry. The callback
+  receives an initial arg which is a `Listbox` instance: the chosen entry may
+  be retrieved by running `lb.value()` or `lb.textvalue()`.
+
+In this example the first two items trigger submenus, the third runs a
+callback. In this example the two submenus share a callback (`cb_sm`), which
+uses the passed arg to determine which menu it was called from. 
+```python
+mnu = (('Gas', cb_sm, (0,), ('Helium','Neon','Argon','Krypton','Xenon','Radon')),
+        ('Metal', cb_sm, (1,), ('Lithium', 'Sodium', 'Potassium','Rubidium','Caesium')),
+        ('View', cb, (2,)))
+```
+
+###### [Contents](./README.md#0-contents)
+
+# 23. Graph Plotting
 
 ```python
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
@@ -2091,7 +2161,7 @@ from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSe
 
 For example code see `gui/demos/plot.py`.
 
-## 22.1 Concepts
+## 23.1 Concepts
 
 Data for Cartesian graphs constitutes a sequence of x, y pairs, for polar
 graphs it is a sequence of complex `z` values. The module supports three
@@ -2101,13 +2171,13 @@ common cases:
  3. One or more `y` values arrive gradually. The `X` axis represents time. This
  is a simplifying case of 2.
 
-### 22.1.1 Graph classes
+### 23.1.1 Graph classes
 
 A user program first instantiates a graph object (`PolarGraph` or
 `CartesianGraph`). This creates an empty graph image upon which one or more
 curves may be plotted. Graphs are passive widgets so cannot accept user input.
 
-### 22.1.2 Curve classes
+### 23.1.2 Curve classes
 
 The user program then instantiates one or more curves (`Curve` or
 `PolarCurve`) as appropriate to the graph. Curves may be assigned colors to
@@ -2122,7 +2192,7 @@ Where it is required to plot realtime data as it arrives, this is achieved
 via calls to the curve's `point` method. If a prior point exists it causes a
 line to be drawn connecting the point to the last one drawn.
 
-### 22.1.3 Coordinates
+### 23.1.3 Coordinates
 
 `PolarGraph` and `CartesianGraph` objects are subclassed from `Widget` and are
 positioned accordingly by `row` and `col` with a 2-pixel outside border. The
@@ -2138,9 +2208,9 @@ unit circle but will be clipped to the rectangular graph boundary.
 
 ###### [Contents](./README.md#0-contents)
 
-## 22.2 Graph classes
+## 23.2 Graph classes
 
-### 22.2.1 Class CartesianGraph
+### 23.2.1 Class CartesianGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2167,7 +2237,7 @@ Keyword only arguments (all optional):
 Method:  
  * `show` No args. Redraws the empty graph. Used when plotting time sequences.
 
-### 22.2.2 Class PolarGraph
+### 23.2.2 Class PolarGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2192,9 +2262,9 @@ Method:
 
 ###### [Contents](./README.md#0-contents)
 
-## 22.3 Curve classes
+## 23.3 Curve classes
 
-### 22.3.1 Class Curve
+### 23.3.1 Class Curve
 
 The Cartesian curve constructor takes the following positional arguments:
 
@@ -2234,7 +2304,7 @@ To plot x values from 1000 to 4000 we would set the `origin` x value to 1000
 and the `excursion` x value to 3000. The `excursion` values scale the plotted
 values to fit the corresponding axis.
 
-### 22.3.2 Class PolarCurve
+### 23.3.2 Class PolarCurve
 
 The constructor takes the following positional arguments:
 
@@ -2268,7 +2338,7 @@ Complex points should lie within the unit circle to be drawn within the grid.
 
 ###### [Contents](./README.md#0-contents)
 
-## 22.4 Class TSequence
+## 23.4 Class TSequence
 
 A common task is the acquisition and plotting of real time data against time,
 such as hourly temperature and air pressure readings. This class facilitates

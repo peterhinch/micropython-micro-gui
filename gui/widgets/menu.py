@@ -18,8 +18,8 @@ class SubMenu(Window):
 
     def __init__(self, menu, button, elements, cb, args):  # menu is parent Menu
         wri = menu.writer
-        row = 10
-        col = button.col + 4 # Drop down below top level menu button
+        row = button.height + 2
+        col = button.col  # Drop down below top level menu button
         # Need to determine Window dimensions from size of Listbox, which
         # depends on number and length of elements.
         entry_height, lb_height, textwidth = Listbox.dimensions(wri, elements)
@@ -41,9 +41,10 @@ class SubMenu(Window):
 
 # A Menu is a set of Button objects at the top of the screen. On press, Buttons either run the
 # user callback or instantiate a SubMenu
+# args: ((text, cb, (args,)),(text, cb, (args,), (elements,)), ...)
 class Menu:
 
-    def __init__(self, writer, *, height=25, bgcolor=None, fgcolor=None, textcolor=None, select_color=DARKBLUE, args):   # ((text, cb, (args,)),(text, cb, (args,), (elements,)), ...)
+    def __init__(self, writer, *, height=25, bgcolor=None, fgcolor=None, textcolor=None, select_color=DARKBLUE, args):
         self.writer = writer
         self.select_color = select_color
         row = 2

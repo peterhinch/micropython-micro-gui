@@ -46,9 +46,13 @@ else:
     DARKBLUE = SSD.rgb(0, 0, 90)
     WHITE = SSD.rgb(255, 255, 255)
 
-# Color used when clearing the screen
-BGCOLOR = BLACK
-
 CIRCLE = 1
 RECTANGLE = 2
 CLIPPED_RECT = 3
+
+FOCUS = 0
+PRECISION = 1
+FG = 2
+BG = 3
+GREY_OUT = 4
+color_map = [WHITE, YELLOW, WHITE, BLACK, GREY]

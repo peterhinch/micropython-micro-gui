@@ -21,7 +21,7 @@ display = None  # Singleton instance
 ssd = None
 
 gc.collect()
-__version__ = (0, 1, 1)
+__version__ = (0, 1, 2)
 
 # Null function
 dolittle = lambda *_ : None
@@ -37,8 +37,9 @@ _LAST = const(3)
 
 # Wrapper for ssd providing buttons and framebuf compatible methods
 class Display:
+    verbose = True
 
-    def __init__(self, objssd, nxt, sel, prev=None, up=None, down=None, encoder=False):
+    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
         global display, ssd
         self._next = Switch(nxt)
         self._sel = Switch(sel)
@@ -58,18 +59,20 @@ class Display:
             self._prev = Switch(prev)
             self._prev.close_func(self._closure, (self._prev, Screen.ctrl_move, _PREV))
         if encoder:
-            if up is None or down is None:
+            self.verbose and print('Using encoder.')
+            if incr is None or decr is None:
                 raise ValueError('Must specify pins for encoder.')
             from gui.primitives.encoder import Encoder
-            self._enc = Encoder(up, down, div=encoder, callback=Screen.adjust)
+            self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
         else:
-            # Up and down methods get the button as an arg.
-            if up is not None:
-                sup = Switch(up)
+            self.verbose and print('Using switches.')
+            # incr and decr methods get the button as an arg.
+            if incr is not None:
+                sup = Switch(incr)
                 sup.close_func(self._closure, (sup, Screen.adjust, 1))
-            if down is not None:
-                sdown = Switch(down)
-                sdown.close_func(self._closure, (sdown, Screen.adjust, -1))
+            if decr is not None:
+                sdn = Switch(decr)
+                sdn.close_func(self._closure, (sdn, Screen.adjust, -1))
         self._is_grey = False  # Not greyed-out
         display = self  # Populate globals
         ssd = objssd
@@ -85,7 +88,7 @@ class Display:
         sl = writer.stringlen(text)
         writer.set_textpos(ssd, y - writer.height // 2, x - sl // 2)
         if self._is_grey:
-            fgcolor = GREY
+            fgcolor = color_map[GREY_OUT]
         writer.setcolor(fgcolor, bgcolor)
         writer.printstring(text, invert)
         writer.setcolor()  # Restore defaults
@@ -93,7 +96,7 @@ class Display:
     def print_left(self, writer, x, y, txt, fgcolor=None, bgcolor=None, invert=False):
         writer.set_textpos(ssd, y, x)
         if self._is_grey:
-            fgcolor = GREY
+            fgcolor = color_map[GREY_OUT]
         writer.setcolor(fgcolor, bgcolor)
         writer.printstring(txt, invert)
         writer.setcolor()  # Restore defaults
@@ -102,7 +105,7 @@ class Display:
     # It would be possible to do better with RGB565 but would need inverse transformation
     # to (r, g, b), scale and re-convert to integer.
     def _getcolor(self, color):  # Takes in an integer color, bit size dependent on driver
-        return GREY if self._is_grey and color != BGCOLOR else color
+        return color_map[GREY_OUT] if self._is_grey and color != color_map[BG] else color
 
     def usegrey(self, val): # display.usegrey(True) sets greyed-out
         self._is_grey = val
@@ -113,7 +116,7 @@ class Display:
     # These methods support greying out color overrides.
     # Clear screen.
     def clr_scr(self):
-        ssd.fill_rect(0, 0, self.width - 1, self.height - 1, BGCOLOR)
+        ssd.fill_rect(0, 0, self.width - 1, self.height - 1, color_map[BG])
 
     def rect(self, x1, y1, w, h, color):
         ssd.rect(x1, y1, w, h, self._getcolor(color))
@@ -251,8 +254,7 @@ class Screen:
             cs_old.on_hide()  # Optional method in subclass
         if forward:
             if isinstance(cls_new_screen, type):
-                # Instantiate new screen. __init__ must terminate
-                if cs_old is not None and cs_old.__name__ == 'Window':
+                if isinstance(cs_old, Window):
                     raise ValueError('Windows are modal.')
                 new_screen = cls_new_screen(*args, **kwargs)
             else:
@@ -353,7 +355,7 @@ class Screen:
         # If opening a Screen from a Window just blank and redraw covered area
         if isinstance(old_screen, Window):
             x0, y0, x1, y1, w, h = old_screen._list_dims()
-            dev.fill_rect(x0, y0, w, h, BGCOLOR) # Blank to screen BG
+            dev.fill_rect(x0, y0, w, h, color_map[BG]) # Blank to screen BG
             for obj in [z for z in self.displaylist if z.overlaps(x0, y0, x1, y1)]:
                 if obj.visible:
                     obj.draw_border()
@@ -484,8 +486,8 @@ class Window(Screen):
         self.height = height
         self.width = width
         self.draw_border = draw_border
-        self.fgcolor = fgcolor if fgcolor is not None else WHITE
-        self.bgcolor = bgcolor if bgcolor is not None else BGCOLOR
+        self.fgcolor = fgcolor if fgcolor is not None else color_map[FG]
+        self.bgcolor = bgcolor if bgcolor is not None else color_map[BG]
 
     def _do_open(self, old_screen):
         dev = display.usegrey(False)
@@ -596,7 +598,7 @@ class Widget:
             dev = display.usegrey(self._greyed_out)
             x = self.col
             y = self.row
-            dev.fill_rect(x, y, self.width, self.height, BGCOLOR if black else self.bgcolor)
+            dev.fill_rect(x, y, self.width, self.height, color_map[BG] if black else self.bgcolor)
         return True
 
 # Called by Screen.show(). Draw background and bounding box if required.
@@ -609,7 +611,7 @@ class Widget:
             w = self.width + 4
             h = self.height + 4
             if self.has_focus():
-                color = WHITE
+                color = color_map[FOCUS]
                 if hasattr(self, 'precision') and self.precision and self.prcolor is not None:
                     color = self.prcolor
                 dev.rect(x, y, w, h, color)
@@ -617,7 +619,7 @@ class Widget:
             else:
                 if isinstance(self.bdcolor, bool):  # No border
                     if self.has_border:  # Border exists: erase it
-                        dev.rect(x, y, w, h, BGCOLOR)
+                        dev.rect(x, y, w, h, color_map[BG])
                         self.has_border = False
                 elif self.bdcolor:  # Border is required
                     dev.rect(x, y, w, h, self.bdcolor)
@@ -695,7 +697,7 @@ class LinearIO(Widget):
             # Precision mode can only be entered when the active control has focus.
             # In this state it will have a white border. By default this turns yellow
             # but subclass can be defeat this with WHITE or another color
-            self.prcolor = YELLOW if prcolor is None else prcolor
+            self.prcolor = color_map[PRECISION] if prcolor is None else prcolor
 
     # Adjust widget's value. Args: button pressed, amount of increment
     def do_adj(self, button, val):
