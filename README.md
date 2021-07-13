@@ -2110,6 +2110,7 @@ value changes. This enables dynamic color change.
 ```python
 from gui.widgets.menu import Menu
 ```
+![Image](./images/menu.JPG)  
 
 This enables the creation of single or two level menus. The top level of the
 menu consists of a row of `Button` instances at the top of the screen. Each
