@@ -51,4 +51,4 @@ sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
 prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
-display = Display(ssd, nxt, sel, prev, increase, decrease) #, 5)
+display = Display(ssd, nxt, sel, prev, increase, decrease)  #, 5)

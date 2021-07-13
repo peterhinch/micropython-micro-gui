@@ -2107,6 +2107,8 @@ value changes. This enables dynamic color change.
 
 # 22 Menu class
 
+The `Menu` class is under development. API may change.
+
 ```python
 from gui.widgets.menu import Menu
 ```
@@ -2122,10 +2124,10 @@ Constructor mandatory positional arg:
 
 Keyword only args:  
  * `height=25` Height of top level menu buttons.
- * `bgcolor=None`
- * `fgcolor=None`
- * `textcolor=None`
- * `select_color=DARKBLUE`
+ * `bgcolor=None` Background color of buttons and dropdown.
+ * `fgcolor=None` Foreground color.
+ * `textcolor=None` Text color.
+ * `select_color=DARKBLUE` Background color of selected item on dropdown list.
  * `args` This should be a tuple containing a tuple of args for each entry in
  the top level menu. Each tuple should be of one of two forms:
   1. `(text, cb, (args,))` A single-level entry: the top level `Button` with
@@ -2145,6 +2147,7 @@ uses the passed arg to determine which menu it was called from.
 mnu = (('Gas', cb_sm, (0,), ('Helium','Neon','Argon','Krypton','Xenon','Radon')),
         ('Metal', cb_sm, (1,), ('Lithium', 'Sodium', 'Potassium','Rubidium','Caesium')),
         ('View', cb, (2,)))
+Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)
 ```
 
 ###### [Contents](./README.md#0-contents)
