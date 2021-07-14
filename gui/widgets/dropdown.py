@@ -41,6 +41,15 @@ class Dropdown(Widget):
 
         self.entry_height = writer.height + 2 # Allow a pixel above and below text
         height = self.entry_height
+        e0 = elements[0]
+        # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
+        if isinstance(e0, tuple) or isinstance(e0, list):
+            te = [x[0] for x in elements]  # Copy text component
+            self.els = elements  # Retain original
+            elements = te
+            if callback is not dolittle:
+                raise ValueError('Cannot specify callback.')
+            callback = self._despatch
         if width is None:  # Allow for square at end for arrow
             self.textwidth = max(writer.stringlen(s) for s in elements)
             width = self.textwidth + 2 + height
@@ -88,3 +97,7 @@ class Dropdown(Widget):
         if len(self.elements) > 1:
             args = (self.writer, self.row - 2, self.col - 2, self)
             Screen.change(_ListDialog, args = args)
+
+    def _despatch(self, _):  # Run the callback specified in elements
+        x = self.els[self.value()]
+        x[1](self, *x[2])

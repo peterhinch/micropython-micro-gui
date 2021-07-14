@@ -1256,7 +1256,7 @@ Constructor mandatory positional args:
 
 Mandatory keyword only argument:
  * `elements` A list or tuple of strings to display. Must have at least one
- entry.
+ entry. See below for an alternative way to use the `Dropdown`.
 
 Optional keyword only arguments:
  * `width=None` Control width in pixels. By default this is calculated to
@@ -1297,6 +1297,19 @@ callback will not run. Moving the focus is a means of cancelling any changes.
 The callback's first argument is the dropdown instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
 means of the instance's `value` or `textvalue` methods.
+
+#### Alternative approach
+
+By default the `Dropdown` runs a single callback regardless of the element
+chosen. This can be changed by specifying `elements` such that each element
+comprises a 3-list or 3-tuple with the following contents:
+ 0. String to display.
+ 1. Callback.
+ 2. Tuple of args (may be ()).
+
+In this case constructor args `callback` and `args` must not be supplied. Args
+received by the callback functions comprise the `Dropdown` instance followed by
+any supplied args.
 
 ###### [Contents](./README.md#0-contents)
 
