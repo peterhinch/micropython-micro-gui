@@ -22,22 +22,29 @@ class BaseScreen(Screen):
             print('Submenu callback', lb.value(), lb.textvalue(), n)
 
         super().__init__()
-        mnu = (('Gas', (('Helium', cb_sm, (0,)),
-                        ('Neon', cb_sm, (1,)),
-                        ('Argon', cb_sm, (2,)),
-                        ('Krypton', cb_sm, (3,)),
-                        ('Xenon', cb_sm, (4,)),
-                        ('Radon', cb_sm, (5,)))),
-               ('Metal',(('Lithium', cb_sm, (6,)),
-                         ('Sodium', cb_sm, (7,)),
-                         ('Potassium', cb_sm, (8,)),
-                         ('Rubidium', cb_sm, (9,)),
-                         ('More', (('Gold', cb_sm, (6,)),
-                                   ('Silver', cb_sm, (7,)),
-                                   ('Iron', cb_sm, (8,)),
-                                   ('Zinc', cb_sm, (9,)),
-                                   ('Copper', cb_sm, (10,)))))),
+        metals2 = (('Gold', cb_sm, (6,)),
+                   ('Silver', cb_sm, (7,)),
+                   ('Iron', cb_sm, (8,)),
+                   ('Zinc', cb_sm, (9,)),
+                   ('Copper', cb_sm, (10,)))
+
+        gases = (('Helium', cb_sm, (0,)),
+                 ('Neon', cb_sm, (1,)),
+                 ('Argon', cb_sm, (2,)),
+                 ('Krypton', cb_sm, (3,)),
+                 ('Xenon', cb_sm, (4,)),
+                 ('Radon', cb_sm, (5,)))
+
+        metals = (('Lithium', cb_sm, (6,)),
+                  ('Sodium', cb_sm, (7,)),
+                  ('Potassium', cb_sm, (8,)),
+                  ('Rubidium', cb_sm, (9,)),
+                  ('More', metals2))
+
+        mnu = (('Gas', gases),
+               ('Metal',metals),
                ('Help', cb, (2,)))
+
         wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
         Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)
         CloseButton(wri)

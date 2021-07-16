@@ -63,7 +63,7 @@ of some display drivers.
 
 # 0. Contents
 
-1. [Basic concepts](./README.md#1-basic-concepts) Including installation and test.  
+1. [Basic concepts](./README.md#1-basic-concepts) Including "Hello world" script.  
  1.1 [Coordinates](./README.md#11-coordinates) The GUI's coordinate system.  
  1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects) Basic GUI classes.  
  1.3 [Fonts](./README.md#13-fonts)  
@@ -137,6 +137,47 @@ provision of extra visual information. For example the color of all or part of
 a widget may be changed programmatically, for example to highlight an overrange
 condition.
 
+The following, taken from `gui.demos.simple.py`, is a complete application. It
+shows a message and has "Yes" and "No" buttons which trigger a callback.
+```python
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, ssd
+
+from gui.widgets.label import Label
+from gui.widgets.buttons import Button, CloseButton
+from gui.core.writer import CWriter
+
+# Font for CWriter
+import gui.fonts.arial10 as arial10
+from gui.core.colors import *
+
+
+class BaseScreen(Screen):
+
+    def __init__(self):
+
+        def my_callback(button, arg):
+            print('Button pressed', arg)
+
+        super().__init__()
+        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+
+        col = 2
+        row = 2
+        Label(wri, row, col, 'Simple Demo')
+        row = 50
+        Button(wri, row, col, text='Yes', callback=my_callback, args=('Yes',))
+        col += 60
+        Button(wri, row, col, text='No', callback=my_callback, args=('No',))
+        CloseButton(wri)  # Quit the application
+
+def test():
+    print('Simple demo: button presses print to REPL.')
+    Screen.change(BaseScreen)  # A class is passed here, not an instance.
+
+test()
+```
+
 ## 1.1 Coordinates
 
 These are defined as `row` and `col` values where `row==0` and `col==0`
@@ -154,7 +195,8 @@ re-displayed.
 
 A `Window` is a subclass of `Screen` but is smaller, with size and location
 attributes. It can overlay part of an underlying `Screen` and is typically used
-for modal dialog boxes.
+for dialog boxes. `Window` objects are modal: a `Window` can overlay a `Screen`
+but cannot overlay another `Window`.
 
 A `Widget` is an object capable of displaying data. Some are also capable of
 data input: such a widget is defined as `active`. A `passive` widget can only
@@ -162,9 +204,9 @@ display data. An `active` widget can acquire `focus`. The widget with `focus`
 is able to respond to user input. See [navigation](./README.md#14-navigation).
 `Widget` objects have dimensions defined as `height` and `width`. The space
 requred by them exceeds these dimensions by two pixels all round. This is
-because `micro-gui` displays a white border to show which object currently has
-`focus`. Thus to place a `Widget` at the extreme top left, `row` and `col`
-values should be 2.
+because `micro-gui` displays a surrounding white border to show which object
+currently has `focus`. Thus to place a `Widget` at the extreme top left, `row`
+and `col` values should be 2.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -200,7 +242,9 @@ The GUI requires from 2 to 5 pushbuttons for control. These are:
  5. `Decrease` Move within the widget.
 
 An alternative is to replace buttons 4 and 5 with a quadrature encoder knob
-such as [this one](https://www.adafruit.com/product/377).
+such as [this one](https://www.adafruit.com/product/377). That device has a
+switch which operates when the knob is pressed: this may be wired for the
+`Select` button. 
 
 Many widgets such as `Pushbutton` or `Checkbox` objects require only the
 `Select` button to operate: it is possible to design an interface with a subset
@@ -217,8 +261,8 @@ moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
 `active` or `passive` in the constructor, and this status cannot be changed. In
 some cases the state can be specified as a constructor arg, but other widgets
 have a predefined state. An `active` widget can be disabled and re-enabled at
-runtime. A disabled `active` widget is shown "greyed-out" and, until
-re-enabled, cannot accept the `focus`.
+runtime. A disabled `active` widget is shown "greyed-out" and cannot accept the
+`focus` until re-enabled.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -245,20 +289,21 @@ prst = Pin(9, Pin.OUT, value=1)
 pcs = Pin(10, Pin.OUT, value=1)
 spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
+# Instantiate display and assign to ssd. For args see display drivers doc.
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
 from gui.core.ugui import Display, setup
-# Create and export a Display instance
 # Define control buttons
 nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
 sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
 prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+# Create a Display instance and assign to display.
 display = Display(ssd, nxt, sel, prev, increase, decrease)
 ```
-Where an encoder replaces the `increase` and `decrease` buttons the final line
-only needs to be changed to read:
+Where an encoder replaces the `increase` and `decrease` buttons, only the final
+line needs to be changed to provide an extra arg:
 ```python
 display = Display(ssd, nxt, sel, prev, increase, decrease, 5)
 ```
@@ -268,6 +313,9 @@ provides the highest sensitivity, being the native rate of the encoder.
 
 Instantiation of `SSD` and `Display` classes is detailed in
 [section 3](./README.md#3-the-ssd-and-display-objects).
+
+Display drivers are
+[documented here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -319,14 +367,16 @@ widgets, fonts and demos can also be trimmed, but the directory structure must
 be kept.
 
 There is scope for speeding loading and saving RAM by using frozen bytecode.
-Once again, directory structure must be maintained.
+Once again, directory structure must be maintained. An example directory
+structure, pruned to contain a minimum of files, may be seen
+[here](https://github.com/peterhinch/micropython-nano-gui#4-esp8266).
 
 ###### [Contents](./README.md#0-contents)
 
 ## 1.8 Performance and hardware notes
 
 The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
-use of frozen bytecode the demos run with about 74K of free RAM. Substantial
+use of frozen bytecode the demos run with about 70K of free RAM. Substantial
 improvements could be achieved using frozen bytecode.
 
 Snappy navigation benefits from several approaches:
@@ -340,9 +390,8 @@ This is because display update blocks for tens of milliseconds, during which
 time the pushbuttons are not polled. Blocking is much reduced by item 3 above.
 
 On the TTGO T-Display it is necessary to use physical pullup resistors on the
-pushbutton GPIO lines. According to the
-[ESP32 gurus](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/)
-pins 36-39 do not have pullup support.
+pushbutton GPIO lines. This is because pins 36-39 do not have pullup support.
+[See ref](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/).
 
 On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
 bytecode: in this configuration running the `various.py` demo there was 29K of
@@ -441,6 +490,7 @@ minimal and aim to demonstrate a single technique.
  screen layout using widget metrics. Has a simple `uasyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
+ * `menu.py` A multi-level menu.
 
 ### 1.11.2 Test scripts
 
@@ -1012,9 +1062,10 @@ Constructor mandatory positional args:
 
 Optional keyword only arguments:
  * `shape=RECTANGLE` Must be `CIRCLE`, `RECTANGLE` or `CLIPPED_RECT`.
+ * `height=20` Height of button or diameter in `CIRCLE` case.
  * `width=50` Width of button. If `text` is supplied and `width` is too low to
- accommodate the text, it will be increased to enable the text to fit.
- * `height=20` Height. In `CIRCLE` case any passed value is ignored.
+ accommodate the text, it will be increased to enable the text to fit. In
+ `CIRCLE` case any passed value is ignored.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -1189,7 +1240,8 @@ Constructor mandatory positional args:
 
 Mandatory keyword only argument:
  * `elements` A list or tuple of strings to display. Must have at least one
- entry.
+ entry. An alternative format is described below which enables each item in the
+ list to have a separate callback.
 
 Optional keyword only arguments:
  * `width=None` Control width in pixels. By default this is calculated to
@@ -1227,6 +1279,42 @@ The callback's first argument is the listbox instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
 means of the instance's `value` or `textvalue` methods.
 
+#### Alternative approach
+
+By default the `Listbox` runs a common callback regardless of the item chosen.
+This can be changed by specifying `elements` such that each element comprises a
+3-list or 3-tuple with the following contents:
+ 0. String to display.
+ 1. Callback.
+ 2. Tuple of args (may be ()).
+
+In this case constructor args `callback` and `args` must not be supplied. Args
+received by the callback functions comprise the `Listbox` instance followed by
+any supplied args. The following is a complete example (minus initial `import`
+statements).
+
+```python
+class BaseScreen(Screen):
+    def __init__(self):
+        def cb(lb, s):
+            print('Callback', s)
+
+        def cb_radon(lb, s):
+            print('Radioactive', s)
+
+        super().__init__()
+        wri = CWriter(ssd, freesans20, GREEN, BLACK, verbose=False)
+        els = (('Hydrogen', cb, ('H2',)),
+               ('Helium', cb, ('He',)),
+               ('Neon', cb, ('Ne',)),
+               ('Xenon', cb, ('Xe',)),
+               ('Radon', cb_radon, ('Ra',)))
+        Listbox(wri, 2, 2, elements = els, bdcolor=RED)
+        CloseButton(wri)
+
+Screen.change(BaseScreen)
+```
+
 ###### [Contents](./README.md#0-contents)
 
 # 13. Dropdown widget
@@ -1256,7 +1344,8 @@ Constructor mandatory positional args:
 
 Mandatory keyword only argument:
  * `elements` A list or tuple of strings to display. Must have at least one
- entry. See below for an alternative way to use the `Dropdown`.
+ entry. See below for an alternative way to use the `Dropdown` which enables
+ each item on the dropdown list to have a separate callback.
 
 Optional keyword only arguments:
  * `width=None` Control width in pixels. By default this is calculated to
@@ -1309,8 +1398,31 @@ comprises a 3-list or 3-tuple with the following contents:
 
 In this case constructor args `callback` and `args` must not be supplied. Args
 received by the callback functions comprise the `Dropdown` instance followed by
-any supplied args.
+any supplied args. The following is a complete example (minus initial import
+statements):
+```python
+class BaseScreen(Screen):
+    def __init__(self):
+        def cb(dd, arg):
+            print('Gas', arg)
 
+        def cb_radon(dd, arg):
+            print('Radioactive', arg)
+
+        super().__init__()
+        wri = CWriter(ssd, freesans20, GREEN, BLACK, verbose=False)
+        els = (('hydrogen', cb, ('H2',)),
+               ('helium', cb, ('He',)),
+               ('neon', cb, ('Ne',)),
+               ('xenon', cb, ('Xe',)), 
+               ('radon', cb_radon, ('Ra',)))
+        Dropdown(wri, 2, 2, elements = els,
+                bdcolor = RED, fgcolor=RED, fontcolor = YELLOW)
+        CloseButton(wri)
+
+
+Screen.change(BaseScreen)
+```
 ###### [Contents](./README.md#0-contents)
 
 # 14. DialogBox class
@@ -2120,17 +2232,18 @@ value changes. This enables dynamic color change.
 
 # 22 Menu class
 
-The `Menu` class is under development. API may change.
-
 ```python
 from gui.widgets.menu import Menu
 ```
 ![Image](./images/menu.JPG)  
 
-This enables the creation of single or two level menus. The top level of the
-menu consists of a row of `Button` instances at the top of the screen. Each
-button can either call a callback or instantiate a dropdown list comprising the
-second menu level.
+The `Menu` class enables the creation of single or multiple level menus. The
+top level of the menu comprises a row of `Button` instances at the top of the
+physical screen. Each button can either call a callback or instantiate a
+dropdown menu comprising the second menu level.
+
+Each item on a dropdown menu can invoke either a callback or a lower level
+menu.
 
 Constructor mandatory positional arg:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -2140,28 +2253,88 @@ Keyword only args:
  * `bgcolor=None` Background color of buttons and dropdown.
  * `fgcolor=None` Foreground color.
  * `textcolor=None` Text color.
- * `select_color=DARKBLUE` Background color of selected item on dropdown list.
+ * `select_color=DARKBLUE` Background color of selected item on dropdown menu.
  * `args` This should be a tuple containing a tuple of args for each entry in
  the top level menu. Each tuple should be of one of two forms:
   1. `(text, cb, (args,))` A single-level entry: the top level `Button` with
   text `text` runs the callback `cb` with positional args defined by the
   supplied tuple (which may be `()`). The callback receives an initial arg
   being the `Button` instance.
-  2. `(text, cb, (args,), (elements,))` In this instance the top level `Button`
-  triggers a dropdown list comprising a tuple of strings in `elements`. The
-  callback `cb` is triggered if the user selects an entry. The callback
-  receives an initial arg which is a `Listbox` instance: the chosen entry may
-  be retrieved by running `lb.value()` or `lb.textvalue()`.
+  2. `(text, (element0, element1,...))` In this instance the top level `Button`
+  triggers a dropdown menu defined by data in the `elements` tuple.
 
-In this example the first two items trigger submenus, the third runs a
-callback. In this example the two submenus share a callback (`cb_sm`), which
-uses the passed arg to determine which menu it was called from. 
+Each element in the `elements` tuple is a tuple defining a menu item. This can
+take two forms, each of which has the text for the menu item as the first
+value:
+ 1. `(text, cb, (args,))` The element triggers callback `cb` with positional
+ args defined by the supplied tuple (which may be `()`). The callback receives
+ an initial arg being the `Listbox` instance which corresponds to the parent
+ dropdown menu.
+ 2. `(text, (elements,))` This element triggers a submenu with a recursive
+ instance of `elements`.
+
+The following (from `gui/demos/menui.py`) is complete apart from initial import
+statements. It illustrates a 3-level menu.
 ```python
-mnu = (('Gas', cb_sm, (0,), ('Helium','Neon','Argon','Krypton','Xenon','Radon')),
-        ('Metal', cb_sm, (1,), ('Lithium', 'Sodium', 'Potassium','Rubidium','Caesium')),
-        ('View', cb, (2,)))
-Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)
+class BaseScreen(Screen):
+
+    def __init__(self):
+        def cb(button, n):
+            print('Help callback', n)
+
+        def cb_sm(lb, n):
+            print('Submenu callback', lb.value(), lb.textvalue(), n)
+
+        super().__init__()
+        metals2 = (('Gold', cb_sm, (10,)),
+                   ('Silver', cb_sm, (11,)),
+                   ('Iron', cb_sm, (12,)),
+                   ('Zinc', cb_sm, (13,)),
+                   ('Copper', cb_sm, (14,)))  # Level 3
+
+        gases = (('Helium', cb_sm, (0,)),
+                 ('Neon', cb_sm, (1,)),
+                 ('Argon', cb_sm, (2,)),
+                 ('Krypton', cb_sm, (3,)),
+                 ('Xenon', cb_sm, (4,)),
+                 ('Radon', cb_sm, (5,)))  # Level 2
+
+        metals = (('Lithium', cb_sm, (6,)),
+                  ('Sodium', cb_sm, (7,)),
+                  ('Potassium', cb_sm, (8,)),
+                  ('Rubidium', cb_sm, (9,)),
+                  ('More', metals2))  # Level 2
+
+        mnu = (('Gas', gases),
+               ('Metal', metals),
+               ('Help', cb, (2,)))  # Top level 1
+
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+        Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)
+        CloseButton(wri)
+
+Screen.change(BaseScreen)
 ```
+The code
+```python
+        mnu = (('Gas', gases),
+               ('Metal',metals),
+               ('Help', cb, (2,)))
+```
+defines the top level, with the first two entries invoking submenus and the
+third running a callback `cb` with 2 as an arg.
+
+This produces a second level menu with one entry ('More') invoking a third
+level (`metals2`):
+```python
+        metals = (('Lithium', cb_sm, (6,)),
+                  ('Sodium', cb_sm, (7,)),
+                  ('Potassium', cb_sm, (8,)),
+                  ('Rubidium', cb_sm, (9,)),
+                  ('More', metals2))
+```
+The other entries all run `cb_sm` with a different arg. They could each run a
+different callback if the application required it.
 
 ###### [Contents](./README.md#0-contents)
 

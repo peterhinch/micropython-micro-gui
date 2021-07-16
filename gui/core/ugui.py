@@ -21,7 +21,7 @@ display = None  # Singleton instance
 ssd = None
 
 gc.collect()
-__version__ = (0, 1, 2)
+__version__ = (0, 1, 3)
 
 # Null function
 dolittle = lambda *_ : None

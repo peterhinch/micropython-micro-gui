@@ -27,26 +27,29 @@ class Listbox(Widget):
                  fgcolor=None, bgcolor=None, bdcolor=False, fontcolor=None, select_color=DARKBLUE,
                  callback=dolittle, args=[], also=0):
 
-        self.entry_height, height, textwidth = self.dimensions(writer, elements)
+        e0 = elements[0]
+        # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
+        if isinstance(e0, tuple) or isinstance(e0, list):
+            self.els = elements  # Retain original for .despatch
+            self.elements = [x[0] for x in elements]  # Copy text component
+            if callback is not dolittle:
+                raise ValueError('Cannot specify callback.')
+            self.cb = self.despatch
+        else:
+            self.cb = callback
+            self.elements = elements
+        if any(not isinstance(s, str) for s in self.elements):
+            raise ValueError('Invalid elements arg.')
+        self.entry_height, height, textwidth = self.dimensions(writer, self.elements)
         self.also = also
         if width is None:
             width = textwidth
         if not isinstance(value, int) or value >= len(elements):
             value = 0
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, True)
-        self.cb = callback
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor
-        fail = False
-        try:
-            self.elements = [s for s in elements if type(s) is str]
-        except:
-            fail = True
-        else:
-            fail = len(self.elements) == 0
-        if fail:
-            raise ValueError('elements must be a list or tuple of one or more strings')
         self._value = value # No callback until user selects
         self.ev = value
 
@@ -103,3 +106,7 @@ class Listbox(Widget):
     def leave(self):
         if (self.also & Listbox.ON_LEAVE) and self._value != self.ev:
             self.do_sel()
+
+    def despatch(self, _):  # Run the callback specified in elements
+        x = self.els[self()]
+        x[1](self, *x[2])

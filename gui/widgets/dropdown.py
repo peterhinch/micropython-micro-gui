@@ -99,5 +99,5 @@ class Dropdown(Widget):
             Screen.change(_ListDialog, args = args)
 
     def _despatch(self, _):  # Run the callback specified in elements
-        x = self.els[self.value()]
+        x = self.els[self()]
         x[1](self, *x[2])
