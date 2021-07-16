@@ -87,7 +87,7 @@ Text may be clipped to the width of the control or may be word-wrapped. If the n
 of lines of text exceeds the height available, scrolling may be performed \
 by calling a method.
 
-Please use the increase and decrease buttons to scroll this text.
+Please use the increase and decrease buttons (or encoder) to scroll this text.
 '''
 
 class TBUScreen(Screen):

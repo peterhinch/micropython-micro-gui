@@ -129,7 +129,13 @@ class Textbox(LinearIO):
             self.start = max(0, min(line, len(self.lines) - self.nlines))
         self.draw = True  # Cause a refresh
 
-    async def btnhan(self, button, up):
+    def do_adj(self, button, val):
+        if isinstance(button, int):  # Using an encoder
+            self.scroll(val)
+        else:
+            asyncio.create_task(self.btn_handler(button, val))
+
+    async def btn_handler(self, button, up):  # Only runs if not using encoder
         self.scroll(-up)
         t = ticks_ms()
         d = 1
