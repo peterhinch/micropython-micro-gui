@@ -375,19 +375,30 @@ structure, pruned to contain a minimum of files, may be seen
 
 ## 1.8 Performance and hardware notes
 
+#### RAM usage
+
 The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
 use of frozen bytecode the demos run with about 70K of free RAM. Substantial
-improvements could be achieved using frozen bytecode.
+improvements can be achieved on all platforms by using frozen bytecode.
 
-Snappy navigation benefits from several approaches:
- 1. Clocking the SPI bus as fast as possible.
- 2. Clocking the host fast (`machine.freq`).
- 3. Device driver support for `uasyncio`. Currently this exists on ILI9341 and
-    ST7789 (e.g. TTGO T-Display). I intend to extend this to other drivers.
+#### Speed
 
 The consequence of inadequate speed is that brief button presses can be missed.
 This is because display update blocks for tens of milliseconds, during which
-time the pushbuttons are not polled. Blocking is much reduced by item 3 above.
+time the pushbuttons are not polled. This can be an issue in displays with a
+large number of pixels, multi-byte colors and/or slow SPI clock rates. In high
+resolution cases the device driver has specfic `uasyncio` support whereby the
+driver yields to the scheduler a few times during the refresh.Currently this
+exists on ILI9341 and ST7789 (e.g. TTGO T-Display). By my calculations and
+measurements this should be unnecessary on other drivers, but please report any
+tendency to miss button presses and I will investigate.
+
+This may be mitigated by two approaches:
+ 1. Clocking the SPI bus as fast as possible. This is discussed in
+ [the drivers doc](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
+ 2. Clocking the host fast (`machine.freq`).
+
+#### Platform notes
 
 On the TTGO T-Display it is necessary to use physical pullup resistors on the
 pushbutton GPIO lines. This is because pins 36-39 do not have pullup support.
