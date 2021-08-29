@@ -19,7 +19,7 @@ from gui.widgets.label import Label
 from gui.widgets.textbox import Textbox
 from gui.widgets.buttons import Button, CloseButton
 
-wri = CWriter(ssd, arial10, verbose=False)
+wri = CWriter(ssd, arial10)  # verbose = True
 
 def fwdbutton(wri, row, col, cls_screen, text='Next'):
     def fwd(button):

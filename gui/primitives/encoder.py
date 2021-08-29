@@ -3,6 +3,7 @@
 # Copyright (c) 2021 Peter Hinch
 # Released under the MIT License (MIT) - see LICENSE file
 
+# https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/encoder.py
 # This driver is intended for encoder-based control knobs. It is
 # unsuitable for NC machine applications. Please see the docs.
 

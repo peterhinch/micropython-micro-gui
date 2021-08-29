@@ -69,7 +69,7 @@ class BaseScreen(Screen):
                   'bgcolor' : DARKGREEN,
                   }
 
-        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK)  # verbose = True
         dial = Dial(wri, 2, 2, height = 70, ticks = 12,
                     fgcolor = GREEN, pip = GREEN)
         # Set up clock display: instantiate labels

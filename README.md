@@ -24,9 +24,6 @@ Raspberry Pico with an ILI9341 from eBay.
 TTGO T-Display. A joystick switch and an SIL resistor make a simple inexpensive
 and WiFi-capable system.
 
-Please look at the GitHub Wiki for this project where I am requesting feedback
-on an alternative user interface scheme.
-
 # Rationale
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
@@ -61,8 +58,11 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 Code has been tested on ESP32, Pi Pico and Pyboard. The API shuld be stable.
 Code is new and issues are likely: please report any found. The project is
-under development so check for updates. I also plan to upgrade the performance
-of some display drivers.
+under development so check for updates.
+
+A recent firmware update [PR7682](https://github.com/micropython/micropython/pull/7682)
+has provided a major boost to text rendering speed on color displays. See
+[section 1.8](./README.md#18-performance-and-hardware-notes) for details.
 
 # 0. Contents
 
@@ -412,12 +412,23 @@ bytecode: in this configuration running the `various.py` demo there was 29K of
 free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
 RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
+#### A performance boost
+
+As of Aug 2021 a firmware update
+[PR7682](https://github.com/micropython/micropython/pull/7682) means that color
+displays can benefit from a substantial performance boost in rendering text. To
+take advantage of this, firmware should be dated after 26 Aug 21. The display
+driver and GUI core files should be updated. Ensure that the new file 
+`drivers/boolpalette.py` exists on the target hardware.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 1.9 Firmware and dependencies
 
-Firmware should be V1.15 or later. The source tree includes all dependencies.
-These are listed to enable users to check for newer versions or to read docs:
+Firmware should be V1.15 or later. For fast text rendering a daily build or
+a release build >= 1.17 should be used. The source tree includes all
+dependencies. These are listed to enable users to check for newer versions or
+to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
@@ -453,17 +464,14 @@ Display drivers are documented [here](https://github.com/peterhinch/micropython-
 ## 1.11 Files
 
 Display drivers may be found in the `drivers` directory. These are copies of
-those in `nano-gui`, included for convenience.
+those in `nano-gui`, included for convenience. Note the file
+`drivers/boolpalette.py`, required by all color drivers.
 
 The system is organised as a Python package with the root being `gui`. Core
 files in `gui/core` are:  
  * `colors.py` Constants including colors and shapes.
  * `ugui.py` The main GUI code.
  * `writer.py` Supports the `Writer` and `CWriter` classes.
- * `framebuf_utils.mpy` Accelerator for the `CWriter` class. This optional file
- is compiled for STM hardware. It is specific to Pyboards (1.x and D) and will
- be ignored on other ports. Details may be found
- [here](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#224-a-performance-boost).
 
 The `gui/primitives` directory contains the following files:  
  * `switch.py` Interface to physical pushbuttons.

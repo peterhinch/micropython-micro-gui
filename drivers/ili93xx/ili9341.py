@@ -1,7 +1,7 @@
 # ILI9341 nano-gui driver for ili9341 displays
 # As with all nano-gui displays, touch is not supported.
 
-# Copyright (c) Peter Hinch 2020-2021
+# Copyright (c) Peter Hinch 2020
 # Released under the MIT license see LICENSE
 
 # This work is based on the following sources.
@@ -13,6 +13,7 @@ from time import sleep_ms
 import gc
 import framebuf
 import uasyncio as asyncio
+from drivers.boolpalette import BoolPalette
 
 @micropython.viper
 def _lcopy(dest:ptr16, source:ptr8, lut:ptr16, length:int):
@@ -49,6 +50,7 @@ class ILI9341(framebuf.FrameBuffer):
         self.width = width
         self._spi_init = init_spi
         mode = framebuf.GS4_HMSB
+        self.palette = BoolPalette(mode)
         gc.collect()
         buf = bytearray(self.height * self.width // 2)
         self._mvb = memoryview(buf)
@@ -133,12 +135,7 @@ class ILI9341(framebuf.FrameBuffer):
             self._spi.write(lb)
         self._cs(1)
 
-    def busy(self):
-        return self._lock.locked()
-
     async def do_refresh(self, split=4):
-        if self.busy():
-            print('Warning: refresh paused until prior refresh completed.')
         async with self._lock:
             lines, mod = divmod(self.height, split)  # Lines per segment
             if mod:
