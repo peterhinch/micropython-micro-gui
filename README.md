@@ -60,8 +60,9 @@ Code has been tested on ESP32, Pi Pico and Pyboard. The API shuld be stable.
 Code is new and issues are likely: please report any found. The project is
 under development so check for updates.
 
-A recent firmware update [PR7682](https://github.com/micropython/micropython/pull/7682)
-has provided a major boost to text rendering speed on color displays. See
+Firmware V1.17 has provided a major boost to text rendering speed on color
+display. V1.17 or later is now a requirement for color displays, although
+there is a workround if it's impossible to upgrade. See
 [section 1.8](./README.md#18-performance-and-hardware-notes) for details.
 
 # 0. Contents
@@ -127,6 +128,7 @@ has provided a major boost to text rendering speed on color displays. See
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.1 [Class Curve](./README.md#2331-class-curve)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.2 [Class PolarCurve](./README.md#2332-class-polarcurve)  
  23.4 [Class TSequence](./README.md#234-class-tsequence) Plotting realtime, time sequential data.  
+24. [Old firmware](./README.md#24-old-firmware) For users of color displays who can't run current firmware.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
@@ -414,21 +416,20 @@ RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
 #### A performance boost
 
-As of Aug 2021 a firmware update
-[PR7682](https://github.com/micropython/micropython/pull/7682) means that color
-displays can benefit from a substantial performance boost in rendering text. To
-take advantage of this, firmware should be dated after 26 Aug 21. The display
-driver and GUI core files should be updated. Ensure that the new file 
-`drivers/boolpalette.py` exists on the target hardware.
+A firmware change in V1.17 has enabled the code size to be reduced. It has also
+accelerated text rendering on color displays. Use of color displays now
+requires firmware V1.17 or later. Existing users should update the display
+driver and GUI core files and should ensure that the new file
+`drivers/boolpalette.py` exists.
 
 ###### [Contents](./README.md#0-contents)
 
 ## 1.9 Firmware and dependencies
 
-Firmware should be V1.15 or later. For fast text rendering a daily build or
-a release build >= 1.17 should be used. The source tree includes all
-dependencies. These are listed to enable users to check for newer versions or
-to read docs:
+Users of color displays should ensure that firmware is V1.17 or later. If this
+cannot be met, there is a [workround](./README.md#24-old-firmware). The source
+tree includes all dependencies. These are listed to enable users to check for
+newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
@@ -2612,6 +2613,15 @@ class TSeq(Screen):
             await asyncio.sleep_ms(400)
             t += 1
 ```
+###### [Contents](./README.md#0-contents)
+
+# 24. Old firmware
+
+Current firmware is highly recommended. For users of color displays who cannot
+run V1.17 or later it is possible to run under V1.15+. This involves copying
+[this file](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/old_versions/writer_fw_compatible.py)
+to `gui/core/writer.py`. This uses Python code to render text if the firmware
+or driver are unable to support fast rendering.
 
 ###### [Contents](./README.md#0-contents)
 
