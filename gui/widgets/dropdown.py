@@ -3,6 +3,8 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
 
+# 12 Sep 21 Support for scrolling.
+
 from gui.core.ugui import Widget, display, Window, Screen
 from gui.core.colors import *
 
@@ -17,15 +19,18 @@ class _ListDialog(Window):
     def __init__(self, writer, row, col, dd):  # dd is parent dropdown
         # Need to determine Window dimensions from size of Listbox, which
         # depends on number and length of elements.
-        entry_height, lb_height, textwidth = Listbox.dimensions(writer, dd.elements)
-        lb_width = textwidth + 2
+        _, lb_height, dlines, tw = Listbox.dimensions(writer, dd.elements, dd.dlines)
+        lb_width = tw + 2  # Text width + 2
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
         super().__init__(row, col, ap_height, ap_width)
-        self.listbox = Listbox(writer, row + 3, col + 3, elements = dd.elements, width = lb_width,
-                               fgcolor = dd.fgcolor, bgcolor = dd.bgcolor, bdcolor=False, 
-                               fontcolor = dd.fontcolor, select_color = dd.select_color,
+        self.listbox = Listbox(writer, row + 3, col + 3,
+                               elements = dd.elements,
+                               dlines = dlines, width = lb_width,
+                               fgcolor = dd.fgcolor, bgcolor = dd.bgcolor,
+                               bdcolor=False, fontcolor = dd.fontcolor,
+                               select_color = dd.select_color,
                                value = dd.value(), callback = self.callback)
         self.dd = dd
 
@@ -35,8 +40,11 @@ class _ListDialog(Window):
 
 
 class Dropdown(Widget):
-    def __init__(self, writer, row, col, *, elements, width=None, value=0,
-                 fgcolor=None, bgcolor=None, bdcolor=False, fontcolor=None, select_color=DARKBLUE,
+    def __init__(self, writer, row, col, *,
+                 elements,
+                 dlines=None, width=None, value=0,
+                 fgcolor=None, bgcolor=None, bdcolor=False,
+                 fontcolor=None, select_color=DARKBLUE,
                  callback=dolittle, args=[]):
 
         self.entry_height = writer.height + 2 # Allow a pixel above and below text
@@ -60,6 +68,7 @@ class Dropdown(Widget):
         self.select_color = select_color
         self.fontcolor = self.fgcolor if fontcolor is None else fontcolor
         self.elements = elements
+        self.dlines = dlines
 
     def show(self):
         if super().show():

@@ -2,6 +2,9 @@
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch
+
+# 12 Sep 21 Support for scrolling.
+
 from gui.core.ugui import Widget, display
 from gui.core.colors import *
 
@@ -15,16 +18,23 @@ class Listbox(Widget):
     ON_MOVE = 1  # Also run whenever the currency moves.
     ON_LEAVE = 2  # Also run on exit from the control.
 
+    # This is used by dropdown.py
     @staticmethod
-    def dimensions(writer, elements):
+    def dimensions(writer, elements, dlines):
+        # Height of a single entry in list.
         entry_height = writer.height + 2 # Allow a pixel above and below text
-        le = len(elements)
-        height = entry_height * le + 2
+        # Number of displayable lines
+        dlines = len(elements) if dlines is None else dlines
+        # Height of control
+        height = entry_height * dlines + 2
         textwidth = max(writer.stringlen(s) for s in elements) + 4
-        return entry_height, height, textwidth
+        return entry_height, height, dlines, textwidth
 
-    def __init__(self, writer, row, col, *, elements, width=None, value=0,
-                 fgcolor=None, bgcolor=None, bdcolor=False, fontcolor=None, select_color=DARKBLUE,
+    def __init__(self, writer, row, col, *, 
+                 elements,
+                 dlines=None, width=None, value=0,
+                 fgcolor=None, bgcolor=None, bdcolor=False,
+                 fontcolor=None, select_color=DARKBLUE,
                  callback=dolittle, args=[], also=0):
 
         e0 = elements[0]
@@ -40,33 +50,49 @@ class Listbox(Widget):
             self.elements = elements
         if any(not isinstance(s, str) for s in self.elements):
             raise ValueError('Invalid elements arg.')
-        self.entry_height, height, textwidth = self.dimensions(writer, self.elements)
-        self.also = also
+        # Calculate dimensions
+        self.entry_height, height, self.dlines, tw = self.dimensions(
+            writer, self.elements, dlines)
         if width is None:
-            width = textwidth
-        if not isinstance(value, int) or value >= len(elements):
-            value = 0
+            width = tw  # Text width
+
+        self.also = also
+        self.ntop = 0  # Top visible line
+        if not isinstance(value, int):
+            value = 0  # Or ValueError?
+        elif value >= self.dlines:  # Must scroll
+            value = min(value, len(elements) - 1)
+            self.ntop = value - self.dlines + 1
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, True)
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor
         self._value = value # No callback until user selects
-        self.ev = value
+        self.ev = value  # Value change detection
 
     def show(self):
         if not super().show(False):  # Clear to self.bgcolor
             return
 
-        length = len(self.elements)
         x = self.col
         y = self.row
-        for n in range(length):
+        eh = self.entry_height
+        ntop = self.ntop
+        dlines = self.dlines
+        for n in range(ntop, ntop + dlines):
             if n == self._value:
-                display.fill_rect(x, y + 1, self.width, self.entry_height - 1, self.select_color)
+                display.fill_rect(x, y + 1, self.width, eh - 1, self.select_color)
                 display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.select_color)
             else:
                 display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.bgcolor)
-            y += self.entry_height
+            y += eh
+        # Draw a vertical line to hint at scrolling
+        x = self.col + self.width - 2
+        if ntop:
+            display.vline(x, self.row, eh - 1, self.fgcolor)
+        if ntop + dlines < len(self.elements):
+            y = self.row + (dlines - 1) * eh
+            display.vline(x, y, eh - 1, self.fgcolor)
 
     def textvalue(self, text=None): # if no arg return current text
         if text is None:
@@ -81,16 +107,24 @@ class Listbox(Widget):
                     self.value(v)
             return v
 
+    def _vchange(self, vnew):  # A value change is taking place
+        # Handle scrolling
+        if vnew >= self.ntop + self.dlines:
+            self.ntop = vnew - self.dlines + 1
+        elif vnew < self.ntop:
+            self.ntop = vnew
+        self.value(vnew)
+        if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
+            self.do_sel()
+
     def do_adj(self, _, val):
         v = self._value
         if val > 0:
             if v:
-                self.value(v - 1)
+                self._vchange(v -1)
         elif val < 0:
             if v < len(self.elements) - 1:
-                self.value(v + 1)
-        if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
-            self.do_sel()
+                self._vchange(v + 1)
 
     # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes
     # list currency and then moves off the control. Otherwise if we have a

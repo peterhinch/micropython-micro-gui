@@ -26,9 +26,11 @@ class BaseScreen(Screen):
 
         col = 2
         row = 2
+        els = ('hydrogen', 'helium', 'neon', 'argon', 'krypton', 'xenon', 'radon')
         self.dd = Dropdown(wri, row, col,
-                           elements = ('hydrogen', 'helium', 'neon', 'xenon', 'radon'),
-                           bdcolor = GREEN, bgcolor = DARKGREEN,
+                           elements = els,
+                           dlines = 5,  # Show 5 lines
+                           bdcolor = GREEN,
                            callback=self.ddcb)
         row += 30
         self.lbl = Label(wri, row, col, self.dd.width, bdcolor=RED)

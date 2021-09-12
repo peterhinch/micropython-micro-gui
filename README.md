@@ -504,7 +504,8 @@ minimal and aim to demonstrate a single technique.
  mode.
  * `linked_sliders.py` One `Slider` updating two others, and a coding "wrinkle"
  required for doing this.
- * `dropdown.py` A dropdown list updates a `Label`.
+ * `dropdown.py` A dropdown list (with scrolling) updates a `Label`.
+ * `listbox.py` A listbox with scrolling.
  * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
  * `screen_change.py` A `Pushbutton` causing a screen change using a re-usable
  "forward" button.
@@ -1251,10 +1252,11 @@ from gui.widgets.listbox import Listbox
 A `listbox` with the second item highlighted. Pressing the physical `select`
 button will cause the callback to run.
 
-A `Listbox` is an active widget. Its height is determined by the number of
-entries in it and the font in use. Scrolling is not supported. When the widget
-has focus the currently selected element may be changed using `increase` and
-`decrease` buttons. On pressing `select` a callback runs.
+A `Listbox` is an active widget. By default its height is determined by the
+number of entries in it and the font in use. It may be reduced by specifying
+`dlines` in which case scrolling will occur. When the widget has focus the
+currently selected element may be changed using `increase` and `decrease`
+buttons or by turning the encoder. On pressing `select` a callback runs.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1267,9 +1269,16 @@ Mandatory keyword only argument:
  list to have a separate callback.
 
 Optional keyword only arguments:
+ * `dlines=None` By default the height of the control is determined by the
+ number of elements. If an integer < number of elements is passed the list
+ will show that number of lines; its height will correspond. Scrolling will
+ occur to ensure that the current element is always visible. To indicate when
+ scrolling is possible, one or two vertical bars will appear to the right of
+ the list.
  * `width=None` Control width in pixels. By default this is calculated to
  accommodate all elements.
- * `value=0` Index of currently selected list item.
+ * `value=0` Index of currently selected list item. If necessary the list will
+ scroll to ensure the item is visible.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
  * `bgcolor=None` Background color of object. If `None` the `Writer` background
@@ -1306,10 +1315,10 @@ means of the instance's `value` or `textvalue` methods.
 
 By default the `Listbox` runs a common callback regardless of the item chosen.
 This can be changed by specifying `elements` such that each element comprises a
-3-list or 3-tuple with the following contents:
- 0. String to display.
- 1. Callback.
- 2. Tuple of args (may be ()).
+3-list or 3-tuple with the following contents:  
+ 1. String to display.
+ 2. Callback.
+ 3. Tuple of args (may be `()`).
 
 In this case constructor args `callback` and `args` must not be supplied. Args
 received by the callback functions comprise the `Listbox` instance followed by
@@ -1354,11 +1363,12 @@ Closed dropdown list.
 
 Open dropdown list. When closed, hidden items below are refreshed.
 
-A dropdown list. The list, when active, is drawn below the control. The height
-of the control is determined by the height of the font in use. The height of
-the list is determined by the number of entries in it and the font in use.
-Scrolling is not supported. The dropdown should be placed high enough on the
-screen to ensure that the list can be displayed
+A dropdown list. The list, when active, is drawn over the control. The height
+of the control is determined by the height of the font in use. By default the
+height of the list is determined by the number of entries in it and the font in
+use. It may be reduced by specifying `dlines` in which case scrolling will
+occur. The dropdown should be placed high enough on the screen to ensure that
+the list can be displayed.
 
 Constructor mandatory positional args:  
  1. `writer` The `Writer` instance (defines font) to use.
@@ -1371,6 +1381,12 @@ Mandatory keyword only argument:
  each item on the dropdown list to have a separate callback.
 
 Optional keyword only arguments:
+ * `dlines=None` By default the height of the dropdown list is determined by
+ the number of elements. If an integer < number of elements is passed the list
+ will show that number of lines; its height will correspond. Scrolling will
+ occur to ensure that the current element is always visible. To indicate when
+ scrolling is possible, one or two vertical bars will appear to the right of
+ the list.
  * `width=None` Control width in pixels. By default this is calculated to
  accommodate all elements.
  * `value=0` Index of currently selected list item.
@@ -1414,10 +1430,10 @@ means of the instance's `value` or `textvalue` methods.
 
 By default the `Dropdown` runs a single callback regardless of the element
 chosen. This can be changed by specifying `elements` such that each element
-comprises a 3-list or 3-tuple with the following contents:
- 0. String to display.
- 1. Callback.
- 2. Tuple of args (may be ()).
+comprises a 3-list or 3-tuple with the following contents:  
+ 1. String to display.
+ 2. Callback.
+ 3. Tuple of args (may be `()`).
 
 In this case constructor args `callback` and `args` must not be supplied. Args
 received by the callback functions comprise the `Dropdown` instance followed by
