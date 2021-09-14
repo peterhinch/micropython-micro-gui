@@ -2,7 +2,7 @@
 
 This is a lightweight, portable, MicroPython GUI library for displays having
 drivers subclassed from `framebuf`. Written in Python it runs under a standard
-MicroPython firmware build. Options for data input comprise
+MicroPython firmware build. Options for data input comprise:
  * Via from two to five pushbuttons depending on the application.
  * Via a switch-based navigation joystick.
  * Via two pushbuttons and a rotary encoder such as
@@ -140,7 +140,9 @@ graphics primitives rather than icons. This makes them efficiently scalable and
 minimises RAM usage compared to icon-based graphics. It also facilitates the
 provision of extra visual information. For example the color of all or part of
 a widget may be changed programmatically, for example to highlight an overrange
-condition.
+condition. There is limited support for
+[icons](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#3-icons)
+in pushbuttons via icon fonts.
 
 The following, taken from `gui.demos.simple.py`, is a complete application. It
 shows a message and has "Yes" and "No" buttons which trigger a callback.
@@ -1099,7 +1101,9 @@ Optional keyword only arguments:
  * `textcolor=None` Text color. Defaults to `fgcolor`.
  * `litcolor=None` If provided the button will display this color for one
  second after being pressed.
- * `text=''` Shown in centre of button.
+ * `text=''` Shown in centre of button. It is possible to show simple
+ [icons](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#3-icons),
+ for example media playback symbols.
  * `callback=dolittle` Callback function which runs when button is pressed.
  * `args=()` A list/tuple of arguments for the above callback.
  * `onrelease=False` If `True` the callback will occur when the `select`
