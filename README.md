@@ -95,6 +95,7 @@ there is a workround if it's impossible to upgrade. See
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
  4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
+ 4.5 [Usage](./README.md#45-usage) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
@@ -864,6 +865,17 @@ base screen are cancelled.
 
 For finer control, applications can ignore this method and handle cancellation
 explicitly in code.
+
+## 4.5 Usage
+
+The `Screen.change()` classmethod returns immediately. This has implications
+where the new, top screen sets up data for use by the underlying screen. One
+approach is for the top screen to populate class variables. These can be
+acccessed by the bottom screen's `after_open` method which will run after the
+top screen has terminated.
+
+If a `Screen` throws an exception when instantiated, check that its constructor
+calls `super().__init__()`.
 
 ###### [Contents](./README.md#0-contents)
 
