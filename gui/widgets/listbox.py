@@ -79,7 +79,8 @@ class Listbox(Widget):
         eh = self.entry_height
         ntop = self.ntop
         dlines = self.dlines
-        for n in range(ntop, ntop + dlines):
+        nlines = min(dlines, len(self.elements))  # Displayable lines
+        for n in range(ntop, ntop + nlines):
             if n == self._value:
                 display.fill_rect(x, y + 1, self.width, eh - 1, self.select_color)
                 display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.select_color)
