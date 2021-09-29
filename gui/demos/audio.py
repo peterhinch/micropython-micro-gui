@@ -12,6 +12,8 @@ import pyb
 # Do allocations early
 BUFSIZE = 1024*20  # 5.8ms/KiB
 
+root = "/sd/music"  # Location of directories containing albums
+
 pyb.Pin("EN_3V3").on()  # provide 3.3V on 3V3 output pin
 
 # ======= I2S CONFIGURATION =======
@@ -52,19 +54,29 @@ from gui.core.colors import *
 import os
 import gc
 import uasyncio as asyncio
+import sys
+
+# Initial check on ilesystem
+try:
+    subdirs = [x[0] for x in os.ilistdir(root) if x[1] == 0x4000]
+    if len(subdirs):
+        subdirs.sort()
+    else:
+        print("No albums found in ", root)
+        sys.exit(1)
+except OSError:
+    print(f"Expected {root} directory not found.")
+    sys.exit(1)
 
 class SelectScreen(Screen):
     songs = []
     album = ""
     def __init__(self, wri):
         super().__init__()
-        self.root = "/sd/music"
-        subdirs = [x[0] for x in os.ilistdir(self.root) if x[1] == 0x4000]
-        subdirs.sort()
-        Listbox(wri, 2, 2, elements = subdirs, dlines = 8, callback = self.lbcb)
+        Listbox(wri, 2, 2, elements = subdirs, dlines = 8, width=100, callback = self.lbcb)
 
     def lbcb(self, lb):  # sort
-        directory = ''.join((self.root, '/', lb.textvalue()))
+        directory = ''.join((root, '/', lb.textvalue()))
         songs = [x[0] for x in os.ilistdir(directory) if x[1] != 0x4000]
         songs.sort()
         SelectScreen.songs = [''.join((directory, '/', x)) for x in songs]
@@ -113,8 +125,8 @@ class BaseScreen(Screen):
         row = 110
         col = 14
         HorizSlider(wri, row, col, callback=self.slider_cb, **args)
-        CloseButton(wri, callback=self.shutdown)  # Quit the application
-        self.reg_task(asyncio.create_task(self.report()))
+        CloseButton(wri)  # Quit the application
+        # self.reg_task(asyncio.create_task(self.report()))
 
     async def report(self):
         while True:
@@ -131,39 +143,53 @@ class BaseScreen(Screen):
     def pause(self, _):
         self.stop_play = True
         self.paused = True
+        self.show_song()
 
     def stop(self, _):  # Abandon album
         self.stop_play = True
         self.paused = False
         self.song_idx = 0
+        self.show_song()
 
     def replay(self, _):
-        self.stop_play = True
+        if self.stop_play:
+            self.song_idx = max(0, self.song_idx - 1)
+        else:
+            self.stop_play = True  # Replay from start
         self.paused = False
-        #self.play_album()  # Play from same song_idx
+        self.show_song()
+        #self.play_album()
 
     def skip(self, _):
         self.stop_play = True
         self.paused = False
         self.song_idx = min(self.song_idx + 1, len(self.songs) -1)
+        self.show_song()
         #self.play_album()
 
     def new(self, _, wri):
+        self.stop_play = True
+        self.paused = False
         Screen.change(SelectScreen, args=[wri,])
 
     def play_album(self):
         self.reg_task(asyncio.create_task(self.album_task()))
-
-    def shutdown(self, _):
-        audio_out.deinit()
-        print("==========  CLOSE AUDIO ==========")
 
     def after_open(self):
         self.songs = SelectScreen.songs
         self.lbl.value(SelectScreen.album)
         if self.songs:
             self.song_idx = 0  # Start on track 0
+            self.show_song()
             #self.play_album()
+
+    def show_song(self):
+        song = self.songs[self.song_idx]
+        print('refresh', song)
+        ns = song.find(SelectScreen.album)
+        ne = song[ns:].find('/') + 1
+        end = song[ns + ne:].find(".wav")
+        self.lblsong.value(song[ns + ne: ns + ne + end])
 
     async def album_task(self):
         # Must ensure that only one instance of album_task is running
@@ -175,18 +201,12 @@ class BaseScreen(Screen):
         # Leave paused status unchanged
         songs = self.songs[self.song_idx :]  # Start from current index
         for song in songs:
-            ns = song.find(SelectScreen.album)
-            ne = song[ns:].find('/') + 1
-            end = song[ns + ne:].find(".wav")
-            self.lblsong.value(song[ns + ne: ns + ne + end])
-            print(song[ns + ne: ns + ne + end])
-
+            self.show_song()
             await self.play_song(song)
             if self.stop_play:
                 break  # A callback has stopped playback
             self.song_idx += 1
         self.playing = False
-        self.lblsong.value("")
 
     # Open and play a binary wav file
     async def play_song(self, song):
@@ -208,6 +228,10 @@ class BaseScreen(Screen):
 
 def test():
     print('Audio demo.')
-    Screen.change(BaseScreen)  # A class is passed here, not an instance.
+    try:
+        Screen.change(BaseScreen)  # A class is passed here, not an instance.
+    finally:
+        audio_out.deinit()
+        print("==========  CLOSE AUDIO ==========")
 
 test()

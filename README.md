@@ -1292,7 +1292,9 @@ Optional keyword only arguments:
  scrolling is possible, one or two vertical bars will appear to the right of
  the list.
  * `width=None` Control width in pixels. By default this is calculated to
- accommodate all elements.
+ accommodate all elements. If a `width` is specified, and some elements are too
+ long to fit, they will be clipped. This is a visual effect only and does not
+ affect the value of that element.
  * `value=0` Index of currently selected list item. If necessary the list will
  scroll to ensure the item is visible.
  * `fgcolor=None` Color of foreground (the control itself). If `None` the

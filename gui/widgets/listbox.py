@@ -81,11 +81,22 @@ class Listbox(Widget):
         dlines = self.dlines
         nlines = min(dlines, len(self.elements))  # Displayable lines
         for n in range(ntop, ntop + nlines):
+            text = self.elements[n]
+            if self.writer.stringlen(text) > self.width:  # Clip
+                font = self.writer.font
+                pos = 0
+                nch = 0
+                for ch in text:
+                    pos += font.get_ch(ch)[2]  # width of current char
+                    if pos > self.width:
+                        break
+                    nch += 1
+                text = text[: nch]
             if n == self._value:
                 display.fill_rect(x, y + 1, self.width, eh - 1, self.select_color)
-                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.select_color)
+                display.print_left(self.writer, x + 2, y + 1, text, self.fontcolor, self.select_color)
             else:
-                display.print_left(self.writer, x + 2, y + 1, self.elements[n], self.fontcolor, self.bgcolor)
+                display.print_left(self.writer, x + 2, y + 1, text, self.fontcolor, self.bgcolor)
             y += eh
         # Draw a vertical line to hint at scrolling
         x = self.col + self.width - 2
