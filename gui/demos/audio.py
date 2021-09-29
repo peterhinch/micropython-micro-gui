@@ -173,7 +173,8 @@ class BaseScreen(Screen):
         Screen.change(SelectScreen, args=[wri,])
 
     def play_album(self):
-        self.reg_task(asyncio.create_task(self.album_task()))
+        if not self.playing:
+            self.reg_task(asyncio.create_task(self.album_task()))
 
     def after_open(self):
         self.songs = SelectScreen.songs
@@ -185,17 +186,12 @@ class BaseScreen(Screen):
 
     def show_song(self):
         song = self.songs[self.song_idx]
-        print('refresh', song)
         ns = song.find(SelectScreen.album)
         ne = song[ns:].find('/') + 1
         end = song[ns + ne:].find(".wav")
         self.lblsong.value(song[ns + ne: ns + ne + end])
 
     async def album_task(self):
-        # Must ensure that only one instance of album_task is running
-        self.stop_play = True  # Stop the running instance
-        while self.playing:  # Wait for it to happen
-            await asyncio.sleep_ms(200)
         self.playing = True  # Prevent other instances
         self.stop_play = False
         # Leave paused status unchanged
@@ -206,6 +202,9 @@ class BaseScreen(Screen):
             if self.stop_play:
                 break  # A callback has stopped playback
             self.song_idx += 1
+        else:
+            self.song_idx = 0  # Played to completion.
+            self.show_song()
         self.playing = False
 
     # Open and play a binary wav file
