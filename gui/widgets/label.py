@@ -23,8 +23,16 @@ class Label(Widget):
             self.value(text, invert)
 
     def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
-        if self.writer.stringlen(text) > self.width:
-            raise ValueError('Label.value() string is too long.')
+        if self.writer.stringlen(text) > self.width:  # Clip
+            font = self.writer.font
+            pos = 0
+            n = 0
+            for ch in text:
+                pos += font.get_ch(ch)[2]  # width of current char
+                if pos > self.width:
+                    break
+                n += 1
+            text = text[: n]
         txt = super().value(text)  # Sets .draw ensuring refresh
         # Redraw even if no text supplied: colors may have changed.
         self.invert = invert

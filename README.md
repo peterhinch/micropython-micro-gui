@@ -966,9 +966,9 @@ Method:
  passed, no border is displayed. This clears a previously drawn border.  
 Returns the current text string.  
 
-If the `value` method is called with a text string too long for the `Label` a
-`ValueError` will be thrown. The width specified to the constructor should be
-sufficient for all possible values.
+If the `value` method is called with a text string too long for the `Label` the
+text will be clipped to fit the width. In this case `value()` will return the
+truncated text.
 
 If constructing a label would cause it to extend beyond the screen boundary a
 warning is printed at the console. The label may appear at an unexpected place.

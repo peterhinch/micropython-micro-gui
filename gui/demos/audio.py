@@ -10,7 +10,7 @@ from machine import Pin
 import pyb
 
 # Do allocations early
-BUFSIZE = 1024*25  # 5.8ms/KiB
+BUFSIZE = 1024*20  # 5.8ms/KiB
 
 pyb.Pin("EN_3V3").on()  # provide 3.3V on 3V3 output pin
 
@@ -108,7 +108,8 @@ class BaseScreen(Screen):
         Button(wri_icons, row, col + 25, text='C', callback=self.skip, **buttons)  # Skip
         row = 60
         col = 2
-        self.lbl = Label(wri, row, col, 100)
+        self.lbl = Label(wri, row, col, 120)
+        self.lblsong = Label(wri, self.lbl.mrow + 2, col, 120)
         row = 110
         col = 14
         HorizSlider(wri, row, col, callback=self.slider_cb, **args)
@@ -174,12 +175,18 @@ class BaseScreen(Screen):
         # Leave paused status unchanged
         songs = self.songs[self.song_idx :]  # Start from current index
         for song in songs:
+            ns = song.find(SelectScreen.album)
+            ne = song[ns:].find('/') + 1
+            end = song[ns + ne:].find(".wav")
+            self.lblsong.value(song[ns + ne: ns + ne + end])
+            print(song[ns + ne: ns + ne + end])
+
             await self.play_song(song)
             if self.stop_play:
                 break  # A callback has stopped playback
             self.song_idx += 1
         self.playing = False
-            
+        self.lblsong.value("")
 
     # Open and play a binary wav file
     async def play_song(self, song):
@@ -194,18 +201,10 @@ class BaseScreen(Screen):
             _ = wav.seek(self.offset)
             while (num_read := wav.readinto(wav_samples_mv)) and not self.stop_play:
                 I2S.shift(buf=wav_samples_mv[:num_read], bits=16, shift=self.volume)
-                if swriter.out_buf != b"":
-                    print('Que?')  # This never happens
-                    await asyncio.sleep_ms(0)
-                #swriter.write(wav_samples_mv[:num_read])  # Occasional errors allocating entire buffer
+                # HACK awaiting https://github.com/micropython/micropython/pull/7868
                 swriter.out_buf = wav_samples_mv[:num_read]
                 await swriter.drain()
-                await asyncio.sleep_ms(0)
                 self.offset += size
-        for x in range(256):  # Neccessary for silence
-            wav_samples[x] = 0
-        swriter.write(wav_samples_mv[:256])
-        await swriter.drain()
 
 def test():
     print('Audio demo.')
