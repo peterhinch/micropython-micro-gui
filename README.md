@@ -95,7 +95,8 @@ there is a workround if it's impossible to upgrade. See
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
  4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
- 4.5 [Usage](./README.md#45-usage) Accessing data created in a screen.  
+ 4.5 [Bound variable](./README.md#45-bound-variable)
+ 4.6 [Usage](./README.md#46-usage) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
@@ -130,6 +131,7 @@ there is a workround if it's impossible to upgrade. See
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.2 [Class PolarCurve](./README.md#2332-class-polarcurve)  
  23.4 [Class TSequence](./README.md#234-class-tsequence) Plotting realtime, time sequential data.  
 24. [Old firmware](./README.md#24-old-firmware) For users of color displays who can't run current firmware.  
+25. [Realtime applications](./README.md#25-realtime-applications) Accommodating tasks requiring fast RT performance.
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
@@ -866,7 +868,14 @@ base screen are cancelled.
 For finer control, applications can ignore this method and handle cancellation
 explicitly in code.
 
-## 4.5 Usage
+## 4.5 Bound variable
+
+ * `pause_ms=0` Screen refreshes are performed by a looping task. This
+ refreshes the screen before pausing. The default of 0ms allows other tasks to
+ be scheduled and suffices in the vast majority of cases. In some applications
+ with difficult realtime requirements a longer pause can offer benefits.
+
+## 4.6 Usage
 
 The `Screen.change()` classmethod returns immediately. This has implications
 where the new, top screen sets up data for use by the underlying screen. One
@@ -2656,6 +2665,44 @@ run V1.17 or later it is possible to run under V1.15+. This involves copying
 [this file](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/old_versions/writer_fw_compatible.py)
 to `gui/core/writer.py`. This uses Python code to render text if the firmware
 or driver are unable to support fast rendering.
+
+# 25. Realtime applications
+
+Screen refresh is performed in a continuous loop with yields to the scheduler.
+In normal applications this works well, however a significant proportion of
+processor time is spent performing a blocking refresh. A means of synchronising
+refresh to other tasks is provided, enabling the application to control the
+screen refresh. This is done by means of two `Event` instances. The refresh
+task operates as below (code simplified to illustrate this mechanism).
+
+```python
+class Screen:
+    rfsh_start = Event()  # Refresh pauses until set (set by default).
+    rfsh_done = Event()  # Flag a user task that a refresh was done.
+
+    @classmethod
+    async def auto_refresh(cls):
+        cls.rfsh_start.set()
+        while True:
+            await cls.rfsh_start.wait()
+            ssd.show()  # Synchronous (blocking) refresh.
+            # Flag user code.
+            cls.rfsh_done.set()
+            await asyncio.sleep_ms(0)  # Let user code respond to event
+```
+By default the `rfsh_start` event is permanently set, allowing refresh to free
+run. User code can clear this event to delay refresh. The `rfsh_done` event can
+signal to user code that refresh is complete. As an example of simple usage,
+the following, if awaited, pauses until a refresh is complete and prevents
+another from occurring.
+```python
+    async def refresh_and_stop(self):
+        Screen.rfsh_start.set()  # Allow refresh
+        Screen.rfsh_done.clear()  # Enable completion flag
+        await Screen.rfsh_done.wait()  # Wait for a refresh to end
+        Screen.rfsh_start.clear()  # Prevent another.
+```
+The demo `gui/demos/audio.py` provides example usage.
 
 ###### [Contents](./README.md#0-contents)
 

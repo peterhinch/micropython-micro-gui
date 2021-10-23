@@ -41,6 +41,14 @@ config = {
 
 audio_out = I2S(I2S_ID, **config)
 
+# *** MONITOR ***
+from machine import UART
+import monitor
+# Define interface to use
+monitor.set_device(UART(2, 1_000_000))  # UART must be 1MHz
+trig2 = monitor.trigger(2)
+# trig4 = monitor.trigger(4)
+
 # ======= GUI =======
 
 from gui.widgets.label import Label
@@ -130,6 +138,9 @@ class BaseScreen(Screen):
         HorizSlider(wri, row, col, callback=self.slider_cb, **args)
         CloseButton(wri)  # Quit the application
         # self.reg_task(asyncio.create_task(self.report()))
+        # *** MONITOR ***
+        monitor.init()
+        asyncio.create_task(monitor.hog_detect())
 
 
     async def report(self):
@@ -188,6 +199,7 @@ class BaseScreen(Screen):
             self.show_song()
             #self.play_album()
 
+    @monitor.sync(5)
     def show_song(self):  # 13ms
         song = self.songs[self.song_idx]
         ns = song.find(SelectScreen.album)
@@ -195,6 +207,7 @@ class BaseScreen(Screen):
         end = song[ns + ne:].find(".wav")
         self.lblsong.value(song[ns + ne: ns + ne + end])
 
+    @monitor.asyn(4)
     async def refresh_and_stop(self):
         Screen.rfsh_start.set()  # Allow refresh
         Screen.rfsh_done.clear()
@@ -234,6 +247,7 @@ class BaseScreen(Screen):
         rc.cancel()  # Restore normal display refresh
 
     # Open and play a binary wav file
+    @monitor.asyn(1)
     async def play_song(self, song):
         wav_samples_mv = memoryview(wav_samples)
         size = len(wav_samples)
@@ -248,8 +262,10 @@ class BaseScreen(Screen):
                 I2S.shift(buf=wav_samples_mv[:num_read], bits=16, shift=self.volume)
                 # HACK awaiting https://github.com/micropython/micropython/pull/7868
                 swriter.out_buf = wav_samples_mv[:num_read]
+                trig2(False)
                 await swriter.drain()
                 # wav_samples is now empty
+                trig2(True)  # Ready for data
                 self.offset += size
 
 def test():
