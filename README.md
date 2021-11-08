@@ -117,21 +117,22 @@ there is a workround if it's impossible to upgrade. See
 19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
 20. [Dial widget](./README.md#20-dial-widget) Display multiple vectors.  
 21. [Knob widget](./README.md#21-knob-widget) Rotary potentiometer float entry.  
-22. [Menu class](./README.md#22-menu-class)  
-23. [Graph plotting](./README.md#22-graph-plotting) Widgets for Cartesian and polar graphs.  
- 23.1 [Concepts](./README.md#231-concepts)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.1 [Graph classes](./README.md#2311-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.2 [Curve classes](./README.md#2312-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.1.3 [Coordinates](./README.md#2313-coordinates)  
- 23.2 [Graph classes](./README.md#231-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.2.1 [Class CartesianGraph](./README.md#2321-class-cartesiangraph)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.2.2 [Class PolarGraph](./README.md#2322-class-polargraph)  
- 23.3 [Curve classes](./README.md#233-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.1 [Class Curve](./README.md#2331-class-curve)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;23.3.2 [Class PolarCurve](./README.md#2332-class-polarcurve)  
- 23.4 [Class TSequence](./README.md#234-class-tsequence) Plotting realtime, time sequential data.  
-24. [Old firmware](./README.md#24-old-firmware) For users of color displays who can't run current firmware.  
-25. [Realtime applications](./README.md#25-realtime-applications) Accommodating tasks requiring fast RT performance.
+22. [Adjuster widget](./README.md#22-adjuster-widget) Space saving way to enter floats.  
+23. [Menu class](./README.md#23-menu-class)  
+24. [Graph plotting](./README.md#24-graph-plotting) Widgets for Cartesian and polar graphs.  
+ 24.1 [Concepts](./README.md#241-concepts)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.1 [Graph classes](./README.md#2411-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.2 [Curve classes](./README.md#2412-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.3 [Coordinates](./README.md#2413-coordinates)  
+ 24.2 [Graph classes](./README.md#242-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.2.1 [Class CartesianGraph](./README.md#2421-class-cartesiangraph)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.2.2 [Class PolarGraph](./README.md#2422-class-polargraph)  
+ 24.3 [Curve classes](./README.md#243-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.3.1 [Class Curve](./README.md#2431-class-curve)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.3.2 [Class PolarCurve](./README.md#2432-class-polarcurve)  
+ 24.4 [Class TSequence](./README.md#244-class-tsequence) Plotting realtime, time sequential data.  
+25. [Old firmware](./README.md#25-old-firmware) For users of color displays who can't run current firmware.  
+26. [Realtime applications](./README.md#26-realtime-applications) Accommodating tasks requiring fast RT performance.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
@@ -520,6 +521,8 @@ minimal and aim to demonstrate a single technique.
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
+ * `adjuster.py` Simple demo of the `Adjuster` control.
+ * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
 
 ### 1.11.2 Test scripts
 
@@ -2272,8 +2275,8 @@ Optional keyword only arguments:
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow to for a visual indication. An alternative color can be provided. 
- `WHITE` will defeat this change.
+ to yellow for a visual indication. An alternative color can be provided. 
+ `WHITE` defeats this change; `False` disables precision mode.
  * `callback=dolittle` Callback function runs when the user moves the knob or
  the value is changed programmatically.
  * `args=[]` A list/tuple of arguments for above callback.
@@ -2296,7 +2299,58 @@ value changes. This enables dynamic color change.
 
 ###### [Contents](./README.md#0-contents)
 
-# 22 Menu class
+# 22. Adjuster widget
+
+```python
+from gui.widgets.adjuster import Adjuster
+```
+The `Adjuster` is a space saving version of the `Knob`. It is normally paired
+with a `Label` which provides user feedback of the value. It has a range of
+0.0 to 1.0 and a visual arc of 270°. User code can provide arbitrary scaling
+or nonlinear operation. This is demonstrated in `demos/adjuster.py`. The
+widget was inspired by discussions with the author of
+[this project](https://www.instructables.com/Poor-Mans-Waveform-Generator-Based-on-RP2040-Raspb/).
+
+
+Constructor mandatory positional args:  
+ 1. `writer` The `Writer` instance. This defines the control's height.
+ 2. `row` Location on screen.
+ 3. `col`  
+
+Optional keyword only arguments:
+ * `value=0.0` Initial value. By default the knob will be at its most
+ counter-clockwise position.
+ * `fgcolor=None` Color of foreground (the control itself). If `None` the
+ `Writer` foreground default is used.
+ * `bgcolor=None` Background color of object. If `None` the `Writer` background
+ default is used.
+ * `color=None` Fill color for the control knob. Default: no fill.
+ * `prcolor=None` In precision mode the white focus border changes to yellow
+ for a visual indication. An alternative color can be provided. `WHITE` defeats
+ the change; `False` disables precision mode.
+ * `callback=dolittle` Callback function runs when the user moves the knob or
+ the value is changed programmatically.
+ * `args=[]` A list/tuple of arguments for above callback.
+
+Methods:
+ * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
+ current 'greyed out' status of the control. Otherwise enables or disables it,
+ showing it in its new state.
+ * `value` Optional argument `val`. If set, adjusts the pointer to
+ correspond to the new value. The move callback will run. The method constrains
+ the range to 0.0 to 1.0. Always returns the control's value.
+
+### Callback
+
+The callback receives an initial arg being the widget instance followed by any
+user supplied args. The callback can be a bound method, typically of a `Screen`
+subclass. The callback runs when the widget is instantiated and whenever the
+value changes. Typically the callback will adjust the text displayed on a
+linked label.
+
+###### [Contents](./README.md#0-contents)
+
+# 23 Menu class
 
 ```python
 from gui.widgets.menu import Menu
@@ -2404,7 +2458,7 @@ different callback if the application required it.
 
 ###### [Contents](./README.md#0-contents)
 
-# 23. Graph Plotting
+# 24. Graph Plotting
 
 ```python
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
@@ -2417,7 +2471,7 @@ from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSe
 
 For example code see `gui/demos/plot.py`.
 
-## 23.1 Concepts
+## 24.1 Concepts
 
 Data for Cartesian graphs constitutes a sequence of x, y pairs, for polar
 graphs it is a sequence of complex `z` values. The module supports three
@@ -2427,13 +2481,13 @@ common cases:
  3. One or more `y` values arrive gradually. The `X` axis represents time. This
  is a simplifying case of 2.
 
-### 23.1.1 Graph classes
+### 24.1.1 Graph classes
 
 A user program first instantiates a graph object (`PolarGraph` or
 `CartesianGraph`). This creates an empty graph image upon which one or more
 curves may be plotted. Graphs are passive widgets so cannot accept user input.
 
-### 23.1.2 Curve classes
+### 24.1.2 Curve classes
 
 The user program then instantiates one or more curves (`Curve` or
 `PolarCurve`) as appropriate to the graph. Curves may be assigned colors to
@@ -2448,7 +2502,7 @@ Where it is required to plot realtime data as it arrives, this is achieved
 via calls to the curve's `point` method. If a prior point exists it causes a
 line to be drawn connecting the point to the last one drawn.
 
-### 23.1.3 Coordinates
+### 24.1.3 Coordinates
 
 `PolarGraph` and `CartesianGraph` objects are subclassed from `Widget` and are
 positioned accordingly by `row` and `col` with a 2-pixel outside border. The
@@ -2464,9 +2518,9 @@ unit circle but will be clipped to the rectangular graph boundary.
 
 ###### [Contents](./README.md#0-contents)
 
-## 23.2 Graph classes
+## 24.2 Graph classes
 
-### 23.2.1 Class CartesianGraph
+### 24.2.1 Class CartesianGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2493,7 +2547,7 @@ Keyword only arguments (all optional):
 Method:  
  * `show` No args. Redraws the empty graph. Used when plotting time sequences.
 
-### 23.2.2 Class PolarGraph
+### 24.2.2 Class PolarGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2518,9 +2572,9 @@ Method:
 
 ###### [Contents](./README.md#0-contents)
 
-## 23.3 Curve classes
+## 24.3 Curve classes
 
-### 23.3.1 Class Curve
+### 24.3.1 Class Curve
 
 The Cartesian curve constructor takes the following positional arguments:
 
@@ -2560,7 +2614,7 @@ To plot x values from 1000 to 4000 we would set the `origin` x value to 1000
 and the `excursion` x value to 3000. The `excursion` values scale the plotted
 values to fit the corresponding axis.
 
-### 23.3.2 Class PolarCurve
+### 24.3.2 Class PolarCurve
 
 The constructor takes the following positional arguments:
 
@@ -2594,7 +2648,7 @@ Complex points should lie within the unit circle to be drawn within the grid.
 
 ###### [Contents](./README.md#0-contents)
 
-## 23.4 Class TSequence
+## 24.4 Class TSequence
 
 A common task is the acquisition and plotting of real time data against time,
 such as hourly temperature and air pressure readings. This class facilitates
@@ -2658,7 +2712,7 @@ class TSeq(Screen):
 ```
 ###### [Contents](./README.md#0-contents)
 
-# 24. Old firmware
+# 25. Old firmware
 
 Current firmware is highly recommended. For users of color displays who cannot
 run V1.17 or later it is possible to run under V1.15+. This involves copying
@@ -2666,7 +2720,7 @@ run V1.17 or later it is possible to run under V1.15+. This involves copying
 to `gui/core/writer.py`. This uses Python code to render text if the firmware
 or driver are unable to support fast rendering.
 
-# 25. Realtime applications
+# 26. Realtime applications
 
 Screen refresh is performed in a continuous loop with yields to the scheduler.
 In normal applications this works well, however a significant proportion of
