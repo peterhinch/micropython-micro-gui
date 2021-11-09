@@ -2348,6 +2348,16 @@ subclass. The callback runs when the widget is instantiated and whenever the
 value changes. Typically the callback will adjust the text displayed on a
 linked label.
 
+### A numeric entry device
+
+The file [widgets/adjuster.py](./gui/widgets/adjuster.py) includes an example
+class which combines an `Adjuster` with one or two `Label` instances. The
+`Adjuster` changes the displayed value in the `Label` to its left. Its use is
+illustrated in [demos/adjuster.py](./gui/demos/adjuster.py). The class can be
+used as a template for a user class, which may have a different layout on
+screen. It supports arbitrary mapping and number formatting on a per-instance
+basis. See code comments for further details.
+
 ###### [Contents](./README.md#0-contents)
 
 # 23 Menu class
