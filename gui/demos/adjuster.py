@@ -39,9 +39,10 @@ class BaseScreen(Screen):
         a = Adjuster(wri, row, self.lbl3.mcol + 2, fgcolor=YELLOW,
                      callback=self.adj3_callback)
         Label(wri, row, a.mcol + 2, "Log")
+        # Demo of FloatAdj class
         self.fa = FloatAdj(wri, a.mrow + 5, col, color=BLUE,
                       map_func=lambda x: (x - 0.5) * 20,
-                      fstr="{:6.2f}", text="class")
+                      value=0.5, fstr="{:6.2f}", text="class")
         CloseButton(wri)  # Quit the application
 
     def adj1_callback(self, adj):
@@ -57,7 +58,7 @@ class BaseScreen(Screen):
         self.lbl3.value(f"{v:4.2f}")
 
     #def after_open(self):  # Demo of programmatic change
-        #self.fa.value(0.5)
+        #self.fa.value(0.8)
 
 def test():
     print("Demo of Adjuster control.")

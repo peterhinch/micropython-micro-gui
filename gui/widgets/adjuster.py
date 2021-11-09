@@ -52,37 +52,33 @@ class Adjuster(LinearIO):
         display.line(int(self.xorigin), int(self.yorigin), x_end, y_end, color)
 
 # This class combines an Adjuster with one or two labels. Numerous layout
-# options exist: users may wish to write their own versions of this example.
-# The map_func enables instances to have their own mapping of Adjuster value
+# options exist: users may wish to write a version of this example with
+# different visual characteristics.
+# The map_func enables each instance to have its own mapping of Adjuster value
 # to perform offset, scaling, log mapping etc.
 # The object's value is that of the Adjuster, in range 0.0-1.0. The scaled
 # value is retrieved with .mapped_value()
-class FloatAdj:
+class FloatAdj(Adjuster):
     def __init__(self, wri, row, col, *,
                  lbl_width=60, value=0.0, color=None,
                  fstr="{:4.2f}", map_func=lambda v: v, text="",
                  callback=dolittle, args=[]):
 
-        self.fstr = fstr
         self.map_func = map_func
-        self.callback = callback
+        self.facb = callback
         self.args = args
+        self.fstr = fstr
 
         self.lbl = Label(wri, row, col, lbl_width, bdcolor=color)
-        self.adj = Adjuster(wri, row, self.lbl.mcol + 2, value=value,
-                            fgcolor=color, callback=self.cb)
-        l = Label(wri, row, self.adj.mcol + 2, text) if text else self.adj
-        # Facilitate relative positioning.
-        self.mcol = l.mcol
-        self.mrow = self.adj.mrow
+        super().__init__(wri, row, self.lbl.mcol + 2, value=value,
+                         fgcolor=color, callback=self.cb)
+        if text:
+            self.legend = Label(wri, row, self.mcol + 2, text)
+            self.mcol = self.legend.mcol  # For relative positioning
 
-    def cb(self, adj):
-        self.lbl.value(self.fstr.format(self.mapped_value(adj)))
-        self.callback(self, *self.args)
+    def cb(self, adj):  # Runs on init and when value changes
+        self.lbl.value(self.fstr.format(self.mapped_value()))
+        self.facb(self, *self.args)  # Run user callback
 
-    # Behave like a Widget.
-    def value(self, v=None):
-        return self.adj.value(v)
-
-    def mapped_value(self, adj=None):  # Special handling for initial callback
-        return self.map_func(self.value() if adj is None else adj.value())
+    def mapped_value(self):
+        return self.map_func(self.value())
