@@ -27,7 +27,7 @@ class BaseScreen(Screen):
         wri = CWriter(ssd, font, GREEN, BLACK)
         col = 2
         row = 2
-        self.dial = Dial(wri, row, col, bdcolor=None)
+        self.dial = Dial(wri, row, col, bdcolor=None, style=Dial.COMPASS)
         self.vec = Pointer(self.dial)
         a = Adjuster(wri, row, self.dial.mcol + 2, fgcolor=BLUE, callback=self.phi_cb)
         Label(wri, row, a.mcol + 2, "ϕ", fgcolor=BLUE)

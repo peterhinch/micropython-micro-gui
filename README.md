@@ -2304,6 +2304,11 @@ value changes. This enables dynamic color change.
 ```python
 from gui.widgets.adjuster import Adjuster
 ```
+![Image](./images/adjusters.jpg)  ![Image](./images/adj_vector.jpg)  
+
+Four examples paired with `Label`s. An example of two `Adjuster` instances
+setting a vector.
+
 The `Adjuster` is a space saving version of the `Knob`. It is normally paired
 with a `Label` which provides user feedback of the value. It has a range of
 0.0 to 1.0 and a visual arc of 270°. User code can provide arbitrary scaling
