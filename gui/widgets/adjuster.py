@@ -66,7 +66,7 @@ class FloatAdj(Adjuster):
 
         self.map_func = map_func
         self.facb = callback
-        self.args = args
+        self.fargs = args
         self.fstr = fstr
 
         self.lbl = Label(wri, row, col, lbl_width, bdcolor=color)
@@ -78,7 +78,7 @@ class FloatAdj(Adjuster):
 
     def cb(self, adj):  # Runs on init and when value changes
         self.lbl.value(self.fstr.format(self.mapped_value()))
-        self.facb(self, *self.args)  # Run user callback
+        self.facb(self, *self.fargs)  # Run user callback
 
     def mapped_value(self):
         return self.map_func(self.value())
