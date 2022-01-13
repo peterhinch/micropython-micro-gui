@@ -261,6 +261,8 @@ class Screen:
                 if isinstance(cs_old, Window):
                     raise ValueError('Windows are modal.')
                 new_screen = cls_new_screen(*args, **kwargs)
+                if not len(new_screen.lstactive):
+                    raise ValueError("Screen has no active widgets.")
             else:
                 raise ValueError('Must pass Screen class or subclass (not instance)')
             new_screen.parent = cs_old
@@ -411,10 +413,10 @@ class Screen:
                         lo.show()  # Re-display with new status
                     co.enter()  # Tell object it has currency
                     co.show()
-                elif isinstance(self, Window):
+                #elif isinstance(self, Window):
                     # Special case of Window with one object: leave
                     # without making changes (Dropdown in particular)
-                    Screen.back()
+                    #Screen.back()
                 done = True
 
     # Move currency to a specific control.
@@ -488,7 +490,8 @@ class Window(Screen):
             cls._value = val
         return cls._value
 
-    def __init__(self, row, col, height, width, *, draw_border=True, bgcolor=None, fgcolor=None):
+    def __init__(self, row, col, height, width, *, draw_border=True,
+                 bgcolor=None, fgcolor=None):
         Screen.__init__(self)
         self.row = row
         self.col = col

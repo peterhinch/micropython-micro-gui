@@ -26,7 +26,7 @@ class SubMenu(Window):
         # depends on number and length of elements.
         te = [x[0] for x in elements]  # Text part
         self.elements = elements
-        entry_height, lb_height, textwidth = Listbox.dimensions(wri, te)
+        entry_height, lb_height, _, textwidth = Listbox.dimensions(wri, te, None)
         lb_width = textwidth + 2
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border

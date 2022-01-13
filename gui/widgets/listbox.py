@@ -1,7 +1,7 @@
 # listbox.py Extension to ugui providing the Listbox class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2022 Peter Hinch
 
 # 12 Sep 21 Support for scrolling.
 
@@ -18,7 +18,7 @@ class Listbox(Widget):
     ON_MOVE = 1  # Also run whenever the currency moves.
     ON_LEAVE = 2  # Also run on exit from the control.
 
-    # This is used by dropdown.py
+    # This is used by dropdown.py and menu.py
     @staticmethod
     def dimensions(writer, elements, dlines):
         # Height of a single entry in list.
