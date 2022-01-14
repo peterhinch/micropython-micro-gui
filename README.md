@@ -100,6 +100,7 @@ there is a workround if it's impossible to upgrade. See
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
+ 5.3 [Popup windows](./README.md#53-popup-windows)  
 6. [Label widget](./README.md#6-label-widget) Single line text display.  
 7. [LED widget](./README.md#7-led-widget) Display Boolean values.  
 8. [Checkbox widget](./README.md#8-checkbox-widget) Enter Boolean values.  
@@ -912,6 +913,7 @@ Followed by keyword-only args
  * `draw_border=True`
  * `bgcolor=None` Background color, default black.
  * `fgcolor=None` Foreground color, default white.
+ * `writer=None` See Popups below.
 
 ## 5.2 Class method
 
@@ -924,6 +926,14 @@ Another approach, demonstrated in `demos/screens.py`, is to pass one or more
 callbacks to the user window constructor args. These may be called by widgets
 to send data to the calling screen. Note that widgets on the screen below will
 not be updated until the window has closed.
+
+## 5.3 Popup windows
+
+In general `Screen` and `Window` instances need at least one active widget.
+There is a special case of a popup window which typically displays status data,
+possibly with a progress meter. A popup has no user controls and is closed by
+user code. A popup is created by passing a `Writer` (or `CWriter`) to the
+constructor and is closed by issuing the `close()` static method.
 
 ###### [Contents](./README.md#0-contents)
 

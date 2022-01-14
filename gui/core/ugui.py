@@ -1,7 +1,7 @@
 # ugui.py Micropython GUI library
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019-2021 Peter Hinch
+# Copyright (c) 2019-2022 Peter Hinch
 
 # Requires uasyncio V3
 
@@ -21,7 +21,7 @@ display = None  # Singleton instance
 ssd = None
 
 gc.collect()
-__version__ = (0, 1, 3)
+__version__ = (0, 1, 4)
 
 # Null function
 dolittle = lambda *_ : None
@@ -490,8 +490,12 @@ class Window(Screen):
             cls._value = val
         return cls._value
 
+    @staticmethod
+    def close():  # More intuitive name for popup window
+        Screen.back()
+
     def __init__(self, row, col, height, width, *, draw_border=True,
-                 bgcolor=None, fgcolor=None):
+                 bgcolor=None, fgcolor=None, writer=None):
         Screen.__init__(self)
         self.row = row
         self.col = col
@@ -500,6 +504,8 @@ class Window(Screen):
         self.draw_border = draw_border
         self.fgcolor = fgcolor if fgcolor is not None else color_map[FG]
         self.bgcolor = bgcolor if bgcolor is not None else color_map[BG]
+        if writer is not None:  # Special case of popup message
+            DummyWidget(writer, self)  # Invisible active widget
 
     def _do_open(self, old_screen):
         dev = display.usegrey(False)
@@ -515,7 +521,6 @@ class Window(Screen):
         x = self.col
         y = self.row
         return x, y, x + w, y + h, w, h
-
 
 # Base class for all displayable objects
 class Widget:
@@ -622,7 +627,7 @@ class Widget:
             y = self.row - 2
             w = self.width + 4
             h = self.height + 4
-            if self.has_focus():
+            if self.has_focus() and not isinstance(self, DummyWidget):
                 color = color_map[FOCUS]
                 if hasattr(self, 'precision') and self.precision and self.prcolor is not None:
                     color = self.prcolor
@@ -747,3 +752,11 @@ class LinearIO(Widget):
     def leave(self):  # Control has lost focus
         self.precise(False)
 
+# The dummy enables popup windows by satisfying the need for at least one active
+# widget on a screen. It is invisible and is drawn by Window constructor before
+# any user labels..
+class DummyWidget(Widget):
+    
+    def __init__(self, writer, window):
+        super().__init__(writer, window.row + 1, window.col + 1, 4, 4,
+                 window.fgcolor, window.bgcolor, False, None, True)
