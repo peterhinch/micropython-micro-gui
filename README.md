@@ -1107,8 +1107,13 @@ from gui.widgets.buttons import Button
 ```
 ![Image](./images/pushbuttons.JPG)
 
-In this image `Button` "a" has the focus. Pressing the physical `select` button
-will press the virtual `Button`.
+Using an
+[icon font](https://github.com/peterhinch/micropython-font-to-py/blob/master/icon_fonts/README.md):  
+
+![Image](./images/iconbuttons.jpg)
+
+In these images `Button` "a"  and the "Forward" button have the focus. Pressing
+the physical `select` button will press the virtual `Button`.
 
 This emulates a pushbutton, with a callback being executed each time the button
 is pressed. Physically this consists of pressing the `select` button when the
