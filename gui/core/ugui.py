@@ -55,24 +55,28 @@ class Display:
 
         # Optional buttons
         self._prev = None
+        self.has_adjust_input = False
         if prev is not None:
             self._prev = Switch(prev)
             self._prev.close_func(self._closure, (self._prev, Screen.ctrl_move, _PREV))
         if encoder:
-            self.verbose and print('Using encoder.')
+            self.verbose and print('Using encoder for up/down.')
             if incr is None or decr is None:
                 raise ValueError('Must specify pins for encoder.')
             from gui.primitives.encoder import Encoder
             self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
+            self.has_adjust_input = True
         else:
-            self.verbose and print('Using switches.')
+            self.verbose and print('Using switches for up/down.')
             # incr and decr methods get the button as an arg.
             if incr is not None:
                 sup = Switch(incr)
                 sup.close_func(self._closure, (sup, Screen.adjust, 1))
+                self.has_adjust_input = True
             if decr is not None:
                 sdn = Switch(decr)
                 sdn.close_func(self._closure, (sdn, Screen.adjust, -1))
+                self.has_adjust_input = True
         self._is_grey = False  # Not greyed-out
         display = self  # Populate globals
         ssd = objssd
@@ -209,9 +213,9 @@ class Screen:
     rfsh_done = Event()  # Flag a user task that a refresh was done.
 
     @classmethod
-    def ctrl_move(cls, _, v):
+    def ctrl_move(cls, b, v):
         if cls.current_screen is not None:
-            cls.current_screen.move(v)
+            cls.current_screen.move(v, b)
 
     @classmethod
     def sel_ctrl(cls, b, _):
@@ -388,7 +392,7 @@ class Screen:
         return None
 
     # Move currency to next enabled control. Arg is direction of move.
-    def move(self, to):
+    def move(self, to, button):
         if to == _FIRST:
             idx = -1
             up = 1
@@ -400,6 +404,12 @@ class Screen:
             up = 1 if to == _NEXT else -1
 
         lo = self.get_obj()  # Old current object
+
+        # handle inc/dec with only 3 buttons
+        if hasattr(lo, 'adjusting') and lo.adjusting:
+            self.do_adj(button, up)
+            return
+
         done = False
         while not done:
             idx += up
@@ -449,7 +459,7 @@ class Screen:
         if co is not None and hasattr(co, 'do_adj'):
             co.do_adj(button, val)  # Widget can handle up/down
         else:
-            Screen.current_screen.move(_FIRST if val < 0 else _LAST)
+            Screen.current_screen.move(_FIRST if val < 0 else _LAST, button)
 
     # Methods optionally implemented in subclass
     def on_open(self): 
@@ -629,6 +639,8 @@ class Widget:
             h = self.height + 4
             if self.has_focus() and not isinstance(self, DummyWidget):
                 color = color_map[FOCUS]
+                if hasattr(self, 'adjusting') and self.adjusting and self.selcolor is not None:
+                    color = self.selcolor
                 if hasattr(self, 'precision') and self.precision and self.prcolor is not None:
                     color = self.prcolor
                 dev.rect(x, y, w, h, color)
@@ -707,6 +719,10 @@ class LinearIO(Widget):
         # Handle variable precision. Start normal
         self.precision = False
         self.do_precision = prcolor is not False
+
+        self.adjusting = False
+        self.selcolor = color_map[ADJUSTING]
+        
         if self.do_precision:
             # Subclass supports precision mode
             # 1 sec long press to set precise
@@ -737,9 +753,15 @@ class LinearIO(Widget):
 
     def precise(self, v):  # Timed out while button pressed
         self.precision = v
+        # precision implies adjusting
+        if not display.has_adjust_input:
+            self.adjusting = v
         self.draw = True
 
     def do_sel(self):  # Select button was pushed
+        if not display.has_adjust_input:
+            self.adjusting = not self.adjusting
+            self.draw = True
         if self.do_precision:  # Subclass handles precision mode
             if self.precision:  # Already in mode
                 self.precise(False)
