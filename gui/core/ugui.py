@@ -407,6 +407,8 @@ class Screen:
 
         # handle inc/dec with only 3 buttons
         if hasattr(lo, 'adjusting') and lo.adjusting:
+            # invert direction to make more sense
+            up = -up 
             self.do_adj(button, up)
             return
 
@@ -588,6 +590,8 @@ class Widget:
         self.has_border = False
         self.callback = dolittle # Value change callback
         self.args = []
+
+        self.selcolor = None
 
     def warning(self):
         print('Warning: attempt to create {} outside screen dimensions.'.format(self.__class__.__name__))

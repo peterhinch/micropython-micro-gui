@@ -8,6 +8,8 @@
 from gui.core.ugui import Widget, display
 from gui.core.colors import *
 
+from gui.primitives.delay_ms import Delay_ms
+
 dolittle = lambda *_ : None
 
 # Behaviour has issues compared to touch displays because movement between
@@ -70,6 +72,12 @@ class Listbox(Widget):
         self._value = value # No callback until user selects
         self.ev = value  # Value change detection
 
+        # Support input without adjust
+        if not display.has_adjust_input:
+            self.adjusting = True
+            self.lpd = Delay_ms(self.change_adjust, (False,))
+            self.selcolor = color_map[ADJUSTING]
+
     def show(self):
         if not super().show(False):  # Clear to self.bgcolor
             return
@@ -127,7 +135,7 @@ class Listbox(Widget):
             self.ntop = vnew
         self.value(vnew)
         if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
-            self.do_sel()
+            self.select()
 
     def do_adj(self, _, val):
         v = self._value
@@ -138,20 +146,38 @@ class Listbox(Widget):
             if v < len(self.elements) - 1:
                 self._vchange(v + 1)
 
+    def change_adjust(self, a):
+        self.adjusting = a
+        self.draw = True
+
     # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes
     # list currency and then moves off the control. Otherwise if we have a
     # callback that refreshes another control, that second control does not
     # track currency.
-    def do_sel(self): # Select was pushed
+    def select(self):
         self.ev = self._value
         self.cb(self, *self.cb_args)
+
+    def do_sel(self): # Select was pushed
+        if not display.has_adjust_input:
+            if self.adjusting:
+                self.lpd.trigger()
+            else:
+                self.change_adjust(True)
+                return
+
+        self.select()
+
+    def unsel(self):
+        if self.adjusting:
+            self.lpd.stop()
 
     def enter(self):
         self.ev = self._value  # Value change detection
 
     def leave(self):
         if (self.also & Listbox.ON_LEAVE) and self._value != self.ev:
-            self.do_sel()
+            self.select()
 
     def despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]
