@@ -3,7 +3,7 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2019-2022 Peter Hinch
 
-# Requires uasyncio V3
+# Credit to Bart Cerneels for devising and prototyping the 3-button mode
 
 import uasyncio as asyncio
 from uasyncio import Event
@@ -13,15 +13,14 @@ import gc
 from gui.core.colors import *
 from hardware_setup import ssd
 
-from gui.primitives.delay_ms import Delay_ms
-from gui.primitives.switch import Switch
+from gui.primitives import Pushbutton
 
 # Globally available singleton objects
 display = None  # Singleton instance
 ssd = None
 
 gc.collect()
-__version__ = (0, 1, 4)
+__version__ = (0, 1, 5)
 
 # Null function
 dolittle = lambda *_ : None
@@ -30,59 +29,96 @@ async def _g():
     pass
 type_coro = type(_g())
 
+# Navigation destinations
 _FIRST = const(0)
 _NEXT = const(1)
 _PREV = const(2)
 _LAST = const(3)
 
-# Wrapper for ssd providing buttons and framebuf compatible methods
-class Display:
-    verbose = True
+# Input abstracts input from 2-5 pushbuttons or 3 buttons + encoder. Handles
+# transitions between modes (normal, precision, adjustment)
+class Input:
 
-    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
-        global display, ssd
-        self._next = Switch(nxt)
-        self._sel = Switch(sel)
-        self._last = None  # Last switch pressed.
+    def __init__(self, nxt, sel, prev, incr, decr, encoder):
+        verbose = True
+        self._encoder = encoder  # Encoder in use
+        self._precision = False  # Precision mode
+        self._adj = False  # Adjustment mode
+        # Count buttons
+        self._nb = sum(1 for x in (nxt, sel, prev, incr, decr) if x is not None)
         # Mandatory buttons
+        self._next = Pushbutton(nxt)
+        self._sel = Pushbutton(sel, suppress=True)
         # Call current screen bound method
-        self._next.close_func(self._closure, (self._next, Screen.ctrl_move, _NEXT))
-        self._sel.close_func(self._closure, (self._sel, Screen.sel_ctrl, 0))
-        self._sel.open_func(Screen.unsel)
-
-        self.height = objssd.height
-        self.width = objssd.width
-
+        self._next.press_func(Screen.ctrl_move, (_NEXT,))
+        self._sel.release_func(Screen.sel_ctrl)
+        if encoder or (self._nb > 2):  # Can use precision mode when in adjust mode
+            self._sel.long_func(self.precision, (True,))
+        if self._nb == 3:  # Special case of 3-button interface
+            self._sel.double_func(self.adj_mode)  # Double click toggles adjust
         # Optional buttons
-        self._prev = None
         if prev is not None:
-            self._prev = Switch(prev)
-            self._prev.close_func(self._closure, (self._prev, Screen.ctrl_move, _PREV))
+            self._prev = Pushbutton(prev)
+            self._prev.press_func(Screen.ctrl_move, (_PREV,))
         if encoder:
-            self.verbose and print('Using encoder.')
+            verbose and print('Using encoder.')
             if incr is None or decr is None:
                 raise ValueError('Must specify pins for encoder.')
             from gui.primitives.encoder import Encoder
             self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
         else:
-            self.verbose and print('Using switches.')
+            verbose and print('Using {:d} switches.'.format(self._nb))
             # incr and decr methods get the button as an arg.
             if incr is not None:
-                sup = Switch(incr)
-                sup.close_func(self._closure, (sup, Screen.adjust, 1))
+                sup = Pushbutton(incr)
+                sup.press_func(Screen.adjust, (sup, 1))
             if decr is not None:
-                sdn = Switch(decr)
-                sdn.close_func(self._closure, (sdn, Screen.adjust, -1))
+                sdn = Pushbutton(decr)
+                sdn.press_func(Screen.adjust, (sdn, -1))
+
+    def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode
+        if val:
+            if self._nb == 3 and not self._adj:
+                self.adj_mode()
+            self._precision = True
+        else:
+            self._precision = False
+        Screen.redraw_co()
+
+    def adj_mode(self, v=None):  # Set, clear or toggle adjustment mode
+        if self._nb == 3:  # Called from menu and dropdown widgets
+            self._adj = not self._adj if v is None else v
+            # Change button function
+            if self._adj:
+                self._prev.press_func(Screen.adjust, (self._prev, -1))
+                self._next.press_func(Screen.adjust, (self._next, 1))
+            else:
+                self._prev.press_func(Screen.ctrl_move, (_PREV,))
+                self._next.press_func(Screen.ctrl_move, (_NEXT,))
+                self._precision = False
+            Screen.redraw_co()
+
+    def encoder(self):
+        return self._encoder
+
+    def is_precision(self):
+        return self._precision
+
+    def is_adjust(self):
+        return self._adj
+
+
+# Wrapper for ssd providing buttons and framebuf compatible methods
+class Display:
+
+    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
+        global display, ssd
+        self.ipdev = Input(nxt, sel, prev, incr, decr, encoder)
+        self.height = objssd.height
+        self.width = objssd.width
         self._is_grey = False  # Not greyed-out
         display = self  # Populate globals
         ssd = objssd
-
-    # Reject button presses where a button is already pressed.
-    # Execute if initialising, if same switch re-pressed or if last switch released
-    def _closure(self, switch, func, arg):
-        if (self._last is None) or (self._last == switch) or self._last():
-            self._last = switch
-            func(switch, arg)
 
     def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False):
         sl = writer.stringlen(text)
@@ -208,20 +244,24 @@ class Screen:
     rfsh_start = Event()  # Refresh pauses until set (set by default).
     rfsh_done = Event()  # Flag a user task that a refresh was done.
 
-    @classmethod
-    def ctrl_move(cls, _, v):
+    @classmethod  # Called by Input when status change needs redraw of current obj
+    def redraw_co(cls):
         if cls.current_screen is not None:
+            obj = cls.current_screen.get_obj()
+            if obj is not None:
+                obj.draw = True
+
+    @classmethod
+    def ctrl_move(cls, v):
+        if cls.current_screen is not None:
+            display.ipdev.precision(False)  # Cancel precision mode
             cls.current_screen.move(v)
 
     @classmethod
-    def sel_ctrl(cls, b, _):
+    def sel_ctrl(cls):
         if cls.current_screen is not None:
+            display.ipdev.precision(False)  # Cancel precision mode
             cls.current_screen.do_sel()
-
-    @classmethod
-    def unsel(cls):
-        if cls.current_screen is not None:
-            cls.current_screen.unsel_i()
 
     # Adjust the value of a widget. If an encoder is used, button arg
     # is an int (discarded), val is the delta. If using buttons, 1st 
@@ -269,6 +309,7 @@ class Screen:
             cs_new = new_screen
         else:
             cs_new = cls_new_screen # An object, not a class
+        display.ipdev.adj_mode(False)  # Ensure normal mode
         cls.current_screen = cs_new
         cs_new.on_open() # Optional subclass method
         cs_new._do_open(cs_old) # Clear and redraw
@@ -413,10 +454,6 @@ class Screen:
                         lo.show()  # Re-display with new status
                     co.enter()  # Tell object it has currency
                     co.show()
-                #elif isinstance(self, Window):
-                    # Special case of Window with one object: leave
-                    # without making changes (Dropdown in particular)
-                    #Screen.back()
                 done = True
 
     # Move currency to a specific control.
@@ -438,11 +475,6 @@ class Screen:
         co = self.get_obj()
         if co is not None:
             co.do_sel()
-
-    def unsel_i(self):
-        co = self.get_obj()
-        if co is not None:
-            co.unsel()
 
     def do_adj(self, button, val):
         co = self.get_obj()
@@ -475,7 +507,7 @@ class Screen:
             await asyncio.sleep_ms(500)
             gc.collect()
             gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
-            #print(gc.mem_free())
+            # print(gc.mem_free())
 
 # Very basic window class. Cuts a rectangular hole in a screen on which
 # content may be drawn.
@@ -570,7 +602,7 @@ class Widget:
         self.bgcolor = bgcolor
         # bdcolor is False if no border is to be drawn
         self.bdcolor = bdcolor
-        # Default colors allow restoration after dynamic change
+        # Default colors allow restoration after dynamic change (Label)
         self.def_fgcolor = fgcolor
         self.def_bgcolor = bgcolor
         self.def_bdcolor = bdcolor
@@ -607,7 +639,6 @@ class Widget:
         if self.screen != Screen.current_screen:
             # Can occur if a control's action is to change screen.
             return False  # Subclass abandons
-
         self.draw = False
         self.draw_border()
         # Blank controls' space
@@ -629,8 +660,11 @@ class Widget:
             h = self.height + 4
             if self.has_focus() and not isinstance(self, DummyWidget):
                 color = color_map[FOCUS]
-                if hasattr(self, 'precision') and self.precision and self.prcolor is not None:
+                precision = hasattr(self, 'do_precision') and self.do_precision and display.ipdev.is_precision()
+                if precision:
                     color = self.prcolor
+                elif display.ipdev.is_adjust():
+                    color = color_map[ADJUSTING]
                 dev.rect(x, y, w, h, color)
                 self.has_border = True
             else:
@@ -676,9 +710,6 @@ class Widget:
     def do_sel(self):  # Select button was pushed
         pass
 
-    def unsel(self):  # Select button was released
-        pass
-
     def enter(self):  # Control has acquired focus
         pass
 
@@ -695,6 +726,7 @@ class Widget:
 # have do_up and do_down methods which adjust the control's value in a
 # time-dependent manner.
 class LinearIO(Widget):
+
     def __init__(self, writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
                 value=None, active=True, prcolor=False,
@@ -704,53 +736,31 @@ class LinearIO(Widget):
         super().__init__(writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
                 value, active)
-        # Handle variable precision. Start normal
-        self.precision = False
         self.do_precision = prcolor is not False
         if self.do_precision:
-            # Subclass supports precision mode
-            # 1 sec long press to set precise
-            self.lpd = Delay_ms(self.precise, (True,))
-            # Precision mode can only be entered when the active control has focus.
-            # In this state it will have a white border. By default this turns yellow
-            # but subclass can be defeat this with WHITE or another color
             self.prcolor = color_map[PRECISION] if prcolor is None else prcolor
 
     # Adjust widget's value. Args: button pressed, amount of increment
     def do_adj(self, button, val):
-        encoder = isinstance(button, int)
-        d = self.min_delta * 0.1 if self.precision else self.min_delta
+        d = self.min_delta * 0.1 if self.precision() else self.min_delta
         self.value(self.value() + val * d)
-        if not encoder:
+        if not display.ipdev.encoder():
             asyncio.create_task(self.btnhan(button, val, d))
 
     # Handle increase and decrease buttons. Redefined by textbox.py, scale_log.py
     async def btnhan(self, button, up, d):
-        maxd = self.max_delta if self.precision else d * 4  # Why move fast in precision mode?
+        maxd = self.max_delta if self.precision() else d * 4  # Why move fast in precision mode?
         t = ticks_ms()
-        while not button():
+        while button():
             await asyncio.sleep_ms(0)  # Quit fast on button release
             if ticks_diff(ticks_ms(), t) > 500:  # Button was held down
                 d = min(maxd, d * 2)
                 self.value(self.value() + up * d)
                 t = ticks_ms()
 
-    def precise(self, v):  # Timed out while button pressed
-        self.precision = v
-        self.draw = True
-
-    def do_sel(self):  # Select button was pushed
-        if self.do_precision:  # Subclass handles precision mode
-            if self.precision:  # Already in mode
-                self.precise(False)
-            else:  # Require a long press to enter mode
-                self.lpd.trigger()
-
-    def unsel(self):  # Select button was released
-        self.do_precision and self.lpd.stop()
-
-    def leave(self):  # Control has lost focus
-        self.precise(False)
+    # Get current status (also used by scale_log widget)
+    def precision(self):
+        return self.do_precision and display.ipdev.is_precision()
 
 # The dummy enables popup windows by satisfying the need for at least one active
 # widget on a screen. It is invisible and is drawn by Window constructor before

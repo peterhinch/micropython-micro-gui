@@ -145,14 +145,14 @@ class ScaleLog(LinearIO):
     # Adjust widget's value. Args: button pressed, amount of increment
     def do_adj(self, button, val):
         if isinstance(button, int):  # Using an encoder
-            delta = self.delta * self.encoder_rate * 0.1 if self.precision else self.delta * self.encoder_rate
+            delta = self.delta * self.encoder_rate * 0.1 if self.precision() else self.delta * self.encoder_rate
             self.value(self.value() * (1 + delta)**val)
         else:  # val == 1 or -1
             asyncio.create_task(self.btnhan(button, val))
 
     async def btnhan(self, button, up):
         up = up == 1
-        if self.precision:
+        if self.precision():
             delta = self.delta * 0.1
             maxdelta = self.delta
         else:
@@ -161,7 +161,7 @@ class ScaleLog(LinearIO):
         smul= (1 + delta) if up else (1 / (1 + delta))
         self.value(self.value() * smul)
         t = ticks_ms()
-        while not button():
+        while button():
             await asyncio.sleep_ms(0)  # Quit fast on button release
             if ticks_diff(ticks_ms(), t) > 500:  # Button was held down
                 delta = min(maxdelta, delta * 2)

@@ -6,9 +6,7 @@
 # Initialise hardware and framebuf before importing modules.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
-from gui.widgets.label import Label
-from gui.widgets.dial import Dial, Pointer
-from gui.widgets.buttons import CloseButton
+from gui.widgets import Label, Dial, Pointer, CloseButton
 
 # Now import other modules
 from cmath import rect, pi

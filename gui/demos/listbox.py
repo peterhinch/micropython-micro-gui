@@ -9,8 +9,7 @@ from gui.core.ugui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
 
-from gui.widgets.listbox import Listbox
-from gui.widgets.buttons import CloseButton
+from gui.widgets import Listbox, CloseButton
 import gui.fonts.freesans20 as font
 
 

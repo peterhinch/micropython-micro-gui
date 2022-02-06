@@ -8,8 +8,7 @@ from gui.core.ugui import Screen, ssd
 import gui.fonts.freesans20 as font
 from gui.core.writer import CWriter
 
-from gui.widgets.menu import Menu
-from gui.widgets.buttons import CloseButton
+from gui.widgets import Menu, CloseButton
 from gui.core.colors import *
 
 class BaseScreen(Screen):

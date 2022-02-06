@@ -18,9 +18,7 @@ from collections import OrderedDict
 from gui.core.writer import Writer, CWriter
 from gui.core.ugui import Screen, ssd
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
-from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.listbox import Listbox
+from gui.widgets import Label, Button, CloseButton, Listbox
 
 # Fonts & colors
 import gui.fonts.arial10 as arial10

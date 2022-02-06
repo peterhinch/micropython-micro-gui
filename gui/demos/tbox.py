@@ -15,9 +15,7 @@ from gui.core.writer import CWriter
 import uasyncio as asyncio
 from gui.core.colors import *
 import gui.fonts.arial10 as arial10
-from gui.widgets.label import Label
-from gui.widgets.textbox import Textbox
-from gui.widgets.buttons import Button, CloseButton
+from gui.widgets import Label, Textbox, Button, CloseButton
 
 wri = CWriter(ssd, arial10)  # verbose = True
 

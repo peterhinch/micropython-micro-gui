@@ -7,9 +7,7 @@
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.buttons import CloseButton
-from gui.widgets.checkbox import Checkbox
-from gui.widgets.led import LED
+from gui.widgets import CloseButton, Checkbox, LED
 from gui.core.writer import CWriter
 
 # Font for CWriter

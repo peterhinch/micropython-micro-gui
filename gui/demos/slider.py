@@ -7,8 +7,7 @@
 import hardware_setup
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.buttons import CloseButton
-from gui.widgets.sliders import Slider
+from gui.widgets import CloseButton, Slider
 from gui.core.writer import CWriter
 
 # Font for CWriter

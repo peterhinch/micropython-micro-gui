@@ -6,7 +6,7 @@
 # Usage:
 # from gui.widgets.menu import Menu
 
-from gui.core.ugui import Window, Screen
+from gui.core.ugui import Window, Screen, display
 from gui.widgets.buttons import Button
 from gui.widgets.listbox import Listbox
 from gui.core.colors import *
@@ -31,18 +31,20 @@ class SubMenu(Window):
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
-        super().__init__(row, col, ap_height, ap_width)
+        super().__init__(row, col, ap_height, ap_width, draw_border=False)
         Listbox(wri, row + 3, col + 3, elements = te, width = lb_width,
                 fgcolor = button.fgcolor, bgcolor = button.bgcolor, bdcolor=False, 
                 fontcolor = button.textcolor, select_color = menu.select_color,
                 callback = self.callback)
 
     def callback(self, lbox):
+        display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
         el = self.elements[lbox.value()]  # (text, cb, args)
         if len(el) == 2:  # Recurse into submenu
             args = (self.menu, self.button, el[1])
             Screen.change(SubMenu, args = args)
+            display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
         else:
             el[1](lbox, *el[2])
 
@@ -77,3 +79,4 @@ class Menu:
     def cb(self, button, txt, elements):  # Button pushed which calls submenu
         args = (self, button, elements)
         Screen.change(SubMenu, args = args)
+        display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode

@@ -15,7 +15,7 @@ class Button(Widget):
     lit_time = 1000
     def __init__(self, writer, row, col, *, shape=RECTANGLE, height=20, width=50,
                  fgcolor=None, bgcolor=None, bdcolor=False, textcolor=None, litcolor=None, text='',
-                 callback=dolittle, args=[], onrelease=False):
+                 callback=dolittle, args=[]):
         sl = writer.stringlen(text)
         if shape == CIRCLE:  # Only height need be specified
             width = max(sl, height)
@@ -30,7 +30,6 @@ class Button(Widget):
         self.text = text
         self.callback = callback
         self.callback_args = args
-        self.onrelease = onrelease
         if self.litcolor is not None:
             self.delay = Delay_ms(self.shownormal)
 
@@ -77,16 +76,11 @@ class Button(Widget):
         self.draw = True  # Redisplay
 
     def do_sel(self): # Select was pushed
-        if not self.onrelease:
-            self.callback(self, *self.callback_args) # CB takes self as 1st arg.
+        self.callback(self, *self.callback_args) # CB takes self as 1st arg.
         if self.litcolor is not None and self.has_focus():  # CB may have changed focus
             self.bgcolor = self.litcolor
             self.draw = True  # Redisplay
             self.delay.trigger(Button.lit_time)
-
-    def unsel(self):  # Select was released
-        if self.onrelease:
-            self.callback(self, *self.callback_args) # Callback not a bound method so pass self
 
 # Preferred way to close a screen or dialog. Produces an X button at the top RHS.
 # Note that if the bottom screen is closed, the application terminates.

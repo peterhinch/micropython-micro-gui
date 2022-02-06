@@ -10,12 +10,7 @@
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.sliders import Slider
-from gui.widgets.label import Label
-from gui.widgets.meter import Meter
-from gui.widgets.region import Region
-from gui.widgets.led import LED
+from gui.widgets import Button, CloseButton, Slider, Label, Meter, Region, LED
 from gui.core.writer import CWriter
 
 # Font for CWriter

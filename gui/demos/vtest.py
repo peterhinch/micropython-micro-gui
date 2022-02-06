@@ -16,9 +16,7 @@ from gui.core.writer import CWriter
 from gui.fonts import font10
 from gui.core.colors import *
 # Widgets
-from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.dial import Pointer, Dial
+from gui.widgets import Label, Button, CloseButton, Pointer, Dial
 
 
 def fwdbutton(wri, row, col, cls_screen, text='Next'):

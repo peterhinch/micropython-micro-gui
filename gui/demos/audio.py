@@ -44,9 +44,7 @@ audio_out = I2S(I2S_ID, **config)
 # ======= GUI =======
 
 from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton, CIRCLE
-from gui.widgets.sliders import HorizSlider
-from gui.widgets.listbox import Listbox
+from gui.widgets import Button, CloseButton, HorizSlider, Listbox
 from gui.core.writer import CWriter
 
 # Font for CWriter
@@ -59,7 +57,7 @@ import gc
 import uasyncio as asyncio
 import sys
 
-# Initial check on ilesystem
+# Initial check on filesystem
 try:
     subdirs = [x[0] for x in os.ilistdir(root) if x[1] == 0x4000]
     if len(subdirs):

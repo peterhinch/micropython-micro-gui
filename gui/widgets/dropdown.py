@@ -24,7 +24,7 @@ class _ListDialog(Window):
         # Calculate Window dimensions
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
-        super().__init__(row, col, ap_height, ap_width)
+        super().__init__(row, col, ap_height, ap_width, draw_border=False)
         self.listbox = Listbox(writer, row + 3, col + 3,
                                elements = dd.elements,
                                dlines = dlines, width = lb_width,
@@ -35,6 +35,7 @@ class _ListDialog(Window):
         self.dd = dd
 
     def callback(self, obj_listbox):
+        display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
         self.dd.value(obj_listbox.value()) # Update it
 
@@ -106,6 +107,7 @@ class Dropdown(Widget):
         if len(self.elements) > 1:
             args = (self.writer, self.row - 2, self.col - 2, self)
             Screen.change(_ListDialog, args = args)
+            display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
 
     def _despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]

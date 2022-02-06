@@ -7,9 +7,7 @@
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, Window, ssd
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.dialog import DialogBox
+from gui.widgets import Label, Button, CloseButton, DialogBox
 from gui.core.writer import CWriter
 
 # Font for CWriter

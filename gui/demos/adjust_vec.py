@@ -8,10 +8,7 @@ import hardware_setup  # Create a display instance
 import cmath
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import CloseButton
-from gui.widgets.adjuster import Adjuster
-from gui.widgets.dial import Dial, Pointer
+from gui.widgets import Label, CloseButton, Adjuster, Dial, Pointer
 from gui.core.writer import CWriter
 
 # Font for CWriter

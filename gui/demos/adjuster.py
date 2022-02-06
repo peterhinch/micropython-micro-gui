@@ -7,9 +7,7 @@
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import CloseButton
-from gui.widgets.adjuster import Adjuster, FloatAdj
+from gui.widgets import Label, CloseButton, Adjuster, FloatAdj
 from gui.core.writer import CWriter
 
 # Font for CWriter

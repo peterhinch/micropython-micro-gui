@@ -10,13 +10,7 @@ from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
 from gui.core.colors import *
 # Widgets
-from gui.widgets.label import Label
-from gui.widgets.scale import Scale
-from gui.widgets.scale_log import ScaleLog
-from gui.widgets.buttons import Button, CloseButton
-from gui.widgets.sliders import Slider, HorizSlider
-from gui.widgets.knob import Knob
-from gui.widgets.checkbox import Checkbox
+from gui.widgets import Label, Scale, ScaleLog, Button, CloseButton, Slider, HorizSlider, Knob, Checkbox
 
 
 class BaseScreen(Screen):

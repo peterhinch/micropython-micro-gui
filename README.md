@@ -3,15 +3,17 @@
 This is a lightweight, portable, MicroPython GUI library for displays having
 drivers subclassed from `framebuf`. Written in Python it runs under a standard
 MicroPython firmware build. Options for data input comprise:
- * Via from two to five pushbuttons depending on the application.
- * Via a switch-based navigation joystick.
+ * Two pushbuttons: limited capabilities with some widgets unusable for input.
+ * Three pushbuttons with full capability.
+ * Five pushbuttons: full capability, less "modal" interface.
+ * A switch-based navigation joystick: another way to implement five buttons.
  * Via two pushbuttons and a rotary encoder such as
-[this one](https://www.adafruit.com/product/377).
+ [this one](https://www.adafruit.com/product/377). An intuitive interface.
 
 It is larger and more complex than `nano-gui` owing to the support for input.
 It enables switching between screens and launching modal windows. In addition
-to `nano-gui` widgets it supports listboxes, dropdown lists, various means of
-entering or displaying floating point values, and other widgets.
+to `nano-gui` widgets it supports menus, listboxes, dropdown lists, various
+means of entering or displaying floating point values, and other widgets.
 
 It is compatible with all display drivers for
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
@@ -56,9 +58,12 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Code has been tested on ESP32, Pi Pico and Pyboard. The API shuld be stable.
-Code is new and issues are likely: please report any found. The project is
-under development so check for updates.
+February 2022: This has had a significant upgrade to support use with only
+three buttons as devised by Bart Cerneels. Simplified widget import. Existing
+users should replace the entire `gui` tree.
+
+Code has been tested on ESP32, Pi Pico and Pyboard. This is under development
+so check for updates.
 
 Firmware V1.17 has provided a major boost to text rendering speed on color
 display. V1.17 or later is now a requirement for color displays, although
@@ -155,10 +160,8 @@ shows a message and has "Yes" and "No" buttons which trigger a callback.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton
+from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
-
 # Font for CWriter
 import gui.fonts.arial10 as arial10
 from gui.core.colors import *
@@ -256,16 +259,20 @@ The GUI requires from 2 to 5 pushbuttons for control. These are:
 An alternative is to replace buttons 4 and 5 with a quadrature encoder knob
 such as [this one](https://www.adafruit.com/product/377). That device has a
 switch which operates when the knob is pressed: this may be wired for the
-`Select` button. 
+`Select` button. This provides the most intuitive operation.
 
 Many widgets such as `Pushbutton` or `Checkbox` objects require only the
 `Select` button to operate: it is possible to design an interface with a subset
-of `micro-gui` widgets which requires only the first two buttons.
+of `micro-gui` widgets which requires only the first two buttons. With three
+buttons all widgets may be used without restriction.
 
 Widgets such as `Listbox` objects, dropdown lists (`Dropdown`), and those for
-floating point data entry require the `Increase` and `Decrease` buttons (or an
-encoder) to select a data item or to adjust the linear value. This is discussed
-in [Floating Point Widgets](./README.md#112-floating-point-widgets).
+floating point data entry can use the `Increase` and `Decrease` buttons (or an
+encoder) to select a data item or to adjust the linear value. If three buttons
+are provided, the GUI will enter "adjust" mode in response to a double-click
+of `Select`. In this mode `Prev` and `Next` act to decrease and increase the
+widget's value. A further double-click restores normal navigation. This is
+discussed in [Floating Point Widgets](./README.md#112-floating-point-widgets).
 
 The currently selected `Widget` is identified by a white border: the `focus`
 moves between widgets via `Next` and `Prev`. Only `active` `Widget` instances
@@ -563,7 +570,8 @@ one second. The GUI will respond by changing the border color from white
 (i.e. has focus) to yellow. In this mode a brief press of `increase` or
 `decrease` or small movement of an encoder will have a reduced effect (0.05%).
 Fine mode may be cancelled by pressing `select` or by moving the focus to
-another control.
+another control. This also works in three-button mode, with `Next` and `Prev`
+performing the adjustments.
 
 In the case of slider and knob controls the precision of fine mode exceeds that
 of the visual appearance of the widget: fine changes can be too small to see.
@@ -596,8 +604,7 @@ of contiguous RAM.
 import hardware_setup  # Instantiate display, setup color LUT (if present)
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import Button, CloseButton
+from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
 
 # Font for CWriter
@@ -940,7 +947,7 @@ constructor and is closed by issuing the `close()` static method.
 # 6. Label widget
 
 ```python
-from gui.widgets.label import Label
+from gui.widgets import Label
 ```
 ![Image](./images/label.JPG)
 
@@ -1001,8 +1008,7 @@ from gui.core.ugui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
 
-from gui.widgets.label import Label
-from gui.widgets.buttons import CloseButton
+from gui.widgets import Label, CloseButton
 import gui.fonts.freesans20 as freesans20
 
 
@@ -1022,7 +1028,7 @@ Screen.change(BaseScreen)
 # 7. LED widget
 
 ```python
-from gui.widgets.led import LED
+from gui.widgets import LED
 ```
 ![Image](./images/led.JPG)
 
@@ -1061,7 +1067,7 @@ controlled with `led(True)` or `led(False)`.
 # 8. Checkbox widget
 
 ```python
-from gui.widgets.checkbox import Checkbox
+from gui.widgets import Checkbox
 ```
 ![Image](./images/checkbox.JPG)  
 This provides for Boolean data entry and display. In the `True` state the
@@ -1103,7 +1109,7 @@ Methods:
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets.buttons import Button
+from gui.widgets import Button
 ```
 ![Image](./images/pushbuttons.JPG)
 
@@ -1145,8 +1151,6 @@ Optional keyword only arguments:
  for example media playback symbols.
  * `callback=dolittle` Callback function which runs when button is pressed.
  * `args=()` A list/tuple of arguments for the above callback.
- * `onrelease=False` If `True` the callback will occur when the `select`
- pushbutton is released otherwise it will occur when pressed.
 
 Method:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
@@ -1182,7 +1186,7 @@ Optional keyword only arguments:
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets.buttons import Button, ButtonList
+from gui.widgets import Button, ButtonList
 ```
 
 A `ButtonList` groups a number of buttons together to implement a button which
@@ -1241,7 +1245,7 @@ for t in table:  # Buttons overlay each other at same location
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets.buttons import Button, RadioButtons
+from gui.widgets import Button, RadioButtons
 ```
 ![Image](./images/radiobuttons.JPG)
 
@@ -1288,7 +1292,7 @@ for t in table:
 # 12. Listbox widget
 
 ```python
-from gui.widgets.listbox import Listbox
+from gui.widgets import Listbox
 ```
 ![Image](./images/listbox.JPG)
 
@@ -1397,7 +1401,7 @@ Screen.change(BaseScreen)
 # 13. Dropdown widget
 
 ```python
-from gui.widgets.dropdown import Dropdown
+from gui.widgets import Dropdown
 ```
 
 ![Image](./images/dd_closed.JPG)
@@ -1512,7 +1516,7 @@ Screen.change(BaseScreen)
 # 14. DialogBox class
 
 ```python
-from gui.widgets.dialog import DialogBox
+from gui.widgets import DialogBox
 ```
 ![Image](./images/dialog.JPG)
 
@@ -1566,7 +1570,7 @@ in `gui/demos/screens.py`.
 # 15. Textbox widget
 
 ```python
-from gui.widgets.textbox import Textbox
+from gui.widgets import Textbox
 ```
 ![Image](./images/textbox.JPG)
 
@@ -1635,7 +1639,7 @@ the oldest (topmost) being discarded as required.
 This `passive` widget displays a single floating point value on a vertical
 linear scale. Optionally it can support data dependent callbacks.
 ```python
-from gui.widgets.meter import Meter
+from gui.widgets import Meter
 ```
 ![Image](./images/meter.JPG)
 The two styles of `meter`, both showing a value of 0.65. This `passive` widget
@@ -1727,7 +1731,7 @@ behaves similarly for data values between 0.9 and 1.0.
 ## 16.1 Region class
 
 ```python
-from gui.widgets.region import Region
+from gui.widgets import Region
 ```
 Instantiating a `Region` associates it with a supporting widget (currently only
 a `Meter`). Constructor positional args are as follows:
@@ -1787,7 +1791,7 @@ callbacks to run as appropriate.
 # 17. Slider and HorizSlider widgets
 
 ```python
-from gui.widgets.sliders import Slider, HorizSlider
+from gui.widgets import Slider, HorizSlider
 ```
 ![Image](./images/sliders.JPG)
 
@@ -1865,7 +1869,7 @@ around sliders to display all legends.
 # 18. Scale widget
 
 ```python
-from gui.widgets.scale import Scale
+from gui.widgets import Scale
 ```
 ![Image](./images/scale.JPG)
 
@@ -2002,7 +2006,7 @@ precision. Each visible division on the control represents 10 integer units.
 # 19. ScaleLog widget
 
 ```python
-from gui.widgets.scale_log import ScaleLog
+from gui.widgets import ScaleLog
 ```
 ![Image](./images/log_scale.JPG)
 
@@ -2142,7 +2146,7 @@ def tickcb(f, c):
 # 20. Dial widget
 
 ```python
-from gui.widgets.dial import Dial, Pointer
+from gui.widgets import Dial, Pointer
 ```
 ![Image](./images/dial.JPG)  ![Image](./images/dial1.JPG)
 
@@ -2225,8 +2229,7 @@ from gui.core.ugui import Screen
 from gui.core.writer import CWriter
 from gui.core.colors import *
 
-from gui.widgets.dial import Dial, Pointer
-from gui.widgets.buttons import CloseButton
+from gui.widgets import Dial, Pointer, CloseButton
 import gui.fonts.freesans20 as freesans20
 
 async def run(dial):
@@ -2259,7 +2262,7 @@ Screen.change(BaseScreen)
 # 21. Knob widget
 
 ```python
-from gui.widgets.knob import Knob
+from gui.widgets import Knob
 ```
 ![Image](./images/knob.JPG)
 
@@ -2317,7 +2320,7 @@ value changes. This enables dynamic color change.
 # 22. Adjuster widget
 
 ```python
-from gui.widgets.adjuster import Adjuster
+from gui.widgets import Adjuster
 ```
 ![Image](./images/adjusters.jpg)  ![Image](./images/adj_vector.jpg)  
 
@@ -2383,7 +2386,7 @@ basis. See code comments for further details.
 # 23 Menu class
 
 ```python
-from gui.widgets.menu import Menu
+from gui.widgets import Menu
 ```
 ![Image](./images/menu.JPG)  
 
