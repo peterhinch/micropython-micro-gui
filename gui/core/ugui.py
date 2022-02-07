@@ -14,7 +14,6 @@ from gui.core.colors import *
 from hardware_setup import ssd
 
 from gui.primitives import Pushbutton
-
 # Globally available singleton objects
 display = None  # Singleton instance
 ssd = None
@@ -282,9 +281,7 @@ class Screen:
         for obj in cls.current_screen.displaylist:
             if obj.visible: # In a buttonlist only show visible button
                 if force or obj.draw:
-                    obj.draw_border()
                     obj.show()
-                    obj.draw = False
 
     @classmethod
     def change(cls, cls_new_screen, *, forward=True, args=[], kwargs={}):
@@ -410,7 +407,6 @@ class Screen:
             dev.fill_rect(x0, y0, w, h, color_map[BG]) # Blank to screen BG
             for obj in [z for z in self.displaylist if z.overlaps(x0, y0, x1, y1)]:
                 if obj.visible:
-                    obj.draw_border()
                     obj.show()
         # Normally clear the screen and redraw everything
         else:
@@ -561,6 +557,8 @@ class Widget:
                  fgcolor, bgcolor, bdcolor,
                  value=None, active=False):
         self.active = active
+        # By default widgets cannot be adjusted: no green border in adjust mode
+        self.adjustable = False
         self._greyed_out = False
         Screen.addobject(self)
         self.screen = Screen.current_screen
@@ -658,12 +656,13 @@ class Widget:
             y = self.row - 2
             w = self.width + 4
             h = self.height + 4
+            #print('border', self, display.ipdev.is_adjust())
             if self.has_focus() and not isinstance(self, DummyWidget):
                 color = color_map[FOCUS]
                 precision = hasattr(self, 'do_precision') and self.do_precision and display.ipdev.is_precision()
                 if precision:
                     color = self.prcolor
-                elif display.ipdev.is_adjust():
+                elif display.ipdev.is_adjust() and self.adjustable:
                     color = color_map[ADJUSTING]
                 dev.rect(x, y, w, h, color)
                 self.has_border = True
@@ -701,7 +700,6 @@ class Widget:
             self._greyed_out = val
             if self.screen is Screen.current_screen:
                 display.usegrey(val)
-                self.draw_border()
                 self.show()
         return self._greyed_out
 
@@ -736,6 +734,7 @@ class LinearIO(Widget):
         super().__init__(writer, row, col, height, width,
                 fgcolor, bgcolor, bdcolor,
                 value, active)
+        self.adjustable = True  # Can show adjustable border
         self.do_precision = prcolor is not False
         if self.do_precision:
             self.prcolor = color_map[PRECISION] if prcolor is None else prcolor

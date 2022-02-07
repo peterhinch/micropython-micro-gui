@@ -64,6 +64,7 @@ class Listbox(Widget):
             value = min(value, len(elements) - 1)
             self.ntop = value - self.dlines + 1
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, True)
+        self.adjustable = True  # Can show adjustable border
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor

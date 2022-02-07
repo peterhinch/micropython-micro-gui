@@ -45,7 +45,7 @@ class BaseScreen(Screen):
                ('Help', cb, (2,)))
 
         wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
-        Menu(wri, bgcolor=BLUE, textcolor=WHITE, args = mnu)
+        Menu(wri, bgcolor=BLUE, textcolor=WHITE, fgcolor=RED, args = mnu)
         CloseButton(wri)
 
 

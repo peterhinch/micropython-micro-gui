@@ -92,7 +92,7 @@ class Dropdown(Widget):
             return v
 
     def _draw(self, x, y):
-        self.draw_border()
+        #self.draw_border()
         display.vline(x + self.width - self.height, y, self.height, self.fgcolor)
         xcentre = x + self.width - self.height // 2 # Centre of triangle
         ycentre = y + self.height // 2
