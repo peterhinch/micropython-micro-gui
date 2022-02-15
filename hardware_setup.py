@@ -43,7 +43,8 @@ spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
-from gui.core.ugui import Display
+from gui.core.ugui import Display, quiet
+# quiet()
 # Create and export a Display instance
 # Define control buttons
 nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
@@ -51,5 +52,5 @@ sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
 prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
-display = Display(ssd, nxt, sel, prev)  # 3-button mode
-# display = Display(ssd, nxt, sel, prev, increase, decrease, 5)  # Encoder mode
+# display = Display(ssd, nxt, sel, prev)  # 3-button mode
+display = Display(ssd, nxt, sel, prev, increase, decrease, 5)  # Encoder mode

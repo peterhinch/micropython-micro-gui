@@ -17,6 +17,7 @@ from gui.primitives import Pushbutton
 # Globally available singleton objects
 display = None  # Singleton instance
 ssd = None
+_vb = True
 
 gc.collect()
 __version__ = (0, 1, 5)
@@ -34,12 +35,15 @@ _NEXT = const(1)
 _PREV = const(2)
 _LAST = const(3)
 
+def quiet():
+    global _vb
+    _vb = False
+
 # Input abstracts input from 2-5 pushbuttons or 3 buttons + encoder. Handles
 # transitions between modes (normal, precision, adjustment)
 class Input:
 
     def __init__(self, nxt, sel, prev, incr, decr, encoder):
-        verbose = True
         self._encoder = encoder  # Encoder in use
         self._precision = False  # Precision mode
         self._adj = False  # Adjustment mode
@@ -60,13 +64,13 @@ class Input:
             self._prev = Pushbutton(prev)
             self._prev.press_func(Screen.ctrl_move, (_PREV,))
         if encoder:
-            verbose and print('Using encoder.')
+            _vb and print('Using encoder.')
             if incr is None or decr is None:
                 raise ValueError('Must specify pins for encoder.')
             from gui.primitives.encoder import Encoder
             self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
         else:
-            verbose and print('Using {:d} switches.'.format(self._nb))
+            _vb and print('Using {:d} switches.'.format(self._nb))
             # incr and decr methods get the button as an arg.
             if incr is not None:
                 sup = Pushbutton(incr)
@@ -499,11 +503,14 @@ class Screen:
         self.tasks.append((task, on_change))
 
     async def _garbage_collect(self):
+        n = 0
         while True:
             await asyncio.sleep_ms(500)
             gc.collect()
             gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
-            # print(gc.mem_free())
+            n += 1
+            n &= 0x1f
+            _vb and (not n) and print("Free RAM", gc.mem_free())
 
 # Very basic window class. Cuts a rectangular hole in a screen on which
 # content may be drawn.

@@ -311,7 +311,8 @@ gc.collect()  # Precaution before instantiating framebuf
 # Instantiate display and assign to ssd. For args see display drivers doc.
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
-from gui.core.ugui import Display, setup
+from gui.core.ugui import Display, quiet
+# quiet()
 # Define control buttons
 nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
 sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
@@ -329,6 +330,9 @@ display = Display(ssd, nxt, sel, prev, increase, decrease, 5)
 The final arg specifies the sensitivity of the attached encoder, the higher the
 value the more the knob has to be turned for a desired effect. A value of 1
 provides the highest sensitivity, being the native rate of the encoder.
+
+The commented-out `quiet()` line provides a means of suppressing diagnostic
+messages.
 
 Instantiation of `SSD` and `Display` classes is detailed in
 [section 3](./README.md#3-the-ssd-and-display-objects).
@@ -389,6 +393,9 @@ There is scope for speeding loading and saving RAM by using frozen bytecode.
 Once again, directory structure must be maintained. An example directory
 structure, pruned to contain a minimum of files, may be seen
 [here](https://github.com/peterhinch/micropython-nano-gui#4-esp8266).
+
+For reasons that are unclear, freezing the display driver can lead to
+instability. For this reason it is recommended to freeze the gui tree only.
 
 ###### [Contents](./README.md#0-contents)
 
