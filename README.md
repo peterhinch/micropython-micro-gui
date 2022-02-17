@@ -390,12 +390,9 @@ widgets, fonts and demos can also be trimmed, but the directory structure must
 be kept.
 
 There is scope for speeding loading and saving RAM by using frozen bytecode.
-Once again, directory structure must be maintained. An example directory
-structure, pruned to contain a minimum of files, may be seen
-[here](https://github.com/peterhinch/micropython-nano-gui#4-esp8266).
-
-For reasons that are unclear, freezing the display driver can lead to
-instability. For this reason it is recommended to freeze the gui tree only.
+The entire `gui` tree may be frozen but the directory structure must be
+maintained. For reasons that are unclear freezing display drivers does not
+work. For fexibility, consider keeping `hardware_setup.py` in the filesystem.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -403,9 +400,15 @@ instability. For this reason it is recommended to freeze the gui tree only.
 
 #### RAM usage
 
-The largest supported display is a 320x240 ILI9341 unit. On a Pi Pico with no
-use of frozen bytecode the demos run with about 70K of free RAM. Substantial
-improvements can be achieved on all platforms by using frozen bytecode.
+Running the `linked_sliders` demo, the code uses about 23,000 bytes with frozen
+bytecode and 55,000 bytes without. To this must be added the size of the frame
+buffer. This can readily be calculated. For example in the case of the ILI9341
+(a 240x320 pixel unit whose driver uses 4-bit color) the buffer size is  
+`240x320/2 = 38,400` bytes.
+
+A Pico shows ~182000 bytes free with no code running. With `linked_sliders`
+running on an ILI9341 display, it shows 120,896 bytes free with frozen
+bytecode and 88,640 bytes free without.
 
 #### Speed
 
