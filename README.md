@@ -58,16 +58,17 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-February 2022: This has had a significant upgrade to support use with only
-three buttons as devised by Bart Cerneels. Simplified widget import. Existing
-users should replace the entire `gui` tree.
+March 2022: Add [latency control](./README.md#45-bound-variable) for hosts with
+SPIRAM.
 
-Code has been tested on ESP32, Pi Pico and Pyboard. This is under development
-so check for updates.
+February 2022: Supports use with only three buttons devised by Bart Cerneels.
+Simplified widget import. Existing users should replace the entire `gui` tree.
 
-Firmware V1.17 has provided a major boost to text rendering speed on color
-display. V1.17 or later is now a requirement for color displays, although
-there is a workround if it's impossible to upgrade. See
+Code has been tested on ESP32, ESP32-S2, Pi Pico and Pyboard. This is under
+development so check for updates.
+
+Firmware V1.17 or later is a requirement for color displays, although there is
+a workround if it's impossible to upgrade. See
 [section 1.8](./README.md#18-performance-and-hardware-notes) for details.
 
 # 0. Contents
@@ -100,7 +101,7 @@ there is a workround if it's impossible to upgrade. See
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
  4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
- 4.5 [Bound variable](./README.md#45-bound-variable)
+ 4.5 [Bound variable](./README.md#45-bound-variable) Control latency caused by garbage collection.  
  4.6 [Usage](./README.md#46-usage) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
@@ -896,7 +897,7 @@ explicitly in code.
  before too much garbage has accumulated. However on platforms with SPIRAM GC
  can take hundreds of ms, causing unacceptable latency. If `do_gc` is `False`
  the application can perform GC at times when fast response to user actions is
- not required.
+ not required. If turned off, the GC task cannot be re-started.
 
 ## 4.6 Usage
 
