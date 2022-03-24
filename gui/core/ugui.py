@@ -505,7 +505,7 @@ class Screen:
 
     async def _garbage_collect(self):
         n = 0
-        while True:
+        while Screen.do_gc:
             await asyncio.sleep_ms(500)
             gc.collect()
             gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())

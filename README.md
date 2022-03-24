@@ -891,10 +891,12 @@ explicitly in code.
 
 ## 4.5 Bound variable
 
- * `pause_ms=0` Screen refreshes are performed by a looping task. This
- refreshes the screen before pausing. The default of 0ms allows other tasks to
- be scheduled and suffices in the vast majority of cases. In some applications
- with difficult realtime requirements a longer pause can offer benefits.
+ * `do_gc = True` By default a coroutine is launched to periodically perform
+ garbage collection (GC). On most platforms this reduces latency by doing GC
+ before too much garbage has accumulated. However on platforms with SPIRAM GC
+ can take hundreds of ms, causing unacceptable latency. If `do_gc` is `False`
+ the application can perform GC at times when fast response to user actions is
+ not required.
 
 ## 4.6 Usage
 
