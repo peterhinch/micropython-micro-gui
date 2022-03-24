@@ -240,6 +240,7 @@ class Display:
 
 
 class Screen:
+    do_gc = True  # Allow user to take control of GC
     current_screen = None
     is_shutdown = Event()
     # These events enable user code to synchronise display refresh
@@ -397,7 +398,7 @@ class Screen:
         self.width = ssd.width
         self.row = 0
         self.col = 0
-        if Screen.current_screen is None: # Initialising class and task
+        if Screen.current_screen is None and Screen.do_gc: # Initialising class and task
             # Here we create singleton tasks
             asyncio.create_task(self._garbage_collect())
         Screen.current_screen = self
