@@ -995,6 +995,9 @@ Constructor args:
  8. `bdcolor=False` Color of border. If `False` no border will be drawn. If
  `None` the `fgcolor` will be used, otherwise a color may be passed. If a color
  is available, a border line will be drawn around the control.
+ 9. `justify=Label.LEFT` Options are `Label.RIGHT` and `Label.CENTRE` (note
+ British spelling). Justification can only occur if there is sufficient space
+ in the `Label` i.e. where an integer is supplied for the `text` arg.
 
 The constructor displays the string at the required location.
 

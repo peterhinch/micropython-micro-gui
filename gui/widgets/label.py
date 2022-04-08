@@ -8,8 +8,12 @@ from gui.core.colors import *
 
 # text: str display string int save width
 class Label(Widget):
-    def __init__(self, writer, row, col, text, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=False):
+    LEFT = 0
+    CENTRE = 1
+    RIGHT = 2
+    def __init__(self, writer, row, col, text, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=False, justify=0):
         self.writer = writer
+        self.justify = justify
         # Determine width of object
         if isinstance(text, int):
             width = text
@@ -19,11 +23,14 @@ class Label(Widget):
         height = writer.height
         self.invert = invert
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor)
+        self.tcol = col
         if text is not None:
             self.value(text, invert)
 
     def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
-        if self.writer.stringlen(text) > self.width:  # Clip
+        sl = self.writer.stringlen(text)
+        self.tcol = self.col  # Default is left justify
+        if sl > self.width:  # Clip
             font = self.writer.font
             pos = 0
             n = 0
@@ -33,6 +40,11 @@ class Label(Widget):
                     break
                 n += 1
             text = text[: n]
+        elif self.justify == 1:
+            self.tcol = self.col + (self.width - sl) // 2
+        elif self.justify == 2:
+            self.tcol = self.col + self.width - sl
+            
         txt = super().value(text)  # Sets .draw ensuring refresh
         # Redraw even if no text supplied: colors may have changed.
         self.invert = invert
@@ -46,4 +58,4 @@ class Label(Widget):
     def show(self):
         if super().show():  # Draw or erase border
             if isinstance(txt := super().value(), str):
-                display.print_left(self.writer, self.col, self.row, txt, self.fgcolor, self.bgcolor, self.invert)
+                display.print_left(self.writer, self.tcol, self.row, txt, self.fgcolor, self.bgcolor, self.invert)

@@ -1,7 +1,7 @@
 # aclock.py micro-gui analog clock demo.
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2022 Peter Hinch
 
 # Initialise hardware and framebuf before importing modules.
 import hardware_setup  # Create a display instance
@@ -65,6 +65,7 @@ class BaseScreen(Screen):
         labels = {'bdcolor' : RED,
                   'fgcolor' : WHITE,
                   'bgcolor' : DARKGREEN,
+                  'justify' : Label.CENTRE,
                   }
 
         wri = CWriter(ssd, font, GREEN, BLACK)  # verbose = True
