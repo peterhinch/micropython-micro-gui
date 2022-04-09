@@ -27,8 +27,10 @@ class Label(Widget):
         if text is not None:
             self.value(text, invert)
 
-    def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
+    def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None, justify=None):
         sl = self.writer.stringlen(text)
+        if justify is None:
+            justify = self.justify
         self.tcol = self.col  # Default is left justify
         if sl > self.width:  # Clip
             font = self.writer.font
@@ -40,9 +42,9 @@ class Label(Widget):
                     break
                 n += 1
             text = text[: n]
-        elif self.justify == 1:
+        elif justify == 1:  # Centre
             self.tcol = self.col + (self.width - sl) // 2
-        elif self.justify == 2:
+        elif justify == 2:  # Right
             self.tcol = self.col + self.width - sl
             
         txt = super().value(text)  # Sets .draw ensuring refresh

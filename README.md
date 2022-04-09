@@ -1009,7 +1009,9 @@ Method:
  * `bgcolor=None` Background color, as per foreground.
  * `bdcolor=None` Border color. As per above except that if `False` is
  passed, no border is displayed. This clears a previously drawn border.  
-Returns the current text string.  
+Returns the current text string.
+ * `justify=None` By default justify using the constructor default. Override
+ with `Label.LEFT`, `Label.RIGHT` or `Label.CENTRE`.
 
 If the `value` method is called with a text string too long for the `Label` the
 text will be clipped to fit the width. In this case `value()` will return the
