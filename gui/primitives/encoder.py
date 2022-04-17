@@ -1,11 +1,7 @@
 # encoder.py Asynchronous driver for incremental quadrature encoder.
 
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2022 Peter Hinch
 # Released under the MIT License (MIT) - see LICENSE file
-
-# https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/encoder.py
-# This driver is intended for encoder-based control knobs. It is
-# unsuitable for NC machine applications. Please see the docs.
 
 import uasyncio as asyncio
 from machine import Pin
@@ -17,9 +13,11 @@ class Encoder:
                  callback=lambda a, b : None, args=()):
         self._pin_x = pin_x
         self._pin_y = pin_y
+        self._x = pin_x()
+        self._y = pin_y()
         self._v = 0  # Hardware value always starts at 0
         self._cv = v  # Current (divided) value
-        if ((vmin is not None) and v < min) or ((vmax is not None) and v > vmax):
+        if ((vmin is not None) and v < vmin) or ((vmax is not None) and v > vmax):
             raise ValueError('Incompatible args: must have vmin <= v <= vmax')
         self._tsf = asyncio.ThreadSafeFlag()
         trig = Pin.IRQ_RISING | Pin.IRQ_FALLING
@@ -31,14 +29,20 @@ class Encoder:
             yirq = pin_y.irq(trigger=trig, handler=self._y_cb)
         asyncio.create_task(self._run(vmin, vmax, div, callback, args))
 
-    # Hardware IRQ's
-    def _x_cb(self, pin):
-        fwd = pin() ^ self._pin_y()
+    # Hardware IRQ's. Duration 36μs on Pyboard 1.
+    def _x_cb(self, pin_x):
+        if (x := pin_x()) == self._x:  # IRQ latency: if 2nd edge has
+            return  # occurred there is no movement.
+        self._x = x
+        fwd = x ^ self._pin_y()
         self._v += 1 if fwd else -1
         self._tsf.set()
 
-    def _y_cb(self, pin):
-        fwd = pin() ^ self._pin_x() ^ 1
+    def _y_cb(self, pin_y):
+        if (y := pin_y()) == self._y:
+            return
+        self._y = y
+        fwd = y ^ self._pin_x() ^ 1
         self._v += 1 if fwd else -1
         self._tsf.set()
 
