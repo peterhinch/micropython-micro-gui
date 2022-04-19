@@ -15,7 +15,7 @@ class Encoder:
         self._pin_y = pin_y
         self._x = pin_x()
         self._y = pin_y()
-        self._v = 0  # Hardware value always starts at 0
+        self._v = 0  # Initialise hardware value
         self._cv = v  # Current (divided) value
         if ((vmin is not None) and v < vmin) or ((vmax is not None) and v > vmax):
             raise ValueError('Incompatible args: must have vmin <= v <= vmax')

@@ -326,11 +326,13 @@ display = Display(ssd, nxt, sel, prev, increase, decrease)
 Where an encoder replaces the `increase` and `decrease` buttons, only the final
 line needs to be changed to provide an extra arg:
 ```python
-display = Display(ssd, nxt, sel, prev, increase, decrease, 5)
+display = Display(ssd, nxt, sel, prev, increase, decrease, 4)
 ```
 The final arg specifies the sensitivity of the attached encoder, the higher the
 value the more the knob has to be turned for a desired effect. A value of 1
-provides the highest sensitivity, being the native rate of the encoder.
+provides the highest sensitivity, being the native rate of the encoder. Many
+encoders have mechanical detents: a value of 4 matches the click rate of most
+devices.
 
 The commented-out `quiet()` line provides a means of suppressing diagnostic
 messages.
@@ -816,8 +818,7 @@ To specify to the GUI that an encoder is in use an integer should be passed to
 the `Display` constructor `encoder` arg. Its value represents the division
 ratio. A value of 1 defines the native rate of the encoder; if the native rate
 is 32 pulses per revolution, a value of 4 would yield a virtual device with
-8 pulses per rev. I found the Adafruit encoder to be too sensitive. A value of 5 
-improved usability.
+8 pulses per rev. A value of 4 matches most encoders with mechanical detents. 
 
 If an encoder is used but the `encoder` arg is `False`, response to the encoder
 will be erratic.
