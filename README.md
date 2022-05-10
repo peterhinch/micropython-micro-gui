@@ -15,6 +15,8 @@ It enables switching between screens and launching modal windows. In addition
 to `nano-gui` widgets it supports menus, listboxes, dropdown lists, various
 means of entering or displaying floating point values, and other widgets.
 
+#### [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
+
 It is compatible with all display drivers for
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) so is portable
 to a wide range of displays. It is also portable between hosts.
