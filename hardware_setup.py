@@ -1,40 +1,56 @@
-# hardware_setup.py Customise for your hardware config
+# ili9341_pico.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch, Ihor Nehrutsa
+# Copyright (c) 2021 Peter Hinch
 
-# Supports:
-# Waveshare Pico LCD 1.14" 135*240(Pixel) based on ST7789V
-# https://www.waveshare.com/wiki/Pico-LCD-1.14
-# https://www.waveshare.com/pico-lcd-1.14.htm
+# As written, supports:
+# ili9341 240x320 displays on Pi Pico
+# Edit the driver import for other displays.
 
-from machine import Pin, SPI
+# Demo of initialisation procedure designed to minimise risk of memory fail
+# when instantiating the frame buffer. The aim is to do this as early as
+# possible before importing other modules.
+
+# WIRING
+# Pico      Display
+# GPIO Pin
+# 3v3  36   Vin
+# IO6   9   CLK  Hardware SPI0
+# IO7  10   DATA (AKA SI MOSI)
+# IO8  11   DC
+# IO9  12   Rst
+# Gnd  13   Gnd
+# IO10 14   CS
+
+# Pushbuttons are wired between the pin and Gnd
+# Pico pin  Meaning
+# 16        Operate current control
+# 17        Decrease value of current control
+# 18        Select previous control
+# 19        Select next control
+# 20        Increase value of current control
+
+from machine import Pin, SPI, freq
 import gc
-from drivers.st7789.st7789_4bit import *
-SSD = ST7789
 
-mode = LANDSCAPE  # Options PORTRAIT, USD, REFLECT combined with |
-
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
+freq(250_000_000)  # RP2 overclock
+# Create and export an SSD instance
+pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
+prst = Pin(9, Pin.OUT, value=1)
+pcs = Pin(10, Pin.OUT, value=1)
+spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
-# Conservative low baudrate. Can go to 62.5MHz.
-spi = SPI(1, 30_000_000, sck=Pin(10), mosi=Pin(11), miso=None)
-pcs = Pin(9, Pin.OUT, value=1)
-prst = Pin(12, Pin.OUT, value=1)
-pbl = Pin(13, Pin.OUT, value=1)
-pdc = Pin(8, Pin.OUT, value=0)
+ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
-portrait = mode & PORTRAIT
-ht, wd = (240, 135) if portrait else (135, 240)
-ssd = SSD(spi, height=ht, width=wd, dc=pdc, cs=pcs, rst=prst, disp_mode=mode, display=TDISPLAY)
-
+from gui.core.ugui import Display, quiet
+# quiet()
 # Create and export a Display instance
-from gui.core.ugui import Display
-# Define control buttons: adjust joystick orientation to match display
-# Orientation is only correct for basic LANDSCAPE and PORTRAIT modes
-pnxt, pprev, pin, pdec = (2, 18, 16, 20) if portrait else (20, 16, 2, 18)
-nxt = Pin(pnxt, Pin.IN, Pin.PULL_UP)  # Move to next control
-sel = Pin(3, Pin.IN, Pin.PULL_UP)  # Operate current control
-prev = Pin(pprev, Pin.IN, Pin.PULL_UP)  # Move to previous control
-increase = Pin(pin, Pin.IN, Pin.PULL_UP)  # Increase control's value
-decrease = Pin(pdec, Pin.IN, Pin.PULL_UP)  # Decrease control's value
-display = Display(ssd, nxt, sel, prev, increase, decrease)
+# Define control buttons
+nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
+sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Operate current control
+prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
+increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
+decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
+# display = Display(ssd, nxt, sel, prev)  # 3-button mode
+display = Display(ssd, nxt, sel, prev, increase, decrease, 4)  # Encoder mode
