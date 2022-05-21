@@ -109,39 +109,42 @@ a workround if it's impossible to upgrade. See
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
  5.3 [Popup windows](./README.md#53-popup-windows)  
-6. [Label widget](./README.md#6-label-widget) Single line text display.  
-7. [LED widget](./README.md#7-led-widget) Display Boolean values.  
-8. [Checkbox widget](./README.md#8-checkbox-widget) Enter Boolean values.  
-9. [Button and CloseButton widgets](./README.md#9-button-and-closebutton-widgets) Pushbutton emulation.  
-10. [ButtonList object](./README.md#10-buttonlist-object) Pushbuttons with multiple states.  
-11. [RadioButtons object](./README.md#11-radiobuttons-object) One-of-N pushbuttons.  
-12. [Listbox widget](./README.md#12-listbox-widget)  
-13. [Dropdown widget](./README.md#13-dropdown-widget) Dropdown lists.  
-14. [DialogBox class](./README.md#14-dialogbox-class) Pop-up modal dialog boxes.  
-15. [Textbox widget](./README.md#15-textbox-widget) Scrolling text display.  
-16. [Meter widget](./README.md#16-meter-widget) Display floats on an analog meter, with data driven callbacks.  
- 16.1 [Region class](./README.md#161-region-class)  
-17. [Slider and HorizSlider widgets](./README.md#17-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
-18. [Scale widget](./README.md#18-scale-widget) High precision float entry and display.  
-19. [ScaleLog widget](./README.md#19-scalelog-widget) Wide dynamic range float entry and display.  
-20. [Dial widget](./README.md#20-dial-widget) Display multiple vectors.  
-21. [Knob widget](./README.md#21-knob-widget) Rotary potentiometer float entry.  
-22. [Adjuster widget](./README.md#22-adjuster-widget) Space saving way to enter floats.  
-23. [Menu class](./README.md#23-menu-class)  
-24. [Graph plotting](./README.md#24-graph-plotting) Widgets for Cartesian and polar graphs.  
- 24.1 [Concepts](./README.md#241-concepts)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.1 [Graph classes](./README.md#2411-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.2 [Curve classes](./README.md#2412-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.1.3 [Coordinates](./README.md#2413-coordinates)  
- 24.2 [Graph classes](./README.md#242-graph-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.2.1 [Class CartesianGraph](./README.md#2421-class-cartesiangraph)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.2.2 [Class PolarGraph](./README.md#2422-class-polargraph)  
- 24.3 [Curve classes](./README.md#243-curve-classes)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.3.1 [Class Curve](./README.md#2431-class-curve)  
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24.3.2 [Class PolarCurve](./README.md#2432-class-polarcurve)  
- 24.4 [Class TSequence](./README.md#244-class-tsequence) Plotting realtime, time sequential data.  
-25. [Old firmware](./README.md#25-old-firmware) For users of color displays who can't run current firmware.  
-26. [Realtime applications](./README.md#26-realtime-applications) Accommodating tasks requiring fast RT performance.  
+6. [Widgets](./README.md#6-widgets) Displayable objects.  
+ 6.1 [Label widget](./README.md#61-label-widget) Single line text display.  
+ 6.2 [LED widget](./README.md#62-led-widget) Display Boolean values.  
+ 6.3 [Checkbox widget](./README.md#63-checkbox-widget) Enter Boolean values.  
+ 6.4 [Button and CloseButton widgets](./README.md#64-button-and-closebutton-widgets) Pushbutton emulation.  
+ 6.5 [ButtonList object](./README.md#65-buttonlist-object) Pushbuttons with multiple states.  
+ 6.6 [RadioButtons object](./README.md#66-radiobuttons-object) One-of-N pushbuttons.  
+ 6.7 [Listbox widget](./README.md#67-listbox-widget)  
+ 6.8 [Dropdown widget](./README.md#68-dropdown-widget) Dropdown lists.  
+ 6.9 [DialogBox class](./README.md#69-dialogbox-class) Pop-up modal dialog boxes.  
+ 6.10 [Textbox widget](./README.md#610-textbox-widget) Scrolling text display.  
+ 6.11 [Meter widget](./README.md#611-meter-widget) Display floats on an analog meter, with data driven callbacks.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.11.1 [Region class](./README.md#161-region-class)  
+ 6.12 [Slider and HorizSlider widgets](./README.md#612-slider-and-horizslider-widgets) Linear potentiometer float data entry and display  
+ 6.13 [Scale widget](./README.md#613-scale-widget) High precision float entry and display.  
+ 6.14 [ScaleLog widget](./README.md#614-scalelog-widget) Wide dynamic range float entry and display.  
+ 6.15 [Dial widget](./README.md#615-dial-widget) Display multiple vectors.  
+ 6.16 [Knob widget](./README.md#616-knob-widget) Rotary potentiometer float entry.  
+ 6.17 [Adjuster widget](./README.md#617-adjuster-widget) Space saving way to enter floats.  
+ 6.18 [Menu class](./README.md#618-menu-class)  
+ 6.19 [BitMap widget](./README.md#619-bitmap-widget) Draw bitmaps from files.__
+ 6.20 [QRMap widget](./README.md#620-qrmap-widget) Draw QR codes.__
+7. [Graph plotting](./README.md#7-graph-plotting) Widgets for Cartesian and polar graphs.  
+ 7.1 [Concepts](./README.md#71-concepts)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.1.1 [Graph classes](./README.md#711-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.1.2 [Curve classes](./README.md#712-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.1.3 [Coordinates](./README.md#713-coordinates)  
+ 7.2 [Graph classes](./README.md#72-graph-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.2.1 [Class CartesianGraph](./README.md#721-class-cartesiangraph)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.2.2 [Class PolarGraph](./README.md#722-class-polargraph)  
+ 7.3 [Curve classes](./README.md#73-curve-classes)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.1 [Class Curve](./README.md#731-class-curve)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.2 [Class PolarCurve](./README.md#732-class-polarcurve)  
+ 7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
+8. [Old firmware](./README.md#8-old-firmware) For users of color displays who can't run current firmware.  
+9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
 # 1. Basic concepts
@@ -960,7 +963,9 @@ constructor and is closed by issuing the `close()` static method.
 
 ###### [Contents](./README.md#0-contents)
 
-# 6. Label widget
+# 6. Widgets
+
+## 6.1 Label widget
 
 ```python
 from gui.widgets import Label
@@ -1046,7 +1051,7 @@ Screen.change(BaseScreen)
 
 ###### [Contents](./README.md#0-contents)
 
-# 7. LED widget
+## 6.2 LED widget
 
 ```python
 from gui.widgets import LED
@@ -1085,7 +1090,7 @@ controlled with `led(True)` or `led(False)`.
 
 ###### [Contents](./README.md#0-contents)
 
-# 8. Checkbox widget
+## 6.3 Checkbox widget
 
 ```python
 from gui.widgets import Checkbox
@@ -1126,7 +1131,7 @@ Methods:
 
 ###### [Contents](./README.md#0-contents)
 
-# 9. Button and CloseButton widgets
+## 6.4 Button and CloseButton widgets
 
 ```python
 from gui.core.colors import *  # Colors and shapes
@@ -1203,7 +1208,7 @@ Optional keyword only arguments:
 
 ###### [Contents](./README.md#0-contents)
 
-# 10. ButtonList object
+## 6.5 ButtonList object
 
 ```python
 from gui.core.colors import *  # Colors and shapes
@@ -1262,7 +1267,7 @@ for t in table:  # Buttons overlay each other at same location
 
 ###### [Contents](./README.md#0-contents)
 
-# 11. RadioButtons object
+## 6.6 RadioButtons object
 
 ```python
 from gui.core.colors import *  # Colors and shapes
@@ -1310,7 +1315,7 @@ for t in table:
 
 ###### [Contents](./README.md#0-contents)
 
-# 12. Listbox widget
+## 6.7 Listbox widget
 
 ```python
 from gui.widgets import Listbox
@@ -1419,7 +1424,7 @@ Screen.change(BaseScreen)
 
 ###### [Contents](./README.md#0-contents)
 
-# 13. Dropdown widget
+## 6.8 Dropdown widget
 
 ```python
 from gui.widgets import Dropdown
@@ -1534,7 +1539,7 @@ Screen.change(BaseScreen)
 ```
 ###### [Contents](./README.md#0-contents)
 
-# 14. DialogBox class
+## 6.9 DialogBox class
 
 ```python
 from gui.widgets import DialogBox
@@ -1588,7 +1593,7 @@ in `gui/demos/screens.py`.
 
 ###### [Contents](./README.md#0-contents)
 
-# 15. Textbox widget
+## 6.10 Textbox widget
 
 ```python
 from gui.widgets import Textbox
@@ -1655,7 +1660,7 @@ the oldest (topmost) being discarded as required.
 
 ###### [Contents](./README.md#0-contents)
 
-# 16. Meter widget
+## 6.11 Meter widget
 
 This `passive` widget displays a single floating point value on a vertical
 linear scale. Optionally it can support data dependent callbacks.
@@ -1749,7 +1754,7 @@ behaves similarly for data values between 0.9 and 1.0.
 
 ###### [Contents](./README.md#0-contents)
 
-## 16.1 Region class
+### 6.11.1 Region class
 
 ```python
 from gui.widgets import Region
@@ -1809,7 +1814,7 @@ callbacks to run as appropriate.
 
 ###### [Contents](./README.md#0-contents)
 
-# 17. Slider and HorizSlider widgets
+## 6.12 Slider and HorizSlider widgets
 
 ```python
 from gui.widgets import Slider, HorizSlider
@@ -1887,7 +1892,7 @@ around sliders to display all legends.
 
 ###### [Contents](./README.md#0-contents)
 
-# 18. Scale widget
+## 6.13 Scale widget
 
 ```python
 from gui.widgets import Scale
@@ -2024,7 +2029,7 @@ precision. Each visible division on the control represents 10 integer units.
 
 ###### [Contents](./README.md#0-contents)
 
-# 19. ScaleLog widget
+## 6.14 ScaleLog widget
 
 ```python
 from gui.widgets import ScaleLog
@@ -2164,7 +2169,7 @@ def tickcb(f, c):
 
 ###### [Contents](./README.md#0-contents)
 
-# 20. Dial widget
+## 6.15 Dial widget
 
 ```python
 from gui.widgets import Dial, Pointer
@@ -2280,7 +2285,7 @@ Screen.change(BaseScreen)
 
 ###### [Contents](./README.md#0-contents)
 
-# 21. Knob widget
+## 6.16 Knob widget
 
 ```python
 from gui.widgets import Knob
@@ -2338,7 +2343,7 @@ value changes. This enables dynamic color change.
 
 ###### [Contents](./README.md#0-contents)
 
-# 22. Adjuster widget
+## 6.17 Adjuster widget
 
 ```python
 from gui.widgets import Adjuster
@@ -2404,7 +2409,7 @@ basis. See code comments for further details.
 
 ###### [Contents](./README.md#0-contents)
 
-# 23 Menu class
+## 6.18 Menu class
 
 ```python
 from gui.widgets import Menu
@@ -2512,7 +2517,22 @@ different callback if the application required it.
 
 ###### [Contents](./README.md#0-contents)
 
-# 24. Graph Plotting
+## 6.19 BitMap Widget
+
+This renders a monochrome bitmap stored in a file to a rectangular region. The
+bitmap file format is C source code generated by the Linux `bitmap` editor. The
+data may be rendered in any color. Data and colors can be changed at run time.
+
+Not suitable for animation due to blocking time.
+Question generator in coroutine.
+
+###### [Contents](./README.md#0-contents)
+
+## 6.20 QRMap Widget
+
+###### [Contents](./README.md#0-contents)
+
+# 7. Graph Plotting
 
 ```python
 from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSequence
@@ -2525,7 +2545,7 @@ from gui.widgets.graph import PolarGraph, PolarCurve, CartesianGraph, Curve, TSe
 
 For example code see `gui/demos/plot.py`.
 
-## 24.1 Concepts
+## 7.1 Concepts
 
 Data for Cartesian graphs constitutes a sequence of x, y pairs, for polar
 graphs it is a sequence of complex `z` values. The module supports three
@@ -2535,13 +2555,13 @@ common cases:
  3. One or more `y` values arrive gradually. The `X` axis represents time. This
  is a simplifying case of 2.
 
-### 24.1.1 Graph classes
+### 7.1.1 Graph classes
 
 A user program first instantiates a graph object (`PolarGraph` or
 `CartesianGraph`). This creates an empty graph image upon which one or more
 curves may be plotted. Graphs are passive widgets so cannot accept user input.
 
-### 24.1.2 Curve classes
+### 7.1.2 Curve classes
 
 The user program then instantiates one or more curves (`Curve` or
 `PolarCurve`) as appropriate to the graph. Curves may be assigned colors to
@@ -2556,7 +2576,7 @@ Where it is required to plot realtime data as it arrives, this is achieved
 via calls to the curve's `point` method. If a prior point exists it causes a
 line to be drawn connecting the point to the last one drawn.
 
-### 24.1.3 Coordinates
+### 7.1.3 Coordinates
 
 `PolarGraph` and `CartesianGraph` objects are subclassed from `Widget` and are
 positioned accordingly by `row` and `col` with a 2-pixel outside border. The
@@ -2572,9 +2592,9 @@ unit circle but will be clipped to the rectangular graph boundary.
 
 ###### [Contents](./README.md#0-contents)
 
-## 24.2 Graph classes
+## 7.2 Graph classes
 
-### 24.2.1 Class CartesianGraph
+### 7.2.1 Class CartesianGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2601,7 +2621,7 @@ Keyword only arguments (all optional):
 Method:  
  * `show` No args. Redraws the empty graph. Used when plotting time sequences.
 
-### 24.2.2 Class PolarGraph
+### 7.2.2 Class PolarGraph
 
 Constructor.  
 Mandatory positional arguments:  
@@ -2626,9 +2646,9 @@ Method:
 
 ###### [Contents](./README.md#0-contents)
 
-## 24.3 Curve classes
+## 7.3 Curve classes
 
-### 24.3.1 Class Curve
+### 7.3.1 Class Curve
 
 The Cartesian curve constructor takes the following positional arguments:
 
@@ -2668,7 +2688,7 @@ To plot x values from 1000 to 4000 we would set the `origin` x value to 1000
 and the `excursion` x value to 3000. The `excursion` values scale the plotted
 values to fit the corresponding axis.
 
-### 24.3.2 Class PolarCurve
+### 7.3.2 Class PolarCurve
 
 The constructor takes the following positional arguments:
 
@@ -2702,7 +2722,7 @@ Complex points should lie within the unit circle to be drawn within the grid.
 
 ###### [Contents](./README.md#0-contents)
 
-## 24.4 Class TSequence
+## 7.4 Class TSequence
 
 A common task is the acquisition and plotting of real time data against time,
 such as hourly temperature and air pressure readings. This class facilitates
@@ -2766,7 +2786,7 @@ class TSeq(Screen):
 ```
 ###### [Contents](./README.md#0-contents)
 
-# 25. Old firmware
+# 8. Old firmware
 
 Current firmware is highly recommended. For users of color displays who cannot
 run V1.17 or later it is possible to run under V1.15+. This involves copying
@@ -2774,7 +2794,7 @@ run V1.17 or later it is possible to run under V1.15+. This involves copying
 to `gui/core/writer.py`. This uses Python code to render text if the firmware
 or driver are unable to support fast rendering.
 
-# 26. Realtime applications
+# 9. Realtime applications
 
 Screen refresh is performed in a continuous loop with yields to the scheduler.
 In normal applications this works well, however a significant proportion of

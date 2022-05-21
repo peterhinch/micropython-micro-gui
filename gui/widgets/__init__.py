@@ -23,7 +23,8 @@ _attrs = {
     "Slider": "sliders",
     "HorizSlider": "sliders",
     "Textbox": "textbox",
-    "BMG": "bitmap",
+    "BitMap": "bitmap",
+    "QRMap": "qrcode",
     }
 
 # Lazy loader, effectively does:

@@ -8,12 +8,12 @@ import gc
 import hardware_setup  # Create a display instance
 from uQR import QRCode
 from gui.core.ugui import Screen, ssd
-from gui.widgets import Label, Button, CloseButton, BMG
+from gui.widgets import Label, Button, CloseButton, QRMap
 # Create buffer for bitmapped graphic before fragmentation sets in
 scale = 3  # Magnification of graphic
 qr_ht = scale * 41
-qr_wd = scale *41
-qr_buf = BMG.make_buffer(qr_ht, qr_wd)
+qr_wd = scale * 41
+qr_buf = QRMap.make_buffer(qr_ht, qr_wd)
 gc.collect()
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10
@@ -35,7 +35,7 @@ class BaseScreen(Screen):
         row = 2
         Label(wri, row, col, "QR code Demo.")
         row = 50
-        graphic = BMG(wri, row, col, qr_ht, qr_wd, scale, fgcolor=BLACK, bgcolor=WHITE, buf=qr_buf)
+        graphic = QRMap(wri, row, col, (qr_ht, qr_wd), scale, fgcolor=BLACK, bgcolor=WHITE, buf=qr_buf)
         qr = QRCode(version=4)  # Gives 41x41 matrix
         qr.add_data("uQR rocks!")
         graphic.value(qr.get_matrix())
