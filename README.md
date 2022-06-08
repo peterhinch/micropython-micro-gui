@@ -129,8 +129,8 @@ a workround if it's impossible to upgrade. See
  6.16 [Knob widget](./README.md#616-knob-widget) Rotary potentiometer float entry.  
  6.17 [Adjuster widget](./README.md#617-adjuster-widget) Space saving way to enter floats.  
  6.18 [Menu class](./README.md#618-menu-class)  
- 6.19 [BitMap widget](./README.md#619-bitmap-widget) Draw bitmaps from files.__
- 6.20 [QRMap widget](./README.md#620-qrmap-widget) Draw QR codes.__
+ 6.19 [BitMap widget](./README.md#619-bitmap-widget) Draw bitmaps from files.  
+ 6.20 [QRMap widget](./README.md#620-qrmap-widget) Draw QR codes created by uQR.  
 7. [Graph plotting](./README.md#7-graph-plotting) Widgets for Cartesian and polar graphs.  
  7.1 [Concepts](./README.md#71-concepts)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.1.1 [Graph classes](./README.md#711-graph-classes)  
