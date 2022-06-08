@@ -42,7 +42,7 @@ pcs = Pin(10, Pin.OUT, value=1)
 spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
-
+gc.collect()
 from gui.core.ugui import Display, quiet
 # quiet()
 # Create and export a Display instance

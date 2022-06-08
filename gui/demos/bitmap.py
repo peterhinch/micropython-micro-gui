@@ -29,9 +29,9 @@ class BaseScreen(Screen):
         self.image = 0
 
     def cb(self, _):
-        self.graphic.value(f"/moon/m{self.image:02d}")
+        self.graphic.value(f"/gui/fonts/bitmaps/m{self.image:02d}")
         self.image += 1
-        self.image %= 28
+        self.image %= 4
         if self.image == 3:
             self.graphic.color(BLUE)
         else:

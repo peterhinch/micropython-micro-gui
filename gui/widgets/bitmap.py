@@ -23,7 +23,7 @@ class BitMap(Widget):
         if self._value is None:
             return
         with open(self._value, "r") as f:
-            g = self.gen_bytes(f)
+            g = self._gen_bytes(f)
             bit = 1
             wrap = False
             for row in range(self.height):
@@ -38,7 +38,7 @@ class BitMap(Widget):
                         byte = next(g)
                         bit = 1
 
-    def gen_bytes(self, f):  # Yield data bytes from file stream
+    def _gen_bytes(self, f):  # Yield data bytes from file stream
         f.readline()
         f.readline()  # Advance file pointer to data start
         s = f.readline()
