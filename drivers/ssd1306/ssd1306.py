@@ -36,6 +36,7 @@ class SSD1306(framebuf.FrameBuffer):
         self.external_vcc = external_vcc
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
+        self.palette = BoolPalette(framebuf.MONO_VLSB)
         super().__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
         self.init_display()
 
