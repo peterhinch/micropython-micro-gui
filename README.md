@@ -60,6 +60,9 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+June 2022: Add [QRMap](./README.md#620-qrmap-widget) and
+[BitMap](./README.md#619-bitmap-widget) widgets.
+
 March 2022: Add [latency control](./README.md#45-bound-variable) for hosts with
 SPIRAM.
 
@@ -158,7 +161,7 @@ provision of extra visual information. For example the color of all or part of
 a widget may be changed programmatically, for example to highlight an overrange
 condition. There is limited support for
 [icons](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#3-icons)
-in pushbuttons via icon fonts.
+in pushbuttons via icon fonts, also via the [BitMap widget](./README.md#619-bitmap-widget).
 
 The following, taken from `gui.demos.simple.py`, is a complete application. It
 shows a message and has "Yes" and "No" buttons which trigger a callback.
@@ -167,8 +170,9 @@ import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton
+# from gui.core.writer import Writer  # Monochrome display
 from gui.core.writer import CWriter
-# Font for CWriter
+# Font for CWriter or Writer
 import gui.fonts.arial10 as arial10
 from gui.core.colors import *
 
@@ -181,6 +185,7 @@ class BaseScreen(Screen):
             print('Button pressed', arg)
 
         super().__init__()
+        # wri = Writer(ssd, arial10, verbose=False)  # Monochrome display
         wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
 
         col = 2
@@ -198,6 +203,8 @@ def test():
 
 test()
 ```
+Note that monochrome displays use the `Writer` class rather than `CWriter` to
+render fonts, as per the commented-out code above.
 
 ## 1.1 Coordinates
 
