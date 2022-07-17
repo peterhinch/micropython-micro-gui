@@ -114,9 +114,11 @@ class Input:
 # Wrapper for ssd providing buttons and framebuf compatible methods
 class Display:
 
-    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
+    def __init__(self, objssd, nxt=None, sel=None, prev=None, incr=None, decr=None, encoder=False, input=None):
         global display, ssd
-        self.ipdev = Input(nxt, sel, prev, incr, decr, encoder)
+        self.ipdev = input
+        if (self.ipdev == None):
+            self.ipdev = Input(nxt, sel, prev, incr, decr, encoder)
         self.height = objssd.height
         self.width = objssd.width
         self._is_grey = False  # Not greyed-out
