@@ -4,6 +4,7 @@
 # Copyright (c) 2019-2022 Peter Hinch
 
 # Credit to Bart Cerneels for devising and prototyping the 3-button mode
+# Also for suggesting abstracting the input device class.
 
 import uasyncio as asyncio
 from uasyncio import Event
@@ -20,7 +21,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 5)
+__version__ = (0, 1, 6)
 
 # Null function
 dolittle = lambda *_ : None
