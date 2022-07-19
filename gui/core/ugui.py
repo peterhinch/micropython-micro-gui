@@ -110,13 +110,17 @@ class Input:
     def is_adjust(self):
         return self._adj
 
+# Normal way to populate the global display instance
+def Display(objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
+    ipdev = Input(nxt, sel, prev, incr, decr, encoder)
+    return DisplayIP(objssd, ipdev)
 
-# Wrapper for ssd providing buttons and framebuf compatible methods
-class Display:
+# Wrapper for ssd poviding framebuf compatible methods with abstract input device
+class DisplayIP:
 
-    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
+    def __init__(self, objssd, ipdev):
         global display, ssd
-        self.ipdev = Input(nxt, sel, prev, incr, decr, encoder)
+        self.ipdev = ipdev
         self.height = objssd.height
         self.width = objssd.width
         self._is_grey = False  # Not greyed-out
