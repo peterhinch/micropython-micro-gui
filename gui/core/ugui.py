@@ -15,6 +15,7 @@ from gui.core.colors import *
 from hardware_setup import ssd
 
 from gui.primitives import Pushbutton
+
 # Globally available singleton objects
 display = None  # Singleton instance
 ssd = None
@@ -24,10 +25,13 @@ gc.collect()
 __version__ = (0, 1, 6)
 
 # Null function
-dolittle = lambda *_ : None
+dolittle = lambda *_: None
+
 
 async def _g():
     pass
+
+
 type_coro = type(_g())
 
 # Navigation destinations
@@ -36,23 +40,25 @@ _NEXT = const(1)
 _PREV = const(2)
 _LAST = const(3)
 
+
 def quiet():
     global _vb
     _vb = False
 
+
 # Input abstracts input from 2-5 pushbuttons or 3 buttons + encoder. Handles
 # transitions between modes (normal, precision, adjustment)
+# BTN class instantiates a push button (may be other than a switch).
 class Input:
-
-    def __init__(self, nxt, sel, prev, incr, decr, encoder):
+    def __init__(self, nxt, sel, prev, incr, decr, encoder, BTN):
         self._encoder = encoder  # Encoder in use
         self._precision = False  # Precision mode
         self._adj = False  # Adjustment mode
         # Count buttons
         self._nb = sum(1 for x in (nxt, sel, prev, incr, decr) if x is not None)
         # Mandatory buttons
-        self._next = Pushbutton(nxt)
-        self._sel = Pushbutton(sel, suppress=True)
+        self._next = BTN(nxt)
+        self._sel = BTN(sel, suppress=True)
         # Call current screen bound method
         self._next.press_func(Screen.ctrl_move, (_NEXT,))
         self._sel.release_func(Screen.sel_ctrl)
@@ -62,22 +68,23 @@ class Input:
             self._sel.double_func(self.adj_mode)  # Double click toggles adjust
         # Optional buttons
         if prev is not None:
-            self._prev = Pushbutton(prev)
+            self._prev = BTN(prev)
             self._prev.press_func(Screen.ctrl_move, (_PREV,))
         if encoder:
-            _vb and print('Using encoder.')
+            _vb and print("Using encoder.")
             if incr is None or decr is None:
-                raise ValueError('Must specify pins for encoder.')
+                raise ValueError("Must specify pins for encoder.")
             from gui.primitives.encoder import Encoder
+
             self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
         else:
-            _vb and print('Using {:d} switches.'.format(self._nb))
+            _vb and print("Using {:d} switches.".format(self._nb))
             # incr and decr methods get the button as an arg.
             if incr is not None:
-                sup = Pushbutton(incr)
+                sup = BTN(incr)
                 sup.press_func(Screen.adjust, (sup, 1))
             if decr is not None:
-                sdn = Pushbutton(decr)
+                sdn = BTN(decr)
                 sdn.press_func(Screen.adjust, (sdn, -1))
 
     def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode
@@ -111,14 +118,21 @@ class Input:
     def is_adjust(self):
         return self._adj
 
+
 # Normal way to populate the global display instance
-def Display(objssd, nxt, sel, prev=None, incr=None, decr=None, encoder=False):
-    ipdev = Input(nxt, sel, prev, incr, decr, encoder)
+def Display(objssd, nxt, sel, prev=None, incr=None, decr=None,
+            encoder=False, touch=False):
+    if touch:
+        from gui.primitives import Touchbutton
+
+        ipdev = Input(nxt, sel, prev, incr, decr, encoder, Touchbutton)
+    else:
+        ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
     return DisplayIP(objssd, ipdev)
+
 
 # Wrapper for ssd poviding framebuf compatible methods with abstract input device
 class DisplayIP:
-
     def __init__(self, objssd, ipdev):
         global display, ssd
         self.ipdev = ipdev
@@ -148,10 +162,13 @@ class DisplayIP:
     # Greying out has only one option given limitation of 4-bit display driver
     # It would be possible to do better with RGB565 but would need inverse transformation
     # to (r, g, b), scale and re-convert to integer.
-    def _getcolor(self, color):  # Takes in an integer color, bit size dependent on driver
-        return color_map[GREY_OUT] if self._is_grey and color != color_map[BG] else color
+    def _getcolor(self, color):  
+        # Takes in an integer color, bit size dependent on driver
+        return (
+            color_map[GREY_OUT] if self._is_grey and color != color_map[BG] else color
+        )
 
-    def usegrey(self, val): # display.usegrey(True) sets greyed-out
+    def usegrey(self, val):  # display.usegrey(True) sets greyed-out
         self._is_grey = val
         return self
 
@@ -178,49 +195,49 @@ class DisplayIP:
         ssd.line(x1, y1, x2, y2, self._getcolor(color))
 
     # Private method uses physical color
-    def _circle(self, x0, y0, r, color): # Single pixel circle
+    def _circle(self, x0, y0, r, color):  # Single pixel circle
         x = -r
         y = 0
-        err = 2 -2*r
+        err = 2 - 2 * r
         while x <= 0:
-            ssd.pixel(x0 -x, y0 +y, color)
-            ssd.pixel(x0 +x, y0 +y, color)
-            ssd.pixel(x0 +x, y0 -y, color)
-            ssd.pixel(x0 -x, y0 -y, color)
+            ssd.pixel(x0 - x, y0 + y, color)
+            ssd.pixel(x0 + x, y0 + y, color)
+            ssd.pixel(x0 + x, y0 - y, color)
+            ssd.pixel(x0 - x, y0 - y, color)
             e2 = err
-            if (e2 <= y):
+            if e2 <= y:
                 y += 1
-                err += y*2 +1
-                if (-x == y and e2 <= x):
+                err += y * 2 + 1
+                if -x == y and e2 <= x:
                     e2 = 0
-            if (e2 > x):
+            if e2 > x:
                 x += 1
-                err += x*2 +1
+                err += x * 2 + 1
 
-    def circle(self, x0, y0, r, color, width =1): # Draw circle (maybe grey)
+    def circle(self, x0, y0, r, color, width=1):  # Draw circle (maybe grey)
         color = self._getcolor(color)
         x0, y0, r = int(x0), int(y0), int(r)
-        for r in range(r, r -width, -1):
+        for r in range(r, r - width, -1):
             self._circle(x0, y0, r, color)
 
-    def fillcircle(self, x0, y0, r, color): # Draw filled circle
+    def fillcircle(self, x0, y0, r, color):  # Draw filled circle
         color = self._getcolor(color)
         x0, y0, r = int(x0), int(y0), int(r)
         x = -r
         y = 0
-        err = 2 -2*r
+        err = 2 - 2 * r
         while x <= 0:
-            ssd.line(x0 -x, y0 -y, x0 -x, y0 +y, color)
-            ssd.line(x0 +x, y0 -y, x0 +x, y0 +y, color)
+            ssd.line(x0 - x, y0 - y, x0 - x, y0 + y, color)
+            ssd.line(x0 + x, y0 - y, x0 + x, y0 + y, color)
             e2 = err
-            if (e2 <= y):
-                y +=1
-                err += y*2 +1
-                if (-x == y and e2 <= x):
+            if e2 <= y:
+                y += 1
+                err += y * 2 + 1
+                if -x == y and e2 <= x:
                     e2 = 0
-            if (e2 > x):
+            if e2 > x:
                 x += 1
-                err += x*2 +1
+                err += x * 2 + 1
 
     def clip_rect(self, x, y, w, h, color):
         color = self._getcolor(color)
@@ -273,7 +290,7 @@ class Screen:
             cls.current_screen.do_sel()
 
     # Adjust the value of a widget. If an encoder is used, button arg
-    # is an int (discarded), val is the delta. If using buttons, 1st 
+    # is an int (discarded), val is the delta. If using buttons, 1st
     # arg is the button, delta is +1 or -1
     @classmethod
     def adjust(cls, button, val):
@@ -285,11 +302,11 @@ class Screen:
     def select(cls, obj):
         if cls.current_screen is not None:
             return cls.current_screen.move_to(obj)
-        
+
     @classmethod
     def show(cls, force):
         for obj in cls.current_screen.displaylist:
-            if obj.visible: # In a buttonlist only show visible button
+            if obj.visible:  # In a buttonlist only show visible button
                 if force or obj.draw:
                     obj.show()
 
@@ -306,21 +323,21 @@ class Screen:
         if forward:
             if isinstance(cls_new_screen, type):
                 if isinstance(cs_old, Window):
-                    raise ValueError('Windows are modal.')
+                    raise ValueError("Windows are modal.")
                 new_screen = cls_new_screen(*args, **kwargs)
                 if not len(new_screen.lstactive):
                     raise ValueError("Screen has no active widgets.")
             else:
-                raise ValueError('Must pass Screen class or subclass (not instance)')
+                raise ValueError("Must pass Screen class or subclass (not instance)")
             new_screen.parent = cs_old
             cs_new = new_screen
         else:
-            cs_new = cls_new_screen # An object, not a class
+            cs_new = cls_new_screen  # An object, not a class
         display.ipdev.adj_mode(False)  # Ensure normal mode
         cls.current_screen = cs_new
-        cs_new.on_open() # Optional subclass method
-        cs_new._do_open(cs_old) # Clear and redraw
-        cs_new.after_open() # Optional subclass method
+        cs_new.on_open()  # Optional subclass method
+        cs_new._do_open(cs_old)  # Clear and redraw
+        cs_new.after_open()  # Optional subclass method
         if cs_old is None:  # Initialising
             asyncio.run(Screen.monitor())  # Starts and ends uasyncio
             # Don't do asyncio.new_event_loop() as it prevents re-running
@@ -346,18 +363,18 @@ class Screen:
     # no factor, do_refresh confers no benefit, so use synchronous code.
     @classmethod
     async def auto_refresh(cls):
-        arfsh = hasattr(ssd, 'do_refresh')  # Refresh can be asynchronous.
+        arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
         # By default rfsh_start is permanently set. User code can clear this.
         cls.rfsh_start.set()
         if arfsh:
             h = ssd.height
-            split = max(y for y in (1,2,3,5,7) if not h % y)
+            split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
             if split == 1:
                 arfsh = False
         while True:
             await cls.rfsh_start.wait()
             Screen.show(False)  # Update stale controls. No physical refresh.
-            # Now perform physical refresh. 
+            # Now perform physical refresh.
             if arfsh:
                 await ssd.do_refresh(split)
             else:
@@ -372,13 +389,13 @@ class Screen:
         if parent is None:  # Closing base screen. Quit.
             cls.shutdown()
         else:
-            cls.change(parent, forward = False)
+            cls.change(parent, forward=False)
 
     @classmethod
     def addobject(cls, obj):
         cs = cls.current_screen
         if cs is None:
-            raise OSError('You must create a Screen instance')
+            raise OSError("You must create a Screen instance")
         # Populate list of active widgets (i.e. ones that can acquire focus).
         if obj.active:
             # Append to active list regrdless of disabled state which may
@@ -403,18 +420,20 @@ class Screen:
         self.width = ssd.width
         self.row = 0
         self.col = 0
-        if Screen.current_screen is None and Screen.do_gc: # Initialising class and task
+        if (
+            Screen.current_screen is None and Screen.do_gc
+        ):  # Initialising class and task
             # Here we create singleton tasks
             asyncio.create_task(self._garbage_collect())
         Screen.current_screen = self
         self.parent = None
 
-    def _do_open(self, old_screen): # Window overrides
+    def _do_open(self, old_screen):  # Window overrides
         dev = display.usegrey(False)
         # If opening a Screen from a Window just blank and redraw covered area
         if isinstance(old_screen, Window):
             x0, y0, x1, y1, w, h = old_screen._list_dims()
-            dev.fill_rect(x0, y0, w, h, color_map[BG]) # Blank to screen BG
+            dev.fill_rect(x0, y0, w, h, color_map[BG])  # Blank to screen BG
             for obj in [z for z in self.displaylist if z.overlaps(x0, y0, x1, y1)]:
                 if obj.visible:
                     obj.show()
@@ -465,7 +484,7 @@ class Screen:
     # Move currency to a specific control.
     def move_to(self, obj):
         lo = self.get_obj()  # Old current object
-        for idx in range(len(self.lstactive)) :
+        for idx in range(len(self.lstactive)):
             co = self.get_obj(idx)
             if co is obj:
                 self.selected_obj = idx
@@ -484,13 +503,13 @@ class Screen:
 
     def do_adj(self, button, val):
         co = self.get_obj()
-        if co is not None and hasattr(co, 'do_adj'):
+        if co is not None and hasattr(co, "do_adj"):
             co.do_adj(button, val)  # Widget can handle up/down
         else:
             Screen.current_screen.move(_FIRST if val < 0 else _LAST)
 
     # Methods optionally implemented in subclass
-    def on_open(self): 
+    def on_open(self):
         return
 
     def after_open(self):
@@ -515,8 +534,9 @@ class Screen:
             gc.collect()
             gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
             n += 1
-            n &= 0x1f
+            n &= 0x1F
             _vb and (not n) and print("Free RAM", gc.mem_free())
+
 
 # Very basic window class. Cuts a rectangular hole in a screen on which
 # content may be drawn.
@@ -535,8 +555,18 @@ class Window(Screen):
     def close():  # More intuitive name for popup window
         Screen.back()
 
-    def __init__(self, row, col, height, width, *, draw_border=True,
-                 bgcolor=None, fgcolor=None, writer=None):
+    def __init__(
+        self,
+        row,
+        col,
+        height,
+        width,
+        *,
+        draw_border=True,
+        bgcolor=None,
+        fgcolor=None,
+        writer=None,
+    ):
         Screen.__init__(self)
         self.row = row
         self.col = col
@@ -563,12 +593,22 @@ class Window(Screen):
         y = self.row
         return x, y, x + w, y + h, w, h
 
+
 # Base class for all displayable objects
 class Widget:
-
-    def __init__(self, writer, row, col, height, width,
-                 fgcolor, bgcolor, bdcolor,
-                 value=None, active=False):
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        height,
+        width,
+        fgcolor,
+        bgcolor,
+        bdcolor,
+        value=None,
+        active=False,
+    ):
         self.active = active
         # By default widgets cannot be adjusted: no green border in adjust mode
         self.adjustable = False
@@ -597,7 +637,7 @@ class Widget:
         # Maximum row and col. Defaults for user metrics. May be overridden
         self.mrow = row + height + 2  # in subclass. Allow for border.
         self.mcol = col + width + 2
-        self.visible = True # Used by ButtonList class for invisible buttons
+        self.visible = True  # Used by ButtonList class for invisible buttons
         self.draw = True  # Signals that obect must be redrawn
         self._value = value
 
@@ -619,13 +659,17 @@ class Widget:
         self.def_bdcolor = bdcolor
         # has_border is True if a border was drawn
         self.has_border = False
-        self.callback = dolittle # Value change callback
+        self.callback = dolittle  # Value change callback
         self.args = []
 
     def warning(self):
-        print('Warning: attempt to create {} outside screen dimensions.'.format(self.__class__.__name__))
+        print(
+            "Warning: attempt to create {} outside screen dimensions.".format(
+                self.__class__.__name__
+            )
+        )
 
-    def value(self, val=None): # User method to get or set value
+    def value(self, val=None):  # User method to get or set value
         if val is not None:
             if type(val) is float:
                 val = min(max(val, 0.0), 1.0)
@@ -640,10 +684,12 @@ class Widget:
 
     # Some widgets (e.g. Dial) have an associated Label
     def text(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None):
-        if hasattr(self, 'label'):
+        if hasattr(self, "label"):
             self.label.value(text, invert, fgcolor, bgcolor, bdcolor)
         else:
-            raise ValueError('Method {}.text does not exist.'.format(self.__class__.__name__))
+            raise ValueError(
+                "Method {}.text does not exist.".format(self.__class__.__name__)
+            )
 
     # Called from subclass prior to populating framebuf with control
     def show(self, black=True):
@@ -657,11 +703,13 @@ class Widget:
             dev = display.usegrey(self._greyed_out)
             x = self.col
             y = self.row
-            dev.fill_rect(x, y, self.width, self.height, color_map[BG] if black else self.bgcolor)
+            dev.fill_rect(
+                x, y, self.width, self.height, color_map[BG] if black else self.bgcolor
+            )
         return True
 
-# Called by Screen.show(). Draw background and bounding box if required.
-# Border is always 2 pixels wide, outside control's bounding box
+    # Called by Screen.show(). Draw background and bounding box if required.
+    # Border is always 2 pixels wide, outside control's bounding box
     def draw_border(self):
         if self.screen is Screen.current_screen:
             dev = display.usegrey(self._greyed_out)
@@ -669,10 +717,14 @@ class Widget:
             y = self.row - 2
             w = self.width + 4
             h = self.height + 4
-            #print('border', self, display.ipdev.is_adjust())
+            # print('border', self, display.ipdev.is_adjust())
             if self.has_focus() and not isinstance(self, DummyWidget):
                 color = color_map[FOCUS]
-                precision = hasattr(self, 'do_precision') and self.do_precision and display.ipdev.is_precision()
+                precision = (
+                    hasattr(self, "do_precision")
+                    and self.do_precision
+                    and display.ipdev.is_precision()
+                )
                 if precision:
                     color = self.prcolor
                 elif display.ipdev.is_adjust() and self.adjustable:
@@ -688,7 +740,7 @@ class Widget:
                     dev.rect(x, y, w, h, self.bdcolor)
                     self.has_border = True
 
-    def overlaps(self, xa, ya, xb, yb): # Args must be sorted: xb > xa and yb > ya
+    def overlaps(self, xa, ya, xb, yb):  # Args must be sorted: xb > xa and yb > ya
         x0 = self.col
         y0 = self.row
         x1 = x0 + self.width
@@ -733,20 +785,32 @@ class Widget:
     # def do_up(self, button)
     # def do_down(self, button)
 
+
 # A LinearIO widget uses the up and down buttons to vary a float. Such widgets
 # have do_up and do_down methods which adjust the control's value in a
 # time-dependent manner.
 class LinearIO(Widget):
-
-    def __init__(self, writer, row, col, height, width,
-                fgcolor, bgcolor, bdcolor,
-                value=None, active=True, prcolor=False,
-                min_delta=0.01, max_delta=0.1):
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        height,
+        width,
+        fgcolor,
+        bgcolor,
+        bdcolor,
+        value=None,
+        active=True,
+        prcolor=False,
+        min_delta=0.01,
+        max_delta=0.1,
+    ):
         self.min_delta = min_delta
         self.max_delta = max_delta
-        super().__init__(writer, row, col, height, width,
-                fgcolor, bgcolor, bdcolor,
-                value, active)
+        super().__init__(
+            writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active
+        )
         self.adjustable = True  # Can show adjustable border
         self.do_precision = prcolor is not False
         if self.do_precision:
@@ -761,7 +825,9 @@ class LinearIO(Widget):
 
     # Handle increase and decrease buttons. Redefined by textbox.py, scale_log.py
     async def btnhan(self, button, up, d):
-        maxd = self.max_delta if self.precision() else d * 4  # Why move fast in precision mode?
+        maxd = (
+            self.max_delta if self.precision() else d * 4
+        )  # Why move fast in precision mode?
         t = ticks_ms()
         while button():
             await asyncio.sleep_ms(0)  # Quit fast on button release
@@ -774,11 +840,21 @@ class LinearIO(Widget):
     def precision(self):
         return self.do_precision and display.ipdev.is_precision()
 
+
 # The dummy enables popup windows by satisfying the need for at least one active
 # widget on a screen. It is invisible and is drawn by Window constructor before
 # any user labels..
 class DummyWidget(Widget):
-    
     def __init__(self, writer, window):
-        super().__init__(writer, window.row + 1, window.col + 1, 4, 4,
-                 window.fgcolor, window.bgcolor, False, None, True)
+        super().__init__(
+            writer,
+            window.row + 1,
+            window.col + 1,
+            4,
+            4,
+            window.fgcolor,
+            window.bgcolor,
+            False,
+            None,
+            True,
+        )
