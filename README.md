@@ -9,11 +9,11 @@ MicroPython firmware build. Options for data input comprise:
  * A switch-based navigation joystick: another way to implement five buttons.
  * Via two pushbuttons and a rotary encoder such as
  [this one](https://www.adafruit.com/product/377). An intuitive interface.
+ * On ESP32 physical buttons may be replaced with touchpads.
 
 It is larger and more complex than `nano-gui` owing to the support for input.
-It enables switching between screens and launching modal windows. In addition
-to `nano-gui` widgets it supports menus, listboxes, dropdown lists, various
-means of entering or displaying floating point values, and other widgets.
+It enables switching between screens and launching modal windows. Widgets are
+a substantial superset of `nano-gui` widgets.
 
 #### [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
 
@@ -60,6 +60,8 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+July 2022: Add ESP32 touch pad support.
+
 June 2022: Add [QRMap](./README.md#620-qrmap-widget) and
 [BitMap](./README.md#619-bitmap-widget) widgets.
 
@@ -71,10 +73,6 @@ Simplified widget import. Existing users should replace the entire `gui` tree.
 
 Code has been tested on ESP32, ESP32-S2, Pi Pico and Pyboard. This is under
 development so check for updates.
-
-Firmware V1.17 or later is a requirement for color displays, although there is
-a workround if it's impossible to upgrade. See
-[section 1.8](./README.md#18-performance-and-hardware-notes) for details.
 
 # 0. Contents
 
@@ -146,7 +144,7 @@ a workround if it's impossible to upgrade. See
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.1 [Class Curve](./README.md#731-class-curve)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7.3.2 [Class PolarCurve](./README.md#732-class-polarcurve)  
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
-8. [Old firmware](./README.md#8-old-firmware) For users of color displays who can't run current firmware.  
+8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 
@@ -154,12 +152,12 @@ a workround if it's impossible to upgrade. See
 
 Internally `micro-gui` uses `uasyncio`. It presents a conventional callback
 based interface; knowledge of `uasyncio` is not required for its use. Display
-refresh is handled automatically. As in nano-gui, widgets are drawn using
-graphics primitives rather than icons. This makes them efficiently scalable and
-minimises RAM usage compared to icon-based graphics. It also facilitates the
-provision of extra visual information. For example the color of all or part of
-a widget may be changed programmatically, for example to highlight an overrange
-condition. There is limited support for
+refresh is handled automatically. Widgets are drawn using graphics primitives
+rather than icons. This makes them efficiently scalable and minimises RAM usage
+compared to icon-based graphics. It also facilitates the provision of extra
+visual information. For example the color of all or part of a widget may be
+changed programmatically, for example to highlight an overrange condition.
+There is limited support for
 [icons](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md#3-icons)
 in pushbuttons via icon fonts, also via the [BitMap widget](./README.md#619-bitmap-widget).
 
@@ -203,8 +201,11 @@ def test():
 
 test()
 ```
-Note that monochrome displays use the `Writer` class rather than `CWriter` to
-render fonts, as per the commented-out code above.
+Notes:  
+ * Monochrome displays use the `Writer` class rather than `CWriter` to
+ render fonts, as per the commented-out code above.
+ * Hardware is defined by a single small file `hardware_setup.py` which the
+ user must edit.
 
 ## 1.1 Coordinates
 
@@ -444,8 +445,9 @@ This may be mitigated by two approaches:
 
 #### Platform notes
 
-On the TTGO T-Display it is necessary to use physical pullup resistors on the
-pushbutton GPIO lines. This is because pins 36-39 do not have pullup support.
+On ESP32 (including the TTGO T-Display) note that pins 36-39 are input-only and
+do not have pullup support: if these are used for pushbutton input, physical
+pullups to 3.3V should be used.
 [See ref](https://randomnerdtutorials.com/esp32-pinout-reference-gpios/).
 
 On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
@@ -453,22 +455,12 @@ bytecode: in this configuration running the `various.py` demo there was 29K of
 free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
 RAM usage. A smaller display or a Pyboard D would offer more headroom.
 
-#### A performance boost
-
-A firmware change in V1.17 has enabled the code size to be reduced. It has also
-accelerated text rendering on color displays. Use of color displays now
-requires firmware V1.17 or later. Existing users should update the display
-driver and GUI core files and should ensure that the new file
-`drivers/boolpalette.py` exists.
-
 ###### [Contents](./README.md#0-contents)
 
 ## 1.9 Firmware and dependencies
 
-Users of color displays should ensure that firmware is V1.17 or later. If this
-cannot be met, there is a [workround](./README.md#24-old-firmware). The source
-tree includes all dependencies. These are listed to enable users to check for
-newer versions or to read docs:
+Firmware should be V1.17 or later. The source tree includes all dependencies.
+These are listed to enable users to check for newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
@@ -514,7 +506,7 @@ files in `gui/core` are:
  * `writer.py` Supports the `Writer` and `CWriter` classes.
 
 The `gui/primitives` directory contains the following files:  
- * `switch.py` Interface to physical pushbuttons.
+ * `pushbutton.py` Interface to physical pushbuttons and ESP32 touch pads.
  * `delay_ms.py` A software triggerable timer.
  * `encoder.py` Driver for a quadrature encoder. This offers an alternative
  interface - see [Appendix 1](./README.md#appendix-1-application-design).
@@ -578,10 +570,10 @@ Some of these require larger screens. Required sizes are specified as
 
 ## 1.12 Floating Point Widgets
 
-The challenge is to devise a way, with two pushbuttons or an encoder, of
-adjusting a data value which may have an extremely large dynamic range. This is
-the ratio of the data value's total range to the smallest adjustment that can
-be made. The mechanism currently implemented enables a precision of 0.05%.
+Some applications need to adjust a data value with an extremely large dynamic
+range. This is the ratio of the data value's total range to the smallest
+adjustment that can be made. The mechanism currently implemented enables a
+precision of 0.05%.
 
 Floating point widgets respond to a brief press of the `increase` or `decrease`
 buttons by adjusting the value by a small amount. A continued press causes the
@@ -614,10 +606,11 @@ is a linked `Label` to update.
 ## 2.1 Program structure and operation
 
 The following is a minimal script (found in `gui.demos.simple.py`) which will
-run on a minimal system with a small display and two pushbuttons. It provides
-two `Button` widgets with "Yes" and "No" legends.
+run on a minimal system with a small display and two pushbuttons. Commented out
+code shows changes for monochrome displays.
 
-It may be run by issuing at the REPL:
+The demo provides two `Button` widgets with "Yes" and "No" legends. It may be
+run by issuing at the REPL:
 ```python
 >>> import gui.demos.simple
 ```
@@ -630,6 +623,7 @@ import hardware_setup  # Instantiate display, setup color LUT (if present)
 from gui.core.ugui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton
+# from gui.core.writer import Writer  # Monochrome display
 from gui.core.writer import CWriter
 
 # Font for CWriter
@@ -645,6 +639,7 @@ class BaseScreen(Screen):
             print('Button pressed', arg)
 
         super().__init__()
+        # wri = Writer(ssd, arial10, verbose=False)
         wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
 
         col = 2
@@ -682,7 +677,7 @@ The `CWriter` instance `wri` associates a widget with a font. Constructors for
 all widgets have three mandatory positional args. These are a `CWriter`
 instance followed by `row` and `col`. These args are followed by a number of
 optional keyword args. These have (hopefully) sensible defaults enabling you to
-get started easily.
+get started easily. Monochrome displays use the simpler `Writer` class.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -750,7 +745,7 @@ The `color_map` index constants and default colors (defined in `colors.py`)
 are:
 
 | Index     | Color  | Purpose                                   |
-|:---------:|:------:|:-----------------------------------------:|
+|:----------|:-------|:------------------------------------------|
 | FOCUS     | WHITE  | Border of control with focus              |
 | PRECISION | YELLOW | Border in precision mode                  |
 | FG        | WHITE  | Window foreground default                 |
@@ -815,6 +810,8 @@ The constructor takes the following positional args:
  5. `incr=None` A `Pin` instance for the `increase` button (if used).
  6. `decr=None` A `Pin` instance for the `decrease` button (if used).
  7. `encoder=False` If an encoder is used, an integer must be passed.
+ 8. `touch=False` Set `True` to use ESP32 `TouchPad` instances in place of all
+ physical pushbuttons. See [ESP32 touch pads](./README.md#8-esp32-touch-pads).
 
 Class variables:  
  * `verbose=True` Causes a message to be printed indicating whether an encoder
@@ -845,9 +842,9 @@ created. This will be current until another is instantiated. When a widget is
 instantiated it is associated with the current screen.
 
 All applications require the creation of at least one user screen. This is done
-by subclassing the `Screen` class. Widgets are instantiated in the constructor.
-Widgets may be assigned to bound variable: this facilitates communication
-between them.
+by subclassing the `Screen` class. Widgets are instantiated in the `Screen`
+constructor. Widgets may be assigned to bound variable: this facilitates
+communication between them.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -962,7 +959,7 @@ not be updated until the window has closed.
 
 ## 5.3 Popup windows
 
-In general `Screen` and `Window` instances need at least one active widget.
+In general `Screen` and `Window` instances need at least one `active` widget.
 There is a special case of a popup window which typically displays status data,
 possibly with a progress meter. A popup has no user controls and is closed by
 user code. A popup is created by passing a `Writer` (or `CWriter`) to the
@@ -2874,13 +2871,33 @@ class TSeq(Screen):
 ```
 ###### [Contents](./README.md#0-contents)
 
-# 8. Old firmware
+# 8. ESP32 touch pads
 
-Current firmware is highly recommended. For users of color displays who cannot
-run V1.17 or later it is possible to run under V1.15+. This involves copying
-[this file](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/old_versions/writer_fw_compatible.py)
-to `gui/core/writer.py`. This uses Python code to render text if the firmware
-or driver are unable to support fast rendering.
+On ESP32 physical buttons may be replaced with touch pads. Not that buttons and
+pads cannot be mixed, but it is possible to use three pads with an encoder.
+
+The only change required to do this is in `hardware_setup.py`. `Pin` instances
+must be chosen from ones supporting the `TouchPad` class and the constructor.
+The following illustrates the end of a setup file for an application with five
+touchpads:
+```python
+# Set up for display driver omitted
+ssd = SSD(spi, pcs, pdc, prst)
+
+from gui.core.ugui import Display, quiet
+# quiet()
+# Define control pins - no pullups.
+nxt = Pin(13)  # Move to next control
+sel = Pin(14)  # Operate current control
+prev = Pin(15)  # Move to previous control
+increase = Pin(33)  # Increase control's value
+decrease = Pin(32)  # Decrease control's value
+# Create a Display instance and assign to display.
+display = Display(ssd, nxt, sel, prev, increase, decrease, False, True)
+```
+The final two constructor args are:
+ * `encoder=False` Not being used in this example.
+ * `touch=True` Use touch interface.
 
 # 9. Realtime applications
 
