@@ -22,7 +22,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 6)
+__version__ = (0, 1, 7)
 
 # Null function
 dolittle = lambda *_: None
@@ -119,28 +119,15 @@ class Input:
         return self._adj
 
 
-# Normal way to populate the global display instance
-def Display(objssd, nxt, sel, prev=None, incr=None, decr=None,
-            encoder=False, touch=False):
-    if touch:
-        from gui.primitives import Touchbutton
-
-        ipdev = Input(nxt, sel, prev, incr, decr, encoder, Touchbutton)
-    else:
-        ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
-    return DisplayIP(objssd, ipdev)
-
-
-# Wrapper for ssd poviding framebuf compatible methods with abstract input device
+# Wrapper for global ssd object providing framebuf compatible methods.
+# Must be subclassed: subclass provides input device and populates globals
+# display and ssd.
 class DisplayIP:
-    def __init__(self, objssd, ipdev):
-        global display, ssd
+    def __init__(self, ipdev):
         self.ipdev = ipdev
-        self.height = objssd.height
-        self.width = objssd.width
+        self.height = ssd.height
+        self.width = ssd.width
         self._is_grey = False  # Not greyed-out
-        display = self  # Populate globals
-        ssd = objssd
 
     def print_centred(self, writer, x, y, text, fgcolor=None, bgcolor=None, invert=False):
         sl = writer.stringlen(text)
@@ -259,6 +246,22 @@ class DisplayIP:
             l = w - 2 * (c - z)  # Line length
             ssd.hline(x + c - z, y + z, l, color)
             ssd.hline(x + c - z, y + h - z - 1, l, color)
+
+
+# Define an input device and populate global ssd and display objects.
+class Display(DisplayIP):
+    def __init__(self, objssd, nxt, sel, prev=None, incr=None, decr=None,
+                 encoder=False, touch=False):
+        global display, ssd
+        ssd = objssd
+        if touch:
+            from gui.primitives import ESP32Touch
+
+            ipdev = Input(nxt, sel, prev, incr, decr, encoder, ESP32Touch)
+        else:
+            ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
+        super().__init__(ipdev)
+        display = self
 
 
 class Screen:

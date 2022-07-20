@@ -6,7 +6,7 @@ _attrs = {
     "Delay_ms": "delay_ms",
     "Switch": "switch",
     "Pushbutton": "pushbutton",
-    "Touchbutton": "touchbutton",
+    "ESP32Touch": "pushbutton",
     }
 
 # Lazy loader, effectively does:

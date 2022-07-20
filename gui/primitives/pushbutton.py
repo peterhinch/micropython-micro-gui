@@ -6,6 +6,10 @@
 import uasyncio as asyncio
 import utime as time
 from . import launch, Delay_ms
+try:
+    from machine import TouchPad
+except ImportError:
+    pass
 
 class Pushbutton:
     debounce_ms = 50
@@ -105,3 +109,25 @@ class Pushbutton:
 
     def deinit(self):
         self._run.cancel()
+
+
+class ESP32Touch(Pushbutton):
+    sensitivity = 0.9
+    def __init__(self, pin, suppress=False):
+        self._thresh = 0  # Detection threshold
+        self._rawval = 0
+        try:
+            self._pad = TouchPad(pin)
+        except ValueError:
+            raise ValueError(pin)  # Let's have a bit of information :)
+        super().__init__(pin, suppress, False)
+
+    # Current logical button state: True == touched
+    def rawstate(self):
+        rv = self._pad.read()  # ~220μs
+        if rv > self._rawval:  # Either initialisation or pad was touched
+            self._rawval = rv  # when initialised and has now been released
+            self._thresh = round(rv * ESP32Touch.sensitivity)
+            return False  # Untouched
+        return rv < self._thresh
+
