@@ -2876,8 +2876,8 @@ class TSeq(Screen):
 On ESP32 physical buttons may be replaced with touch pads. Buttons and pads
 cannot be mixed, but it is possible to use three pads with an encoder.
 
-The only change required to do use touch pads is in `hardware_setup.py`. `Pin`
-instances must be chosen from ones supporting the `TouchPad` class- see
+The only change required to use touch pads is in `hardware_setup.py`. `Pin`
+instances must be chosen from ones supporting the `TouchPad` class - see
 [official docs](http://docs.micropython.org/en/latest/esp32/quickref.html#capacitive-touch).
 The `Pin` constructor may be called with a single arg being the pin number.
 
