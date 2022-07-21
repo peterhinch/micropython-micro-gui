@@ -257,6 +257,7 @@ class Display(DisplayIP):
         if touch:
             from gui.primitives import ESP32Touch
 
+            ESP32Touch.threshold(touch)
             ipdev = Input(nxt, sel, prev, incr, decr, encoder, ESP32Touch)
         else:
             ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)

@@ -810,8 +810,8 @@ The constructor takes the following positional args:
  5. `incr=None` A `Pin` instance for the `increase` button (if used).
  6. `decr=None` A `Pin` instance for the `decrease` button (if used).
  7. `encoder=False` If an encoder is used, an integer must be passed.
- 8. `touch=False` Set `True` to use ESP32 `TouchPad` instances in place of all
- physical pushbuttons. See [ESP32 touch pads](./README.md#8-esp32-touch-pads).
+ 8. `touch=False` Supply an integer to use ESP32 `TouchPad` instances in place
+ of all physical pushbuttons. See [ESP32 touch pads](./README.md#8-esp32-touch-pads).
 
 Class variables:  
  * `verbose=True` Causes a message to be printed indicating whether an encoder
@@ -2893,11 +2893,17 @@ prev = Pin(15)  # Move to previous control
 increase = Pin(33)  # Increase control's value
 decrease = Pin(32)  # Decrease control's value
 # Create a Display instance and assign to display.
-display = Display(ssd, nxt, sel, prev, increase, decrease, False, True)
+display = Display(ssd, nxt, sel, prev, increase, decrease, False, 80)
 ```
 The final two constructor args are:
  * `encoder=False` Not being used in this example.
- * `touch=True` Use touch interface.
+ * `touch=80` Use touch interface with a threshold of 80%.
+
+The `touch` value determines the level from `machine.TouchPad.read()` at which
+a touch is determined to have occurred. Assume a value of 50 is passed, and the
+untouched value read is 1020. If a value below 50% of 1020 = 510 is read, a
+touch is deemed to have occurred.
+[further docs](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/DRIVERS.md#42-esp32touch-class)
 
 # 9. Realtime applications
 
