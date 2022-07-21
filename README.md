@@ -2873,11 +2873,14 @@ class TSeq(Screen):
 
 # 8. ESP32 touch pads
 
-On ESP32 physical buttons may be replaced with touch pads. Not that buttons and
-pads cannot be mixed, but it is possible to use three pads with an encoder.
+On ESP32 physical buttons may be replaced with touch pads. Buttons and pads
+cannot be mixed, but it is possible to use three pads with an encoder.
 
-The only change required to do this is in `hardware_setup.py`. `Pin` instances
-must be chosen from ones supporting the `TouchPad` class and the constructor.
+The only change required to do use touch pads is in `hardware_setup.py`. `Pin`
+instances must be chosen from ones supporting the `TouchPad` class- see
+[official docs](http://docs.micropython.org/en/latest/esp32/quickref.html#capacitive-touch).
+The `Pin` constructor may be called with a single arg being the pin number.
+
 The following illustrates the end of a setup file for an application with five
 touchpads:
 ```python
@@ -2896,14 +2899,15 @@ decrease = Pin(32)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease, False, 80)
 ```
 The final two constructor args are:
- * `encoder=False` Not being used in this example.
+ * `encoder=False` No encoder being used in this example.
  * `touch=80` Use touch interface with a threshold of 80%.
 
 The `touch` value determines the level from `machine.TouchPad.read()` at which
-a touch is determined to have occurred. Assume a value of 50 is passed, and the
-untouched value read is 1020. If a value below 50% of 1020 = 510 is read, a
-touch is deemed to have occurred.
-[further docs](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/DRIVERS.md#42-esp32touch-class)
+a touch is determined to have occurred. In the above fragment a value of 80 is
+passed. Assume the untouched value from `TouchPad.read()` is 1020. If a value
+below 80% of 1020 = 816 is read, a touch is deemed to have occurred. Further
+docs on `pushbutton.py` may be found
+[here](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/DRIVERS.md#42-esp32touch-class).
 
 # 9. Realtime applications
 
