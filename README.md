@@ -403,7 +403,9 @@ directory structure. The `drivers` and `gui` directories (with subdirectories
 and contents) should be copied, along with `hardware_setup.py`. Filesystem
 space may be conserved by copying only the display driver in use. Unused
 widgets, fonts and demos can also be trimmed, but the directory structure must
-be kept.
+be kept. Below is an example of a minimal installation to run the `simple.py`
+demo.
+![Image](./images/filesystem.png)  
 
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 The entire `gui` tree may be frozen but the directory structure must be
