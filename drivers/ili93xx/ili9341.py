@@ -15,6 +15,7 @@ import framebuf
 import uasyncio as asyncio
 from drivers.boolpalette import BoolPalette
 
+# 74μs on RP2 @250MHz
 @micropython.viper
 def _lcopy(dest:ptr16, source:ptr8, lut:ptr16, length:int):
     # rgb565 - 16bit/pixel
