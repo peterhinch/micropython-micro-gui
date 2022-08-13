@@ -1,4 +1,4 @@
-# color_setup.py Customise for your hardware config
+# hardware_setup.py Customise for your hardware config
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021 Peter Hinch, Ihor Nehrutsa

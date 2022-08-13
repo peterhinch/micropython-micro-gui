@@ -74,7 +74,7 @@ class Input:
             _vb and print("Using encoder.")
             if incr is None or decr is None:
                 raise ValueError("Must specify pins for encoder.")
-            from gui.primitives.encoder import Encoder
+            from gui.primitives import Encoder
 
             self._enc = Encoder(incr, decr, div=encoder, callback=Screen.adjust)
         else:

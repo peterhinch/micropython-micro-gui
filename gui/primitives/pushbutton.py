@@ -27,17 +27,24 @@ class Pushbutton:
         self._dd = False  # Ditto for doubleclick
         self.sense = pin.value() if sense is None else sense  # Convert from electrical to logical value
         self.state = self.rawstate()  # Initial state
-        self._run = asyncio.create_task(self.buttoncheck())  # Thread runs forever
+        self._run = asyncio.create_task(self._go())  # Thread runs forever
 
     def press_func(self, func=False, args=()):
-        self._tf = func
+        if func is None:
+            self.press = asyncio.Event()
+        self._tf = self.press.set if func is None else func
         self._ta = args
 
     def release_func(self, func=False, args=()):
-        self._ff = func
+        if func is None:
+            self.release = asyncio.Event()
+        self._ff = self.release.set if func is None else func
         self._fa = args
 
     def double_func(self, func=False, args=()):
+        if func is None:
+            self.double = asyncio.Event()
+            func = self.double.set
         self._df = func
         self._da = args
         if func:  # If double timer already in place, leave it
@@ -47,6 +54,9 @@ class Pushbutton:
             self._dd = False  # Clearing down double func
 
     def long_func(self, func=False, args=()):
+        if func is None:
+            self.long = asyncio.Event()
+            func = self.long.set
         if func:
             if self._ld:
                 self._ld.callback(func, args)
@@ -69,41 +79,44 @@ class Pushbutton:
             if not self._ld or (self._ld and not self._ld()):
                 launch(self._ff, self._fa)
 
-    async def buttoncheck(self):
-        while True:
-            state = self.rawstate()
-            # State has changed: act on it now.
-            if state != self.state:
-                self.state = state
-                if state:  # Button pressed: launch pressed func
-                    if self._tf:
-                        launch(self._tf, self._ta)
-                    if self._ld:  # There's a long func: start long press delay
-                        self._ld.trigger(Pushbutton.long_press_ms)
-                    if self._df:
-                        if self._dd():  # Second click: timer running
-                            self._dd.stop()
-                            self._dblpend = False
-                            self._dblran = True  # Prevent suppressed launch on release
-                            launch(self._df, self._da)
-                        else:
-                            # First click: start doubleclick timer
-                            self._dd.trigger(Pushbutton.double_click_ms)
-                            self._dblpend = True  # Prevent suppressed launch on release
-                else:  # Button release. Is there a release func?
-                    if self._ff:
-                        if self._supp:
-                            d = self._ld 
-                            # If long delay exists, is running and doubleclick status is OK
-                            if not self._dblpend and not self._dblran:
-                                if (d and d()) or not d:
-                                    launch(self._ff, self._fa)
-                        else:
+    def _check(self, state):
+        if state == self.state:
+            return
+        # State has changed: act on it now.
+        self.state = state
+        if state:  # Button pressed: launch pressed func
+            if self._tf:
+                launch(self._tf, self._ta)
+            if self._ld:  # There's a long func: start long press delay
+                self._ld.trigger(Pushbutton.long_press_ms)
+            if self._df:
+                if self._dd():  # Second click: timer running
+                    self._dd.stop()
+                    self._dblpend = False
+                    self._dblran = True  # Prevent suppressed launch on release
+                    launch(self._df, self._da)
+                else:
+                    # First click: start doubleclick timer
+                    self._dd.trigger(Pushbutton.double_click_ms)
+                    self._dblpend = True  # Prevent suppressed launch on release
+        else:  # Button release. Is there a release func?
+            if self._ff:
+                if self._supp:
+                    d = self._ld 
+                    # If long delay exists, is running and doubleclick status is OK
+                    if not self._dblpend and not self._dblran:
+                        if (d and d()) or not d:
                             launch(self._ff, self._fa)
-                    if self._ld:
-                        self._ld.stop()  # Avoid interpreting a second click as a long push
-                    self._dblran = False
-            # Ignore state changes until switch has settled
+                else:
+                    launch(self._ff, self._fa)
+            if self._ld:
+                self._ld.stop()  # Avoid interpreting a second click as a long push
+            self._dblran = False
+
+    async def _go(self):
+        while True:
+            self._check(self.rawstate())
+            # Ignore state changes until switch has settled. Also avoid hogging CPU.
             # See https://github.com/peterhinch/micropython-async/issues/69
             await asyncio.sleep_ms(Pushbutton.debounce_ms)
 

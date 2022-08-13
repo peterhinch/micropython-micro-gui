@@ -1,26 +1,7 @@
-# __init__.py Common functions for uasyncio primitives
+# __init__.py Common functions for uasyncio primitives used bu ugui
 
-# Copyright (c) 2018-2020 Peter Hinch
+# Copyright (c) 2018-2022 Peter Hinch
 # Released under the MIT License (MIT) - see LICENSE file
-_attrs = {
-    "Delay_ms": "delay_ms",
-    "Switch": "switch",
-    "Pushbutton": "pushbutton",
-    "ESP32Touch": "pushbutton",
-    }
-
-# Lazy loader, effectively does:
-#   global attr
-#   from .mod import attr
-# Filched from uasyncio.__init__.py
-
-def __getattr__(attr):
-    mod = _attrs.get(attr, None)
-    if mod is None:
-        raise AttributeError(attr)
-    value = getattr(__import__(mod, None, None, True, 1), attr)
-    globals()[attr] = value
-    return value
 
 try:
     import uasyncio as asyncio
@@ -41,10 +22,22 @@ def launch(func, tup_args):
         res = asyncio.create_task(res)
     return res
 
-def set_global_exception():
-    def _handle_exception(loop, context):
-        import sys
-        sys.print_exception(context["exception"])
-        sys.exit()
-    loop = asyncio.get_event_loop()
-    loop.set_exception_handler(_handle_exception)
+_attrs = {
+    "Delay_ms": "delay_ms",
+    "Encoder": "encoder",
+    "Pushbutton": "pushbutton",
+    "ESP32Touch": "pushbutton",
+    "Switch": "switch",
+}
+
+# Copied from uasyncio.__init__.py
+# Lazy loader, effectively does:
+#   global attr
+#   from .mod import attr
+def __getattr__(attr):
+    mod = _attrs.get(attr, None)
+    if mod is None:
+        raise AttributeError(attr)
+    value = getattr(__import__(mod, None, None, True, 1), attr)
+    globals()[attr] = value
+    return value
