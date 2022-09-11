@@ -164,7 +164,7 @@ class DisplayIP:
     # These methods support greying out color overrides.
     # Clear screen.
     def clr_scr(self):
-        ssd.fill_rect(0, 0, self.width - 1, self.height - 1, color_map[BG])
+        ssd.fill_rect(0, 0, self.width, self.height, color_map[BG])
 
     def rect(self, x1, y1, w, h, color):
         ssd.rect(x1, y1, w, h, self._getcolor(color))
