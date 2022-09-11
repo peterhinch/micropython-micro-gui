@@ -22,9 +22,11 @@ class Slider(LinearIO):
                  height=100, width=20, divisions=10, legends=None,
                  fgcolor=None, bgcolor=None, fontcolor=None, bdcolor=None,
                  slotcolor=None, prcolor=None,
-                 callback=dolittle, args=[], value=0.0, active=True):
+                 callback=dolittle, args=[], value=0.0, active=True,
+                 min_delta=0.01, max_delta=0.1):
         width &= 0xfe # ensure divisible by 2
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor)
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor, 
+            min_delta = min_delta, max_delta = max_delta)
         super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends
@@ -96,9 +98,11 @@ class HorizSlider(LinearIO):
                  height=20, width=100, divisions=10, legends=None,
                  fgcolor=None, bgcolor=None, fontcolor=None, bdcolor=None,
                  slotcolor=None, prcolor=None,
-                 callback=dolittle, args=[], value=0.0, active=True):
+                 callback=dolittle, args=[], value=0.0, active=True,
+                 min_delta=0.01, max_delta=0.1):
         height &= 0xfe # ensure divisible by 2
-        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor)
+        super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, active, prcolor,
+            min_delta = min_delta, max_delta = max_delta)
         super()._set_callbacks(callback, args)
         self.divisions = divisions
         self.legends = legends
