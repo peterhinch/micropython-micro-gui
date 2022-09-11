@@ -1867,6 +1867,8 @@ Optional keyword only arguments:
  * `args=[]` A list/tuple of arguments for above callback.
  * `value=0.0` The initial value: slider will be at the bottom (v), left (h).
  * `active=True` Determines whether the control can accept user input.
+ * `min_delta=0.01` Minimim value increment
+ * `max_delta=0.1` Maximum value increment (long button presses)  
 
 Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
