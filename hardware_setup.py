@@ -36,10 +36,10 @@ import gc
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
 freq(250_000_000)  # RP2 overclock
 # Create and export an SSD instance
-pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
 prst = Pin(9, Pin.OUT, value=1)
 pcs = Pin(10, Pin.OUT, value=1)
-spi = SPI(0, baudrate=30_000_000)
+pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
+spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
 gc.collect()

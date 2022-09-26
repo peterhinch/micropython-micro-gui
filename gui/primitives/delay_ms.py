@@ -1,8 +1,8 @@
 # delay_ms.py Now uses ThreadSafeFlag and has extra .wait() API
 # Usage:
-# from primitives.delay_ms import Delay_ms
+# from primitives import Delay_ms
 
-# Copyright (c) 2018-2021 Peter Hinch
+# Copyright (c) 2018-2022 Peter Hinch
 # Released under the MIT License (MIT) - see LICENSE file
 
 import uasyncio as asyncio
@@ -27,6 +27,7 @@ class Delay_ms:
         self._tout = asyncio.Event()  # Timeout event
         self.wait = self._tout.wait  # Allow: await wait_ms.wait()
         self.clear = self._tout.clear
+        self.set = self._tout.set
         self._ttask = self._fake  # Timer task
         self._mtask = asyncio.create_task(self._run()) #Main task
 
@@ -59,6 +60,7 @@ class Delay_ms:
         self._ttask.cancel()
         self._ttask = self._fake
         self._busy = False
+        self._tout.clear()
 
     def __call__(self):  # Current running status
         return self._busy
