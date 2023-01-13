@@ -7,13 +7,10 @@
 # Also for suggesting abstracting the input device class.
 
 import uasyncio as asyncio
-from uasyncio import Event
 from time import ticks_diff, ticks_ms
 import gc
 
 from gui.core.colors import *
-from hardware_setup import ssd
-
 from gui.primitives import Pushbutton
 
 # Globally available singleton objects
@@ -268,11 +265,11 @@ class Display(DisplayIP):
 class Screen:
     do_gc = True  # Allow user to take control of GC
     current_screen = None
-    is_shutdown = Event()
+    is_shutdown = asyncio.Event()
     # These events enable user code to synchronise display refresh
     # to a realtime process.
-    rfsh_start = Event()  # Refresh pauses until set (set by default).
-    rfsh_done = Event()  # Flag a user task that a refresh was done.
+    rfsh_start = asyncio.Event()  # Refresh pauses until set (set by default).
+    rfsh_done = asyncio.Event()  # Flag a user task that a refresh was done.
 
     @classmethod  # Called by Input when status change needs redraw of current obj
     def redraw_co(cls):
