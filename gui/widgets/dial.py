@@ -43,7 +43,8 @@ class Pointer:
         self.color = None
 
     def value(self, v=None, color=None):
-        self.color = color
+        if color is not None:
+            self.color = color
         if v is not None:
             if isinstance(v, complex):
                 l = cmath.polar(v)[0]
