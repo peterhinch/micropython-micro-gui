@@ -259,6 +259,8 @@ is required `-f` is also required. Supplied examples are:
  * `font10.py` FreeSans 17 high.
  * `freesans20.py` FreeSans 20 high.
 
+The directory `gui/fonts/bitmaps` is only required for the `bitmap.py` demo.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 1.4 Navigation
@@ -436,9 +438,9 @@ time the pushbuttons are not polled. This can be an issue in displays with a
 large number of pixels, multi-byte colors and/or slow SPI clock rates. In high
 resolution cases the device driver has specfic `uasyncio` support whereby the
 driver yields to the scheduler a few times during the refresh.Currently this
-exists on ILI9341 and ST7789 (e.g. TTGO T-Display). By my calculations and
-measurements this should be unnecessary on other drivers, but please report any
-tendency to miss button presses and I will investigate.
+exists on ILI9486, ILI9341 and ST7789 (e.g. TTGO T-Display). By my calculations
+and measurements this should be unnecessary on other drivers, but please report
+any tendency to miss button presses and I will investigate.
 
 This may be mitigated by two approaches:
  1. Clocking the SPI bus as fast as possible. This is discussed in
@@ -455,7 +457,9 @@ pullups to 3.3V should be used.
 On a Pyboard 1.1 with 320x240 ili9341 display it was necessary to use frozen
 bytecode: in this configuration running the `various.py` demo there was 29K of
 free RAM. Note that, at 37.5KiB, this display is the worst-case in terms of
-RAM usage. A smaller display or a Pyboard D would offer more headroom.
+RAM usage. A smaller display or a Pyboard D would offer more headroom. Frozen
+bytecode was also necessary on an RP2 running an ILI9486: a 480x320 display
+requires a 76,800 byte frame buffer.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -550,6 +554,8 @@ minimal and aim to demonstrate a single technique.
  * `menu.py` A multi-level menu.
  * `adjuster.py` Simple demo of the `Adjuster` control.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
+ * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
+ * `qrcode.py` Display a QR code. Requires the uQR module.
 
 ### 1.11.2 Test scripts
 
@@ -728,7 +734,7 @@ If a 4-bit driver is in use, the color `rgb(150, 150, 0)` will be assigned to
 "spare" color number 12. Any color number in range `0 <= n <= 15` may be
 used, implying that predefined colors may be reassigned. It is recommended
 that `BLACK` (0) and `WHITE` (15) are not changed. If an 8-bit or larger driver
-is in use, the color umber is ignored and there is no practical restriction on
+is in use, the color number is ignored and there is no practical restriction on
 the number of colors that may be created.
 
 In the above example, regardless of the display driver, the `PALE_YELLOW`
@@ -779,7 +785,7 @@ The following code, issued as the first executable lines of an application,
 initialises the display.
 ```python
 import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen, ssd, display  # display is seldom needed
+from gui.core.ugui import Screen, ssd, display  # display symbol is seldom needed
 ```
 The `hardware_setup` file creates singleton instances of `SSD` and `Display`
 classes. These instances are made available via `ugui`. Normal GUI applications
