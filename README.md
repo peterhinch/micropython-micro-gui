@@ -1076,16 +1076,15 @@ Screen.change(BaseScreen)
 
 This is a rectangular array of `Label` instances: as such it is a passive
 widget. Rows are of a fixed height equal to the font height + 4 (i.e. the label
-height). Column widths are specified in pixels with the columen width being the
+height). Column widths are specified in pixels with the column width being the
 specified width +4 to allow for borders. The dimensions of the widget including
 borders are thus:  
 height = no. of rows * (font height + 4)  
-width = sum(colun width + 4)  
+width = sum(column width + 4)  
 Cells may be addressed as a 1-dimensional list or by a `[row, col]` 2-list or
 2-tuple.
 
 Constructor args:  
-writer, row, col, lwidth, nrows, ncols, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=None, justify=0
  1. `writer` The `Writer` instance (font and screen) to use.
  2. `row` Location of grid on screen.
  3. `col`
@@ -1099,14 +1098,14 @@ writer, row, col, lwidth, nrows, ncols, invert=False, fgcolor=None, bgcolor=BLAC
  7. `invert=False` Display in inverted or normal style.
  8. `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
- 9. `bgcolor=BLACK` Background color of object. If `None` the `Writer`
+ 9. `bgcolor=BLACK` Background color of cells. If `None` the `Writer`
  background default is used.
  10. `bdcolor=None` Color of border of the widget and its internal grid. If
  `False` no border or grid will be drawn. If `None` the `fgcolor` will be used,
  otherwise a color may be passed.
  11. `justify=Label.LEFT` Options are `Label.RIGHT` and `Label.CENTRE` (note
  British spelling). Justification can only occur if there is sufficient space
- in the `Label` i.e. where an integer is supplied for the `text` arg.
+ in the `Label` as defined by `lwidth`.
 
 Method:  
  * `__getitem__` This enables an individual `Label`'s `value` method to be
@@ -1127,7 +1126,7 @@ del d["fgcolor"]  # Revert to default
 d["invert"] = True
 self.grid[17] = d
 ```
-See the example `calendar.py`.
+See the example [calendar.py](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/calendar.py).
 
 ###### [Contents](./README.md#0-contents)
 
