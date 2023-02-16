@@ -25,6 +25,7 @@ _attrs = {
     "Textbox": "textbox",
     "BitMap": "bitmap",
     "QRMap": "qrcode",
+    "Grid": "grid",
     }
 
 # Lazy loader, effectively does:

@@ -82,7 +82,7 @@ development so check for updates.
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Navigation](./README.md#14-navigation) How the GUI navigates between widgets.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
- 1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config.  
+ 1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config. Please do this first.  
  1.7 [Installation](./README.md#17-installation) Installing the library.  
  1.8 [Performance and hardware notes](./README.md#18-performance-and-hardware-notes)  
  1.9 [Firmware and dependencies](./README.md#19-firmware-and-dependencies)  
@@ -112,6 +112,7 @@ development so check for updates.
  5.3 [Popup windows](./README.md#53-popup-windows)  
 6. [Widgets](./README.md#6-widgets) Displayable objects.  
  6.1 [Label widget](./README.md#61-label-widget) Single line text display.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.1.1 [Grid widget](./README.md#611-grid-widget) A spreadsheet-like array of labels.  
  6.2 [LED widget](./README.md#62-led-widget) Display Boolean values.  
  6.3 [Checkbox widget](./README.md#63-checkbox-widget) Enter Boolean values.  
  6.4 [Button and CloseButton widgets](./README.md#64-button-and-closebutton-widgets) Pushbutton emulation.  
@@ -147,7 +148,8 @@ development so check for updates.
 8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
-[Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.
+[Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
+[Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 
 # 1. Basic concepts
 
@@ -432,6 +434,10 @@ A Pico shows ~182000 bytes free with no code running. With `linked_sliders`
 running on an ILI9341 display, it shows 120,896 bytes free with frozen
 bytecode and 88,640 bytes free without.
 
+With multi-pixel displays the size of the frame buffer can prevent the GUI from
+compiling. If frozen bytecode is impractical, consider cross-compiling. See
+[Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling).
+
 #### Speed
 
 The consequence of inadequate speed is that brief button presses can be missed.
@@ -575,6 +581,7 @@ Some of these require larger screens. Required sizes are specified as
  * `various.py` Assorted widgets including the different types of pushbutton
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
+ * `calendar.py` Demo of grid control (240x320 - but could be reduced).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1012,8 +1019,8 @@ Constructor args:
  5. `invert=False` Display in inverted or normal style.
  6. `fgcolor=None` Color of foreground (the control itself). If `None` the
  `Writer` foreground default is used.
- 7. `bgcolor=None` Background color of object. If `None` the `Writer` background
- default is used.
+ 7. `bgcolor=BLACK` Background color of object. If `None` the `Writer`
+ background default is used.
  8. `bdcolor=False` Color of border. If `False` no border will be drawn. If
  `None` the `fgcolor` will be used, otherwise a color may be passed. If a color
  is available, a border line will be drawn around the control.
@@ -1062,6 +1069,65 @@ class BaseScreen(Screen):
 
 Screen.change(BaseScreen)
 ```
+
+###### [Contents](./README.md#0-contents)
+
+### 6.1.1 Grid widget
+
+This is a rectangular array of `Label` instances: as such it is a passive
+widget. Rows are of a fixed height equal to the font height + 4 (i.e. the label
+height). Column widths are specified in pixels with the columen width being the
+specified width +4 to allow for borders. The dimensions of the widget including
+borders are thus:  
+height = no. of rows * (font height + 4)  
+width = sum(colun width + 4)  
+Cells may be addressed as a 1-dimensional list or by a `[row, col]` 2-list or
+2-tuple.
+
+Constructor args:  
+writer, row, col, lwidth, nrows, ncols, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=None, justify=0
+ 1. `writer` The `Writer` instance (font and screen) to use.
+ 2. `row` Location of grid on screen.
+ 3. `col`
+ 4. `lwidth` If an integer N is passed all labels will have width of N pixels.
+ A list or tuple of integers will define the widths of successive columns. If
+ the list has fewer entries than there are columns, the last entry will define
+ the width of those columns. Thus `[20, 30]` will produce a grid with column 0
+ being 20 pixels and all subsequent columns being 30.
+ 5. `nrows` Number of rows.
+ 6. `ncols` Number of columns.
+ 7. `invert=False` Display in inverted or normal style.
+ 8. `fgcolor=None` Color of foreground (the control itself). If `None` the
+ `Writer` foreground default is used.
+ 9. `bgcolor=BLACK` Background color of object. If `None` the `Writer`
+ background default is used.
+ 10. `bdcolor=None` Color of border of the widget and its internal grid. If
+ `False` no border or grid will be drawn. If `None` the `fgcolor` will be used,
+ otherwise a color may be passed.
+ 11. `justify=Label.LEFT` Options are `Label.RIGHT` and `Label.CENTRE` (note
+ British spelling). Justification can only occur if there is sufficient space
+ in the `Label` i.e. where an integer is supplied for the `text` arg.
+
+Method:  
+ * `__getitem__` This enables an individual `Label`'s `value` method to be
+ retrieved using index notation. The args detailed above enable inividual cells
+ to be updated.
+
+Example uses:
+```python
+colwidth = (20, 30)  # Col 0 width is 20, subsequent columns 30
+self.grid = Grid(wri, row, col, colwidth, rows, cols, justify=Label.CENTRE)
+self.grid[20] = ""  # Clear cell 20 by setting its value to ""
+self.grid[[2, 5]] = str(42)  # Note syntax
+d = {}  # For indiviual control of cell appearance
+d["fgcolor"] = RED
+d["text"] = str(99)
+self.grid[(3, 7)] = d  # Specify color as well as text
+del d["fgcolor"]  # Revert to default
+d["invert"] = True
+self.grid[17] = d
+```
+See the example `calendar.py`.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -3021,8 +3087,8 @@ have the following bound variables, which should be considered read-only:
 
  * `height` As specified. Does not include border.
  * `width` Ditto.
- * `mrow` Maximum absolute row occupied by the widget.
- * `mcol` Maximum absolute col occupied by the widget.
+ * `mrow` Maximum absolute row occupied by the widget (including border).
+ * `mcol` Maximum absolute col occupied by the widget (including border).
  
 A further aid to metrics is the `Writer` method `.stringlen(s)`. This takes a
 string as its arg and returns its length in pixels when rendered using that
@@ -3121,3 +3187,20 @@ It is usually best to keep `hardware_setup.py` unfrozen for ease of making
 changes. I also keep the display driver and `boolpalette.py` in the filesystem
 as I have experienced problems freezing display drivers - but feel free to
 experiment.
+
+## Appendix 3 Cross compiling
+
+This addresses the case where a memory error occurs on import. There are better
+savings with frozen bytecode, but cross compiling the main program module saves
+the compiler from having to compile a large module on the target hardware. The
+cross compiler is documented [here](https://github.com/micropython/micropython/blob/master/mpy-cross/README.md).
+
+Change to the directory `gui/core` and issue:
+```bash
+$ /path/to/micropython/mpy-cross/mpy-cross ugui.py
+```
+This creates a file `ugui.mpy`. It is necessary to move, delete or rename
+`ugui.py` as MicroPython loads a `.py` file in preference to `.mpy`.
+
+If "incorrect mpy version" errors occur, the cross compiler should be
+recompiled.
