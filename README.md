@@ -1074,6 +1074,11 @@ Screen.change(BaseScreen)
 
 ### 6.1.1 Grid widget
 
+```python
+from gui.widgets import Grid
+```
+![Image](./images/grid.JPG)
+
 This is a rectangular array of `Label` instances: as such it is a passive
 widget. Rows are of a fixed height equal to the font height + 4 (i.e. the label
 height). Column widths are specified in pixels with the column width being the
