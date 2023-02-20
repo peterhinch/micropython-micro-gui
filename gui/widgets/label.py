@@ -47,8 +47,8 @@ class Label(Widget):
         elif justify == 2:  # Right
             self.tcol = self.col + self.width - sl
             
-        txt = super().value(text)  # Sets .draw ensuring refresh
-        # Redraw even if no text supplied: colors may have changed.
+        txt = super().value(text)
+        self.draw = True  # Redraw unconditionally: colors may have changed.
         self.invert = invert
         self.fgcolor = self.def_fgcolor if fgcolor is None else fgcolor
         self.bgcolor = self.def_bgcolor if bgcolor is None else bgcolor
