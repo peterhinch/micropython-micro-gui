@@ -57,7 +57,7 @@ class Label(Widget):
         self.bdcolor = self.def_bdcolor if bdcolor is None else bdcolor
         return txt
 
-    def show(self):
-        if super().show():  # Draw or erase border
-            if isinstance(txt := super().value(), str):
-                display.print_left(self.writer, self.tcol, self.row, txt, self.fgcolor, self.bgcolor, self.invert)
+    def show(self):  # Passive: no need to test show return value.
+        super().show(False)  # Honour background. Draw or erase border
+        if isinstance(txt := super().value(), str):
+            display.print_left(self.writer, self.tcol, self.row, txt, self.fgcolor, self.bgcolor, self.invert)
