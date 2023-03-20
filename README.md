@@ -147,6 +147,7 @@ development so check for updates.
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
 8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
+
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
