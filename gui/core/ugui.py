@@ -533,8 +533,6 @@ class Screen:
         while Screen.do_gc:
             await asyncio.sleep_ms(500)
             gc.collect()
-            if hasattr(gc, 'threshold'):
-                gc.threshold(gc.mem_free() // 4 + gc.mem_alloc())
             n += 1
             n &= 0x1F
             _vb and (not n) and print("Free RAM", gc.mem_free())
