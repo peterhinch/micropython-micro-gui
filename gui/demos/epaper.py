@@ -119,7 +119,7 @@ class FooScreen(Screen):
         Checkbox(wri, row, col, callback=self.cbcb)
         col+= 40
         self.led = LED(wri, row, col, color=YELLOW, bdcolor=GREEN)
-        CloseButton(wri)
+        CloseButton(wri, bgcolor=BLACK)
         asyncio.create_task(run(dial, lbltim, m0, scale))
 
 
@@ -174,10 +174,9 @@ async def run(dial, lbltim, m0, scale):
 
 
 def test():
-    if ssd.height < 240 or ssd.width < 320:
-        print(' This test requires a display of at least 320x240 pixels.')
-    else:
-        print('Testing micro-gui...')
-        Screen.change(FooScreen)
+    print('Testing micro-gui...')
+    Screen.change(FooScreen)
+    print("End")
+    ssd.sleep()  # Tidy shutdown of EPD
 
 test()

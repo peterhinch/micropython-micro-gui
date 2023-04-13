@@ -29,7 +29,6 @@
 
 from machine import Pin, SPI, freq
 import gc
-
 from drivers.epaper.pico_epaper_42 import EPD as SSD
 freq(250_000_000)  # RP2 overclock
 # Create and export an SSD instance
@@ -37,7 +36,8 @@ prst = Pin(9, Pin.OUT, value=1)
 pcs = Pin(10, Pin.OUT, value=1)
 pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
 busy = Pin(15, Pin.IN)
-spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=4_000_000)
+# Datasheet allows 10MHz
+spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=10_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 
 # Using normal socket connection default args apply

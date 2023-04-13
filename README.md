@@ -149,7 +149,7 @@ development so check for updates.
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
 8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
- 9.1 [ePaper refresh](./README.md#91-epaper-refresh) Using these techniques to provide a full refresh.  
+10. [ePaper displays](./README.md#10-epaper-displays) Using these techniques to provide a full refresh.  
 
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
@@ -509,7 +509,7 @@ of slow and visually intrusive refreshing. However there is an exception: the
 [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm). This
 supports partial updates which work remarkably well with minimal ghosting. Note
 that it can be used with hosts other than the Pico via the supplied cable. See
-[ePaper refresh](./README.md#91-epaper-refresh).
+[ePaper displays](./README.md#10-epaper-displays).
 
 Display drivers are documented [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
@@ -3042,7 +3042,7 @@ another from occurring.
 ```
 The demo `gui/demos/audio.py` provides example usage.
 
-## 9.1 ePaper refresh
+# 10 ePaper displays
 
 The [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
 is currently the only fully supported ePaper display, with a hardware_setup.py
@@ -3051,7 +3051,7 @@ initial refresh the driver is put into partial mode to provide reasonably
 quick and visually satisfactory response to button events. However ghosting may
 accumulate after long periods of running, and an application may occasionally
 need to perform a full refresh. This requires the "done" interlock described
-above.
+in section 9.
 
 ```python
 async def full_refresh():
