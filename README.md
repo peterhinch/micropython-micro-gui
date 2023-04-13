@@ -60,6 +60,8 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
+
 July 2022: Add ESP32 touch pad support.
 
 June 2022: Add [QRMap](./README.md#620-qrmap-widget) and
@@ -147,6 +149,7 @@ development so check for updates.
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
 8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
+ 9.1 [ePaper refresh](./README.md#91-epaper-refresh) Using these techniques to provide a full refresh.  
 
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
@@ -501,8 +504,12 @@ some builds.
 
 Supported displays are as per
 [the nano-gui list](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#12-description).
-In practice usage with ePaper displays is questionable because of their slow
-refresh times. I haven't tested these, or the Sharp displays.
+In general ePaper and Sharp displays are unlikely to yield good results because
+of slow and visually intrusive refreshing. However there is an exception: the
+[Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm). This
+supports partial updates which work remarkably well with minimal ghosting. Note
+that it can be used with hosts other than the Pico via the supplied cable. See
+[ePaper refresh](./README.md#91-epaper-refresh).
 
 Display drivers are documented [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
@@ -565,6 +572,11 @@ minimal and aim to demonstrate a single technique.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
  * `qrcode.py` Display a QR code. Requires the uQR module.
+ * `calendar.py` Demo of grid widget.
+ * `epaper.py` Warts-and-all demo for an ePaper display. Currently the only
+ supported display is the 
+ [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
+ with Pico or other host.
 
 ### 1.11.2 Test scripts
 
@@ -784,8 +796,8 @@ display such as an OLED. On a Sharp display it indicates reflection.
 
 There is an issue regarding ePaper displays discussed
 [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#312-monochrome-displays).
-I don't consider ePaper displays suitable for I/O because of their slow refresh
-time.
+The driver for the [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
+renders colored objects as black on white.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -3029,6 +3041,27 @@ another from occurring.
         Screen.rfsh_start.clear()  # Prevent another.
 ```
 The demo `gui/demos/audio.py` provides example usage.
+
+## 9.1 ePaper refresh
+
+The [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
+is currently the only fully supported ePaper display, with a hardware_setup.py
+copied or adapted from `setup_examples/pico_epaper_42_pico.py`. After an
+initial refresh the driver is put into partial mode to provide reasonably
+quick and visually satisfactory response to button events. However ghosting may
+accumulate after long periods of running, and an application may occasionally
+need to perform a full refresh. This requires the "done" interlock described
+above.
+
+```python
+async def full_refresh():
+    Screen.rfsh_done.clear()  # Enable completion flag
+    await Screen.rfsh_done.wait()  # Wait for a refresh to end
+    ssd.set_full()
+    Screen.rfsh_done.clear()  # Enable completion flag
+    await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
+    ssd.set_partial()
+```
 
 ###### [Contents](./README.md#0-contents)
 
