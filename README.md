@@ -149,7 +149,7 @@ development so check for updates.
  7.4 [Class TSequence](./README.md#74-class-tsequence) Plotting realtime, time sequential data.  
 8. [ESP32 touch pads](./README.md#8-esp32-touch-pads) Replacing buttons with touch pads.  
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
-10. [ePaper displays](./README.md#10-epaper-displays) Using these techniques to provide a full refresh.  
+10. [ePaper displays](./README.md#10-epaper-displays) Guidance on using ePaper displays.  
 
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
@@ -506,10 +506,8 @@ Supported displays are as per
 [the nano-gui list](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#12-description).
 In general ePaper and Sharp displays are unlikely to yield good results because
 of slow and visually intrusive refreshing. However there is an exception: the
-[Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm). This
-supports partial updates which work remarkably well with minimal ghosting. Note
-that it can be used with hosts other than the Pico via the supplied cable. See
-[ePaper displays](./README.md#10-epaper-displays).
+[Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm). See
+[10. ePaper displays](./README.md#10-epaper-displays).
 
 Display drivers are documented [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md).
 
@@ -3044,14 +3042,29 @@ The demo `gui/demos/audio.py` provides example usage.
 
 # 10 ePaper displays
 
+In general ePaper displays do not work well with micro-gui because refresh is
+slow (seconds) and visually intrusive. Some displays support partial refresh
+which is faster (hundreds of ms) and non-intrusive. The penalty is "ghosting"
+where pixels which change from black to white do so imperfectly, leaving a grey
+trace behind. The degree of ghosting varies between display types. 
+
 The [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
-is currently the only fully supported ePaper display, with a hardware_setup.py
-copied or adapted from `setup_examples/pico_epaper_42_pico.py`. After an
-initial refresh the driver is put into partial mode to provide reasonably
-quick and visually satisfactory response to button events. However ghosting may
-accumulate after long periods of running, and an application may occasionally
-need to perform a full refresh. This requires the "done" interlock described
-in section 9.
+has quite a low level of ghosting. A full refresh takes about 2.1s and partial
+about 740ms. In use there is a visible lag between operating a user control and
+a visible response, but it is usable. Currently this is the only fully
+supported ePaper display.
+
+It has a socket for a Pico or Pico W, but also comes with a cable suitable for
+connecting to any host. The hardware_setup.py should be copied or adapted from
+`setup_examples/pico_epaper_42_pico.py`. If using the socket, default args may
+be used (see code comment).
+
+After an initial refresh to clear the screen the driver is put into partial
+mode. This provides a reasonably quick and visually satisfactory response to
+user inputs such as button events. See the 
+[epaper demo](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/epaper.py).
+This provides for a full refresh via the `reset` button. Provision of full
+refresh is application dependent. It should be done as follows:
 
 ```python
 async def full_refresh():
