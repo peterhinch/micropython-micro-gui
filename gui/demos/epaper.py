@@ -12,16 +12,14 @@ import hardware_setup
 from gui.core.ugui import Screen, ssd
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10  # Font for CWriter
+import gui.fonts.freesans20 as large
+
 from gui.core.colors import *
 # Widgets
-from gui.widgets.label import Label
-from gui.widgets.dial import Dial, Pointer
-from gui.widgets.meter import Meter
-from gui.widgets.scale import Scale
-from gui.widgets.buttons import Button, ButtonList, RadioButtons, CloseButton
-from gui.widgets.checkbox import Checkbox
-from gui.widgets.led import LED
+from gui.widgets import Label, Dial, Pointer, Meter, Scale, Button, ButtonList, RadioButtons, CloseButton, Checkbox, LED
+from gui.widgets.graph import CartesianGraph, Curve
 
+from math import sin, pi
 import cmath
 import uasyncio as asyncio
 import utime
@@ -46,13 +44,6 @@ class FooScreen(Screen):
             {'fgcolor' : GREEN, 'text' : 'Enable', 'args' : (buttons, False)},
         )
 
-        table_radiobuttons = (
-            {'text' : '1', 'args' : ('1',)},
-            {'text' : '2', 'args' : ('2',)},
-            {'text' : '3', 'args' : ('3',)},
-            {'text' : '4', 'args' : ('4',)},
-        )
-
         def tickcb(f, c):
             if f > 0.8:
                 return RED
@@ -67,10 +58,11 @@ class FooScreen(Screen):
         self.rb0 = None
         self.bs0 = None
         wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri_large = CWriter(ssd, large, GREEN, BLACK, verbose=False)
         lbltim = Label(wri, 65, 100, 'this is a test', bdcolor=RED)
 
         m0 = Meter(wri, 10, 240, divisions = 4, ptcolor=YELLOW, height=80, width=15,
-                label='Meter example', style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
+                label='Meter', style=Meter.BAR, legends=('0.0', '0.5', '1.0'))
         # Instantiate displayable objects. bgcolor forces complete redraw.
         dial = Dial(wri, 2, 2, height = 75, ticks = 12, bgcolor=BLACK, bdcolor=None, label=120)  # Border in fg color
         scale = Scale(wri, 2, 100, width = 124, tickcb = tickcb,
@@ -100,25 +92,24 @@ class FooScreen(Screen):
         col+= 60
         btn = Button(wri, row, col, height=30, callback=self.rstcb, text='reset', litcolor=RED, fgcolor=GREEN, bgcolor=DARKGREEN)
 
-        col = 2
-        row = 170
-        Label(wri, row, col, 'Radio buttons')
-        # Radio buttons
-        row = 185
-        self.rb = RadioButtons(BLUE, self.rbcb) # color of selected button
-        self.rb0 = None
-        for t in table_radiobuttons:
-            button = self.rb.add_button(wri, row, col, textcolor = WHITE,
-                                fgcolor = BLUE, bgcolor = DARKBLUE, shape=CIRCLE, height = 30, **t)
-            if self.rb0 is None: # Save for reset button callback
-                self.rb0 = button
-            col+= 35
+        col = btn.mcol + 15
         # Checkbox
-        col+= 35
         Label(wri, row - 15, col, 'Checkbox and LED')
         Checkbox(wri, row, col, callback=self.cbcb)
         col+= 40
         self.led = LED(wri, row, col, color=YELLOW, bdcolor=GREEN)
+
+        row = self.bs0.mrow + 5
+        col = 20
+        ht = 75
+        wd = 200
+        self.graph = CartesianGraph(wri, row, col, height = ht, width = wd, bdcolor=False)
+        Label(wri, row + ht + 5, col - 10, '-2.0')
+        Label(wri, row + ht + 5, col - 8 + int(wd//2), '0.0')
+        lbl = Label(wri, row + ht + 5, col - 10 + wd, '2.0')
+        Label(wri_large, lbl.mrow + 5, col, "y = sinc(x)")
+        
+
         CloseButton(wri, bgcolor=BLACK)
         asyncio.create_task(run(dial, lbltim, m0, scale))
 
@@ -126,19 +117,27 @@ class FooScreen(Screen):
     def callback(self, button, buttons, val):
         buttons[2].greyed_out(val)
 
-    def rbcb(self, button, val):
-        print('RadioButtons callback', val)
-
     def rstcb(self, button):
-        print('Reset button: init ButtonList and RadioButtons, do full refresh.')
+        print('Reset button: init ButtonList, do full refresh.')
         self.bs.value(self.bs0)
-        self.rb.value(self.rb0)
         asyncio.create_task(full_refresh())
 
     def cbcb(self, cb):
         self.led.value(cb.value())
         gc.collect()
         print('Free RAM:', gc.mem_free())
+
+    def after_open(self):
+        def populate():
+            x = -0.998
+            while x < 1.01:
+                z = 6 * pi * x
+                y = sin(z) / z
+                yield x, y
+                x += 0.05
+
+        Curve(self.graph, None, populate())
+
 
 async def run(dial, lbltim, m0, scale):
     days = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',

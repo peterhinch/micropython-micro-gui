@@ -95,13 +95,14 @@ EPD_partial_lut_bb1 = b"\x00\x19\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00
 \x00\x00\x00\x00"
 
 # Invert: EPD is black on white
-# 483/241 us for 2000 bytes (125/250MHz)
-# Can't extend to 32 bits becaue of long ints
+# 337/141 us for 2000 bytes (125/250MHz)
 @micropython.viper
-def _linv(dest:ptr16, source:ptr16, length:int):
-    for n in range(length):
-        c: uint = source[n]
-        dest[n] = c ^ 0xFFFF
+def _linv(dest:ptr32, source:ptr32, length:int):
+    n: int = length-1
+    z: uint32 = int(0xFFFFFFFF)
+    while n >= 0:
+        dest[n] = source[n] ^ z
+        n -= 1
 
 class EPD(framebuf.FrameBuffer):
     # A monochrome approach should be used for coding this. The rgb method ensures
@@ -258,7 +259,7 @@ class EPD(framebuf.FrameBuffer):
     @micropython.native
     def _bsend(self, start, nbytes):
         buf = self.ibuf
-        _linv(buf, self.mvb[start:], nbytes >> 1)  # Invert image data for EPD
+        _linv(buf, self.mvb[start:], nbytes >> 2)  # Invert image data for EPD
         self.send_bytes(buf)
 
     # Time to convert and transmit 1000 bytes ~ 1ms: most of that is tx @ 10MHz

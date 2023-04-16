@@ -28,6 +28,9 @@ Raspberry Pico with an ILI9341 from eBay.
 TTGO T-Display. A joystick switch and an SIL resistor make a simple inexpensive
 and WiFi-capable system.
 
+![Image](./images/epaper.JPG)  
+micro_gui now has limited support for ePaper.
+
 # Rationale
 
 Touch GUI's have many advantages, however they have drawbacks, principally cost
