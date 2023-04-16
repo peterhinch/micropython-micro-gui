@@ -7,8 +7,7 @@
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, Window, ssd
 
-from gui.widgets.label import Label
-from gui.widgets import Button, RadioButtons, CloseButton, Listbox, Dropdown, DialogBox
+from gui.widgets import Button, RadioButtons, CloseButton, Listbox, Dropdown, DialogBox, Label
 from gui.core.writer import CWriter
 
 # Font for CWriter

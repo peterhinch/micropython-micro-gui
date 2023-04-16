@@ -43,8 +43,7 @@ audio_out = I2S(I2S_ID, **config)
 
 # ======= GUI =======
 
-from gui.widgets.label import Label
-from gui.widgets import Button, CloseButton, HorizSlider, Listbox
+from gui.widgets import Button, CloseButton, HorizSlider, Listbox, Label
 from gui.core.writer import CWriter
 
 # Font for CWriter

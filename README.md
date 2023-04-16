@@ -1003,7 +1003,7 @@ constructor and is closed by issuing the `close()` static method.
 ## 6.1 Label widget
 
 ```python
-from gui.widgets import Label
+from gui.widgets import Label  # File: label.py
 ```
 ![Image](./images/label.JPG)
 
@@ -1089,7 +1089,7 @@ Screen.change(BaseScreen)
 ### 6.1.1 Grid widget
 
 ```python
-from gui.widgets import Grid
+from gui.widgets import Grid  # File: grid.py
 ```
 ![Image](./images/grid.JPG)
 
@@ -1152,7 +1152,7 @@ See the example [calendar.py](https://github.com/peterhinch/micropython-micro-gu
 ## 6.2 LED widget
 
 ```python
-from gui.widgets import LED
+from gui.widgets import LED  # File: led.py
 ```
 ![Image](./images/led.JPG)
 
@@ -1191,7 +1191,7 @@ controlled with `led(True)` or `led(False)`.
 ## 6.3 Checkbox widget
 
 ```python
-from gui.widgets import Checkbox
+from gui.widgets import Checkbox  # File: checkbox.py
 ```
 ![Image](./images/checkbox.JPG)  
 This provides for Boolean data entry and display. In the `True` state the
@@ -1233,7 +1233,7 @@ Methods:
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets import Button
+from gui.widgets import Button  # File: buttons.py
 ```
 ![Image](./images/pushbuttons.JPG)
 
@@ -1310,7 +1310,7 @@ Optional keyword only arguments:
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets import Button, ButtonList
+from gui.widgets import Button, ButtonList  # File: buttons.py
 ```
 
 A `ButtonList` groups a number of buttons together to implement a button which
@@ -1369,7 +1369,7 @@ for t in table:  # Buttons overlay each other at same location
 
 ```python
 from gui.core.colors import *  # Colors and shapes
-from gui.widgets import Button, RadioButtons
+from gui.widgets import Button, RadioButtons  # File: buttons.py
 ```
 ![Image](./images/radiobuttons.JPG)
 
@@ -1416,7 +1416,7 @@ for t in table:
 ## 6.7 Listbox widget
 
 ```python
-from gui.widgets import Listbox
+from gui.widgets import Listbox  # File: listbox.py
 ```
 ![Image](./images/listbox.JPG)
 
@@ -1525,7 +1525,7 @@ Screen.change(BaseScreen)
 ## 6.8 Dropdown widget
 
 ```python
-from gui.widgets import Dropdown
+from gui.widgets import Dropdown  # File: dropdown.py
 ```
 
 ![Image](./images/dd_closed.JPG)
@@ -1640,7 +1640,7 @@ Screen.change(BaseScreen)
 ## 6.9 DialogBox class
 
 ```python
-from gui.widgets import DialogBox
+from gui.widgets import DialogBox  # File: dialog.py
 ```
 ![Image](./images/dialog.JPG)
 
@@ -1694,7 +1694,7 @@ in `gui/demos/screens.py`.
 ## 6.10 Textbox widget
 
 ```python
-from gui.widgets import Textbox
+from gui.widgets import Textbox  # File: textbox.py
 ```
 ![Image](./images/textbox.JPG)
 
@@ -1763,7 +1763,7 @@ the oldest (topmost) being discarded as required.
 This `passive` widget displays a single floating point value on a vertical
 linear scale. Optionally it can support data dependent callbacks.
 ```python
-from gui.widgets import Meter
+from gui.widgets import Meter  # File: meter.py
 ```
 ![Image](./images/meter.JPG)
 The two styles of `meter`, both showing a value of 0.65. This `passive` widget
@@ -1855,7 +1855,7 @@ behaves similarly for data values between 0.9 and 1.0.
 ### 6.11.1 Region class
 
 ```python
-from gui.widgets import Region
+from gui.widgets import Region  # File: region.py
 ```
 Instantiating a `Region` associates it with a supporting widget (currently only
 a `Meter`). Constructor positional args are as follows:
@@ -1915,7 +1915,7 @@ callbacks to run as appropriate.
 ## 6.12 Slider and HorizSlider widgets
 
 ```python
-from gui.widgets import Slider, HorizSlider
+from gui.widgets import Slider, HorizSlider  # File: sliders.py
 ```
 ![Image](./images/sliders.JPG)
 
@@ -1995,7 +1995,7 @@ around sliders to display all legends.
 ## 6.13 Scale widget
 
 ```python
-from gui.widgets import Scale
+from gui.widgets import Scale  # File: scale.py
 ```
 ![Image](./images/scale.JPG)
 
@@ -2132,7 +2132,7 @@ precision. Each visible division on the control represents 10 integer units.
 ## 6.14 ScaleLog widget
 
 ```python
-from gui.widgets import ScaleLog
+from gui.widgets import ScaleLog  # File: scale_log.py
 ```
 ![Image](./images/log_scale.JPG)
 
@@ -2272,7 +2272,7 @@ def tickcb(f, c):
 ## 6.15 Dial widget
 
 ```python
-from gui.widgets import Dial, Pointer
+from gui.widgets import Dial, Pointer  # File: dial.py
 ```
 ![Image](./images/dial.JPG)  ![Image](./images/dial1.JPG)
 
@@ -2388,7 +2388,7 @@ Screen.change(BaseScreen)
 ## 6.16 Knob widget
 
 ```python
-from gui.widgets import Knob
+from gui.widgets import Knob  # File: knob.py
 ```
 ![Image](./images/knob.JPG)
 
@@ -2446,7 +2446,7 @@ value changes. This enables dynamic color change.
 ## 6.17 Adjuster widget
 
 ```python
-from gui.widgets import Adjuster
+from gui.widgets import Adjuster, FloatAdj  # File: adjuster.py
 ```
 ![Image](./images/adjusters.jpg)  ![Image](./images/adj_vector.jpg)  
 
@@ -2512,7 +2512,7 @@ basis. See code comments for further details.
 ## 6.18 Menu class
 
 ```python
-from gui.widgets import Menu
+from gui.widgets import Menu  # File: menu.py
 ```
 ![Image](./images/menu.JPG)  
 
@@ -2620,7 +2620,7 @@ different callback if the application required it.
 ## 6.19 BitMap Widget
 
 ```python
-from gui.widgets import BitMap
+from gui.widgets import BitMap  # File: bitmap.py
 ```
 ![Image](./images/bitmap.JPG)  
 
@@ -2662,7 +2662,7 @@ See `gui/demos/bitmap.py` for a usage example.
 ## 6.20 QRMap Widget
 
 ```python
-from gui.widgets import QRMap
+from gui.widgets import QRMap  # File: qrcode.py
 ```
 ![Image](./images/qrcode.JPG)  
 
@@ -3078,6 +3078,10 @@ async def full_refresh():
     await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
     ssd.set_partial()
 ```
+
+The driver for the supported display uses 1-bit color mapping: this means that
+greying-out has no visible effect. Greyed-out controls cannot accept the focus
+and are therefore disabled but appearance is unchanged.
 
 ###### [Contents](./README.md#0-contents)
 
