@@ -1404,7 +1404,7 @@ table = [
     {'text' : '4', 'args' : ['4']},
 ]
 col = 0
-rb = RadioButtons(callback, BLUE) # color of selected button
+rb = RadioButtons(BLUE, callback) # color of selected button
 for t in table:
     rb.add_button(wri, 10, col, textcolor = WHITE,
                   fgcolor = LIGHTBLUE, height = 40, **t)
