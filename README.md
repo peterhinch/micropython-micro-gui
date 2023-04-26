@@ -336,7 +336,7 @@ spi = SPI(0, baudrate=30_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 # Instantiate display and assign to ssd. For args see display drivers doc.
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
-
+# The following import must occur after ssd is instantiated.
 from gui.core.ugui import Display, quiet
 # quiet()
 # Define control buttons
