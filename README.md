@@ -77,8 +77,8 @@ SPIRAM.
 February 2022: Supports use with only three buttons devised by Bart Cerneels.
 Simplified widget import. Existing users should replace the entire `gui` tree.
 
-Code has been tested on ESP32, ESP32-S2, Pi Pico and Pyboard. This is under
-development so check for updates.
+Code has been tested on ESP32, ESP32-S2, ESP32-S3, Pi Pico and Pyboard. This is
+under development so check for updates.
 
 # 0. Contents
 
@@ -932,7 +932,7 @@ base screen are cancelled.
 For finer control, applications can ignore this method and handle cancellation
 explicitly in code.
 
-## 4.5 Bound variable
+## 4.5 Class variable
 
  * `do_gc = True` By default a coroutine is launched to periodically perform
  garbage collection (GC). On most platforms this reduces latency by doing GC
