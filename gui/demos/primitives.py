@@ -32,7 +32,7 @@ class BaseScreen(Screen):
         display.usegrey(False)
         # Coordinates are x, y as per framebuf
         # circle method is in Display class only
-        display.circle(70, 70, 30, RED, 2)
+        display.circle(70, 70, 30, RED)
         # These methods exist in framebuf, so also in SSD and Display
         ssd.hline(0, 127, 128, BLUE)
         ssd.vline(127, 0, 128, BLUE)

@@ -64,6 +64,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 # Project status
 
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
+Now requires firmware >= V1.20.
 
 July 2022: Add ESP32 touch pad support.
 

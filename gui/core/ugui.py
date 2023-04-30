@@ -1,14 +1,16 @@
 # ugui.py Micropython GUI library
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019-2022 Peter Hinch
+# Copyright (c) 2019-2023 Peter Hinch
 
 # Credit to Bart Cerneels for devising and prototyping the 3-button mode
 # Also for suggesting abstracting the input device class.
+# Now requires firmware >= V1.20
 
 import uasyncio as asyncio
 from time import ticks_diff, ticks_ms
 import gc
+from array import array
 
 from gui.core.colors import *
 from gui.primitives import Pushbutton
@@ -19,10 +21,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 7)
-
-# Null function
-dolittle = lambda *_: None
+__version__ = (0, 1, 8)
 
 
 async def _g():
@@ -120,6 +119,28 @@ class Input:
 # Must be subclassed: subclass provides input device and populates globals
 # display and ssd.
 class DisplayIP:
+    # Populate array for clipped rect
+    @staticmethod
+    def crect(x, y, w, h, acr = array("H", (0 for _ in range(16)))):
+        c = 4  # Clip pixels
+        acr[0] = x + c
+        acr[1] = y
+        acr[2] = x + w - c
+        acr[3] = y
+        acr[4] = x + w
+        acr[5] = y + c
+        acr[6] = x + w
+        acr[7] = y + h - c
+        acr[8] = x + w - c
+        acr[9] = y + h
+        acr[10] = x + c
+        acr[11] = y + h
+        acr[12] = x
+        acr[13] = y + h - c
+        acr[14] = x
+        acr[15] = y + c
+        return acr
+
     def __init__(self, ipdev):
         self.ipdev = ipdev
         self.height = ssd.height
@@ -178,71 +199,19 @@ class DisplayIP:
     def line(self, x1, y1, x2, y2, color):
         ssd.line(x1, y1, x2, y2, self._getcolor(color))
 
-    # Private method uses physical color
-    def _circle(self, x0, y0, r, color):  # Single pixel circle
-        x = -r
-        y = 0
-        err = 2 - 2 * r
-        while x <= 0:
-            ssd.pixel(x0 - x, y0 + y, color)
-            ssd.pixel(x0 + x, y0 + y, color)
-            ssd.pixel(x0 + x, y0 - y, color)
-            ssd.pixel(x0 - x, y0 - y, color)
-            e2 = err
-            if e2 <= y:
-                y += 1
-                err += y * 2 + 1
-                if -x == y and e2 <= x:
-                    e2 = 0
-            if e2 > x:
-                x += 1
-                err += x * 2 + 1
-
-    def circle(self, x0, y0, r, color, width=1):  # Draw circle (maybe grey)
+    def circle(self, x0, y0, r, color):  # Draw circle (maybe grey)
         color = self._getcolor(color)
-        x0, y0, r = int(x0), int(y0), int(r)
-        for r in range(r, r - width, -1):
-            self._circle(x0, y0, r, color)
+        ssd.ellipse(int(x0), int(y0), int(r), int(r), color)
 
     def fillcircle(self, x0, y0, r, color):  # Draw filled circle
         color = self._getcolor(color)
-        x0, y0, r = int(x0), int(y0), int(r)
-        x = -r
-        y = 0
-        err = 2 - 2 * r
-        while x <= 0:
-            ssd.line(x0 - x, y0 - y, x0 - x, y0 + y, color)
-            ssd.line(x0 + x, y0 - y, x0 + x, y0 + y, color)
-            e2 = err
-            if e2 <= y:
-                y += 1
-                err += y * 2 + 1
-                if -x == y and e2 <= x:
-                    e2 = 0
-            if e2 > x:
-                x += 1
-                err += x * 2 + 1
+        ssd.ellipse(int(x0), int(y0), int(r), int(r), color, True)
 
     def clip_rect(self, x, y, w, h, color):
-        color = self._getcolor(color)
-        c = 4
-        ssd.hline(x + c, y, w - 2 * c, color)
-        ssd.hline(x + c, y + h, w - 2 * c, color)
-        ssd.vline(x, y + c, h - 2 * c, color)
-        ssd.vline(x + w - 1, y + c, h - 2 * c, color)
-        ssd.line(x + c, y, x, y + c, color)
-        ssd.line(x + w - c - 1, y, x + w - 1, y + c, color)
-        ssd.line(x, y + h - c - 1, x + c, y + h - 1, color)
-        ssd.line(x + w - 1, y + h - c - 1, x + w - c - 1, y + h, color)
+        ssd.poly(0, 0, self.crect(x, y, w, h), self._getcolor(color))
 
     def fill_clip_rect(self, x, y, w, h, color):
-        color = self._getcolor(color)
-        c = 4
-        ssd.fill_rect(x, y + c, w, h - 2 * c, color)
-        for z in range(c):
-            l = w - 2 * (c - z)  # Line length
-            ssd.hline(x + c - z, y + z, l, color)
-            ssd.hline(x + c - z, y + h - z - 1, l, color)
+        ssd.poly(0, 0, self.crect(x, y, w, h), self._getcolor(color), True)
 
 
 # Define an input device and populate global ssd and display objects.
@@ -659,7 +628,7 @@ class Widget:
         self.def_bdcolor = bdcolor
         # has_border is True if a border was drawn
         self.has_border = False
-        self.callback = dolittle  # Value change callback
+        self.callback = lambda *_: None  # Value change callback
         self.args = []
 
     def warning(self):

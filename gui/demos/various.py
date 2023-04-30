@@ -132,6 +132,7 @@ class FooScreen(Screen):
             litcolor=RED,
             fgcolor=GREEN,
             bgcolor=DARKGREEN,
+            shape=CLIPPED_RECT,
         )
 
         col = 2
