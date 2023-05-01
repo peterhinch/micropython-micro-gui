@@ -1,20 +1,13 @@
 # colors.py Micropython GUI library for TFT displays: colors and shapes
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019-2021 Peter Hinch
+# Copyright (c) 2019-2023 Peter Hinch
 from hardware_setup import SSD
+from gui.core.writer import CWriter
 
 # Code can be portable between 4-bit and other drivers by calling create_color
 def create_color(idx, r, g, b):
-    c = SSD.rgb(r, g, b)
-    if not hasattr(SSD, 'lut'):
-        return c
-    if not 0 <= idx <= 15:
-        raise ValueError('Color nos must be 0..15')
-    x = idx << 1
-    SSD.lut[x] = c & 0xff
-    SSD.lut[x + 1] = c >> 8
-    return idx
+    return CWriter.create_color(SSD, idx, r, g, b)
 
 if hasattr(SSD, 'lut'):  # Colors defined by LUT
     BLACK = create_color(0, 0, 0, 0)
