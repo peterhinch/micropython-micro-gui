@@ -33,7 +33,7 @@ class BaseScreen(Screen):
         row = self.lbl.mrow
         self.grid = Grid(wri, row, col, colwidth, rows, cols, justify=Label.CENTRE)
         for n, day in enumerate(DateCal.days):
-            self.grid[[0, n]] = day[:3]
+            self.grid[0, n] = day[:3]
 
         row = self.grid.mrow + 4
         ht = 30

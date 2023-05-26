@@ -1101,8 +1101,7 @@ specified width +4 to allow for borders. The dimensions of the widget including
 borders are thus:  
 height = no. of rows * (font height + 4)  
 width = sum(column width + 4)  
-Cells may be addressed as a 1-dimensional list or by a `[row, col]` 2-list or
-2-tuple.
+Cells may be addressed as a 1 or 2-dimensional array.
 
 Constructor args:  
  1. `writer` The `Writer` instance (font and screen) to use.
@@ -1137,11 +1136,11 @@ Example uses:
 colwidth = (20, 30)  # Col 0 width is 20, subsequent columns 30
 self.grid = Grid(wri, row, col, colwidth, rows, cols, justify=Label.CENTRE)
 self.grid[20] = ""  # Clear cell 20 by setting its value to ""
-self.grid[[2, 5]] = str(42)  # Note syntax
+self.grid[2, 5] = str(42)  # 2D array syntax
 d = {}  # For indiviual control of cell appearance
 d["fgcolor"] = RED
 d["text"] = str(99)
-self.grid[(3, 7)] = d  # Specify color as well as text
+self.grid[3, 7] = d  # Specify color as well as text
 del d["fgcolor"]  # Revert to default
 d["invert"] = True
 self.grid[17] = d
