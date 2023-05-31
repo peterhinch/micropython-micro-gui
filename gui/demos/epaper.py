@@ -186,6 +186,7 @@ class FooScreen(Screen):
                 x += 0.05
 
         Curve(self.graph, None, populate())
+        asyncio.create_task(full_refresh())
 
 
 async def run(dial, lbltim, m0, scale):
