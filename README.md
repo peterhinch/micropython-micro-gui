@@ -1090,7 +1090,7 @@ Screen.change(BaseScreen)
 ### 6.1.1 Grid widget
 
 ```python
-from gui.widgets import Grid  # File: grid.py
+from gui.widgets import Grid  # Files: grid.py, parse2d.py
 ```
 ![Image](./images/grid.JPG)
 
@@ -1127,9 +1127,35 @@ Constructor args:
  in the `Label` as defined by `lwidth`.
 
 Method:  
- * `__getitem__` This enables an individual `Label`'s `value` method to be
- retrieved using index notation. The args detailed above enable inividual cells
- to be updated.
+ * `__getitem__` Return a list containing one or more `Label` instances.
+ * `__setitem__` Assign a value to one or more labels. If multiple labels are
+ specified and a single text value is passed, all labels will receive that
+ value. If an iterator is passed, consecutive labels will receive values from
+ the iterator. If the iterator runs out of data, the last value will be
+ repeated.
+
+Addressing:  
+The `Label` instances may be addressed as a 1D array as follows
+```python
+grid[20] = str(42)
+grid[20:25] = iter([str(n) for n in range(20, 25)])
+```
+or as a 2D array:
+```python
+grid[2, 5] = "A"  # Row == 2, col == 5
+grid[0:7, 3] = "b"  # Populate col 3 of rows 0..6
+grid[1:3, 1:3] = (str(n) for n in range(25))  # Produces
+# 0 1
+# 2 3
+```
+Columns are populated from left to right, rows from top to bottom. Unused
+iterator values are ignored. If an iterator runs out of data the last value is
+repeated, thus
+```python
+grid[1:3, 1:3] = (str(n) for n in range(2))  # Produces
+# 0 1
+# 1 1
+```
 
 Example uses:
 ```python
@@ -1137,6 +1163,8 @@ colwidth = (20, 30)  # Col 0 width is 20, subsequent columns 30
 self.grid = Grid(wri, row, col, colwidth, rows, cols, justify=Label.CENTRE)
 self.grid[20] = ""  # Clear cell 20 by setting its value to ""
 self.grid[2, 5] = str(42)  # 2D array syntax
+grid[1:6, 0] = iter("ABCDE")  # Label row and col headings
+grid[0, 1:cols] = (str(x + 1) for x in range(cols))
 d = {}  # For indiviual control of cell appearance
 d["fgcolor"] = RED
 d["text"] = str(99)
