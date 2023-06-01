@@ -47,6 +47,9 @@ async def full_refresh():
     await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
     ssd.set_partial()
 
+async def set_partial():  # Ensure 1st refresh is a full refresh
+    await Screen.rfsh_done.wait()  # Wait for first refresh to end
+    ssd.set_partial()
 
 class FooScreen(Screen):
     def __init__(self):
@@ -161,6 +164,7 @@ class FooScreen(Screen):
         Label(wri_large, lbl.mrow + 5, col, "y = sinc(x)")
 
         CloseButton(wri, bgcolor=BLACK)
+        asyncio.create_task(set_partial())  # After 1st full refresh
         asyncio.create_task(run(dial, lbltim, m0, scale))
 
     def callback(self, button, buttons, val):
@@ -186,7 +190,6 @@ class FooScreen(Screen):
                 x += 0.05
 
         Curve(self.graph, None, populate())
-        asyncio.create_task(full_refresh())
 
 
 async def run(dial, lbltim, m0, scale):

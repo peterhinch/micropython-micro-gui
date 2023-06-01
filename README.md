@@ -3090,26 +3090,40 @@ connecting to any host. The hardware_setup.py should be copied or adapted from
 `setup_examples/pico_epaper_42_pico.py`. If using the socket, default args may
 be used (see code comment).
 
-After an initial refresh to clear the screen the driver is put into partial
-mode. This provides a reasonably quick and visually satisfactory response to
-user inputs such as button events. See the 
+Some attention to detail is required to handle the refresh characteristics.
+The application must wait for the initial full refresh (which occurs
+automatically) before putting the display into partial mode. This is done by
+the screen constructor issuing
+```python
+        asyncio.create_task(set_partial())
+```
+to run
+```python
+async def set_partial():  # Ensure 1st refresh is a full refresh
+    await Screen.rfsh_done.wait()  # Wait for first refresh to end
+    ssd.set_partial()
+```
+The application then runs in partial mode with a reasonably quick and visually
+satisfactory response to user inputs such as button events. See the 
 [epaper demo](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/epaper.py).
-This provides for a full refresh via the `reset` button. Provision of full
-refresh is application dependent. It should be done as follows:
 
+It is likely that applications will provide a full refresh method to clear any
+ghosting. The demo provides for a full refresh via the `reset` button. A full
+refresh should be done as follows:
 ```python
 async def full_refresh():
     Screen.rfsh_done.clear()  # Enable completion flag
     await Screen.rfsh_done.wait()  # Wait for a refresh to end
     ssd.set_full()
-    Screen.rfsh_done.clear()  # Enable completion flag
+    Screen.rfsh_done.clear()  # Re-enable completion flag
     await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
-    ssd.set_partial()
+    ssd.set_partial()  # Subsequent refreshes are partial
 ```
-
 The driver for the supported display uses 1-bit color mapping: this means that
 greying-out has no visible effect. Greyed-out controls cannot accept the focus
-and are therefore disabled but appearance is unchanged.
+and are therefore disabled but appearance is unchanged. `nano-gui` has a 2-bit
+driver which supports greyscales, but there is no partial support so this is
+unsuitable for `micro_gui`.
 
 ###### [Contents](./README.md#0-contents)
 

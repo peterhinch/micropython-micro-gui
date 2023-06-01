@@ -56,4 +56,3 @@ decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 # display = Display(ssd, nxt, sel, prev)  # 3-button mode
 display = Display(ssd, nxt, sel, prev, increase, decrease)  # 5-button mode
 ssd.wait_until_ready()  # Blocking wait
-ssd.set_partial()  # Subsequent refreshes are partial
