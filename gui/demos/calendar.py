@@ -28,6 +28,8 @@ class BaseScreen(Screen):
         row = 2
         rows = 6
         cols = 7
+        self.ncells = cols * (rows - 1)  # Row 0 has day labels
+        self.last_cell = cols * rows
         colwidth = 35
         self.lbl = Label(wri, row, col, text = (colwidth + 4) * cols, justify=Label.CENTRE)
         row = self.lbl.mrow
@@ -72,48 +74,27 @@ class BaseScreen(Screen):
             d.now()
         self.update()
 
-    def update(self):
-        def cell():
-            if cur.year == today.year and cur.month == today.month and mday == today.mday:  # Today
-                d["fgcolor"] = RED
-            elif mday == cur.mday:  # Currency
-                d["fgcolor"] = YELLOW
-            elif mday in sundays:
-                d["fgcolor"] = BLUE
-            else:
-                d["fgcolor"] = GREEN
-            d["text"] = str(mday)
-            self.grid[idx] = d
+    def days(self, month_length):  # Produce content for every cell
+        for n in range(self.ncells + 1):
+            yield str(n + 1) if n < month_length else ""
 
-        today = DateCal()
+    def update(self):
+        grid = self.grid
         cur = self.date  # Currency
         self.lbl.value(f"{DateCal.months[cur.month - 1]} {cur.year}")
-        d = {}  # Args for Label.value
-        wday = 0
-        wday_1 = cur.wday_n(1)  # Weekday of 1st of month
-        mday = 1
-        seek = True
-        sundays = cur.mday_list(6)
-        for idx in range(7, self.grid.ncells):
-            if seek:  # Find column for 1st of month
-                if wday < wday_1:
-                    self.grid[idx] = ""
-                    wday += 1
-                else:
-                    seek = False
-            if not seek:
-                if mday <= cur.month_length:
-                    cell()
-                    mday += 1
-                else:
-                    self.grid[idx] = ""
-        idx = 7  # Where another row would be needed, roll over to top few cells.
-        while mday <= cur.month_length:
-            cell()
-            idx += 1
-            mday += 1
+        # Populate day number cells
+        values = self.days(cur.month_length)  # Instantiate generator
+        idx_1 = 7 + cur.wday_n(1)  # Index of 1st of month
+        grid[idx_1 : self.last_cell] = values  # Populate from mday 1 to last cell
+        grid[7 : idx_1] = values  # Populate cells before 1st of month
+        # Color cells of Sunday, today and currency. In collisions (e.g. today==Sun)
+        # last color applied is effective
+        grid[1:6, 6] = {"fgcolor": BLUE}  # Sunday color
+        grid[idx_1 + cur.mday - 1] = {"fgcolor": YELLOW}  # Currency
+        today = DateCal()
+        if cur.year == today.year and cur.month == today.month:  # Today is in current month
+            grid[idx_1 + today.mday - 1] = {"fgcolor": RED}
         self.lblnow.value(f"{today.day_str} {today.mday} {today.month_str} {today.year}")
-
 
 def test():
     print('Calendar demo.')

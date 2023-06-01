@@ -28,24 +28,25 @@ class Label(Widget):
             self.value(text, invert)
 
     def value(self, text=None, invert=False, fgcolor=None, bgcolor=None, bdcolor=None, justify=None):
-        sl = self.writer.stringlen(text)
-        if justify is None:
-            justify = self.justify
-        self.tcol = self.col  # Default is left justify
-        if sl > self.width:  # Clip
-            font = self.writer.font
-            pos = 0
-            n = 0
-            for ch in text:
-                pos += font.get_ch(ch)[2]  # width of current char
-                if pos > self.width:
-                    break
-                n += 1
-            text = text[: n]
-        elif justify == 1:  # Centre
-            self.tcol = self.col + (self.width - sl) // 2
-        elif justify == 2:  # Right
-            self.tcol = self.col + self.width - sl
+        if text is not None:
+            sl = self.writer.stringlen(text)
+            if justify is None:
+                justify = self.justify
+            self.tcol = self.col  # Default is left justify
+            if sl > self.width:  # Clip
+                font = self.writer.font
+                pos = 0
+                n = 0
+                for ch in text:
+                    pos += font.get_ch(ch)[2]  # width of current char
+                    if pos > self.width:
+                        break
+                    n += 1
+                text = text[: n]
+            elif justify == 1:  # Centre
+                self.tcol = self.col + (self.width - sl) // 2
+            elif justify == 2:  # Right
+                self.tcol = self.col + self.width - sl
             
         txt = super().value(text)
         self.draw = True  # Redraw unconditionally: colors may have changed.
