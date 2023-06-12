@@ -46,12 +46,10 @@ class Grid(Widget):
             r += self.cheight
             c = col
 
-    def __getitem__(self, *args):  # Return the Label instance
+    def __getitem__(self, *args):
         indices = do_args(args, self.nrows, self.ncols)
-        res = []
         for i in indices:
-            res.append(self.cells[i])
-        return res
+            yield self.cells[i]
 
     # allow grid[[r, c]] = "foo" or kwargs for Label:
     # grid[[r, c]] = {"text": str(n), "fgcolor" : RED}
