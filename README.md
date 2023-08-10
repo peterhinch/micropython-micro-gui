@@ -42,7 +42,7 @@ controller, magnifying the difficulty of writing a portable GUI.
 The input options work well and yield astonishingly low cost solutions. A
 network-connected board with a 135x240 color display can be built for under £20
 ($20?) using the
-[TTGO T-Display](http://www.lilygo.cn/prod_view.aspx?TypeId=50044&Id=1126). The
+[TTGO T-Display](https://www.lilygo.cc/products/lilygo%C2%AE-ttgo-t-display-1-14-inch-lcd-esp32-control-board). The
 test board shown above has a 320x240 display from eBay with a Pi Pico and has a
 component cost of well below £20.
 
@@ -486,7 +486,7 @@ These are listed to enable users to check for newer versions or to read docs:
 
  * [writer.py](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/writer.py)
  Provides text rendering of Python font files.
- * [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+ * [SSD1306 driver](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/display/ssd1306).
  A copy of the official driver for OLED displays using the SSD1306 chip is
  provided. The link is to the official file.
  * [Synchronisation primitives](https://github.com/peterhinch/micropython-async/tree/master/v3/primitives).
