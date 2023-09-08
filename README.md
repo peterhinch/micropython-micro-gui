@@ -460,7 +460,8 @@ is installed with extra fonts and widgets being added as required.
 
 This installs a subset adequate to run the `simple.py` demo. It comprises:  
 ![Image](./images/filesystem.png)  
-It is installed with (on the device):
+Note that `mip` and `mpremote mip` install to `/lib/` which therefore becomes
+the root of the above tree. The subset is installed with (on the device):
 ```python
 >>> mip.install("github:peterhinch/micropython-micro-gui")
 ```
