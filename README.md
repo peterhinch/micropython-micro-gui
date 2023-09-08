@@ -458,7 +458,7 @@ is installed with extra fonts and widgets being added as required.
 
 ### Minimal installation (additive)
 
-This installs a subset adequate to run the `simple.py` demo. It comprises:
+This installs a subset adequate to run the `simple.py` demo. It comprises:  
 ![Image](./images/filesystem.png)  
 It is installed with (on the device):
 ```python
