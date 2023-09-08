@@ -1,0 +1,18 @@
+{
+  "urls": [
+    ["gui/core/colors.py", "github:peterhinch/micropython-micro-gui/gui/core/colors.py"],
+    ["gui/core/ugui.py", "github:peterhinch/micropython-micro-gui/gui/core/ugui.py"],
+    ["gui/core/writer.py", "github:peterhinch/micropython-micro-gui/gui/core/writer.py"],
+    ["gui/demos/simple.py", "github:peterhinch/micropython-micro-gui/gui/demos/simple.py"],
+    ["gui/fonts/__init__.py", "github:peterhinch/micropython-micro-gui/gui/fonts/__init__.py"],
+    ["gui/fonts/arial10.py", "github:peterhinch/micropython-micro-gui/gui/fonts/arial10.py"],
+    ["gui/primitives/__init__.py", "github:peterhinch/micropython-micro-gui/gui/primitives/__init__.py"],
+    ["gui/primitives/delay_ms.py", "github:peterhinch/micropython-micro-gui/gui/primitives/delay_ms.py"],
+    ["gui/primitives/encoder.py", "github:peterhinch/micropython-micro-gui/gui/primitives/encoder.py"],
+    ["gui/primitives/pushbutton.py", "github:peterhinch/micropython-micro-gui/gui/primitives/pushbutton.py"],
+    ["gui/widgets/__init__.py", "github:peterhinch/micropython-micro-gui/gui/widgets/__init__.py"],
+    ["gui/widgets/buttons.py", "github:peterhinch/micropython-micro-gui/gui/widgets/buttons.py"],
+    ["gui/widgets/label.py", "github:peterhinch/micropython-micro-gui/gui/widgets/label.py"]
+  ],
+  "version": "0.1"
+}

@@ -390,20 +390,33 @@ ssd.show()
 
 ## 1.7 Installation
 
-The easy way to start is to use `mpremote` which allows a directory on your PC
-to be mounted on the host. In this way the filesystem on the host is left
-unchanged. This is at some cost in loading speed, especially on ESP32. If
-adopting this approach, you will need to ensure the `hardware_setup.py` file on
-the PC matches your hardware. Install `mpremote` with
-```bash
-$ pip3 install mpremote
-```
-Clone the repo to your PC with
+Please ensure device firmware is up to date. Clone the repo to the PC with:
 ```bash
 $ git clone https://github.com/peterhinch/micropython-micro-gui
 $ cd micropython-micro-gui
 ```
-Edit `hardware_setup.py` then run:
+In the `micropython-micro-gui` directory edit `hardware_setup.py` to match the
+hardware in use.
+
+The official
+[mpremote](http://docs.micropython.org/en/latest/reference/mpremote.html#mpremote)
+tool is recommended. Install with:
+```bash
+$ pip3 install mpremote
+```
+There are several options for installation
+ 1. Using mpremote to run the GUI demos via the PC without installing.
+ 2. Subtractive. Installing the entire GUI, then (optionally) removing unused
+ components.
+ 3. Additive. Installing a minimal subset and manually adding extra components.
+ 4. Using frozen bytecode.
+
+### Testing without installing
+
+The easy way to start is to use `mpremote` which allows a directory on your PC
+to be mounted on the host. In this way the filesystem on the host is left
+unchanged. This is at some cost in loading speed, especially on ESP32. In the
+`micropython-micro-gui` directory run:
 ```bash
 $ mpremote mount .
 ```
@@ -411,18 +424,67 @@ This should provide a REPL. Run the minimal demo:
 ```python
 >>> import gui.demos.simple
 ```
-If installing to the device's filesystem it is necessary to maintain the
-directory structure. The `drivers` and `gui` directories (with subdirectories
-and contents) should be copied, along with `hardware_setup.py`. Filesystem
-space may be conserved by copying only the display driver in use. Unused
-widgets, fonts and demos can also be trimmed, but the directory structure must
-be kept. Below is an example of a minimal installation to run the `simple.py`
-demo.
+If this runs the hardware is correctly configured and other demos should run.
+
+### Installing a display driver
+
+It is necessary to install a display driver prior to any GUI installation. On
+networked hardware a display driver may be installed as follows (example is for
+ST7789):
+```python
+>>> mip.install("github:peterhinch/micropython-nano-gui/drivers/st7789")
+```
+The last part of the addresss (`st7789`) is the name of the directory holding
+drivers for the display in use. In cases where the directory holds more than
+one driver all will be installed. Unused drivers may be deleted.
+
+Install using mpremote on the PC as follows:
+```bash
+$ mpremote mip install "github:peterhinch/micropython-nano-gui/drivers/st7789"
+```
+### Full installation (subtractive)
+
+The entire GUI is large. It is possible to install it all from the PC clone by
+issuing:
+```bash
+$ cd micropython-micro-gui
+$ mpremote cp -r gui :
+$ mpremote cp hardware_setup.py :
+```
+This is rather profligate with Flash storage. There is great scope for
+discarding unused fonts, demos and widgets. As an alternative to installing
+everything and pruning, an additive approach may be used where a minimal subset
+is installed with extra fonts and widgets being added as required.
+
+### Minimal installation (additive)
+
+This installs a subset adequate to run the `simple.py` demo. It comprises:
 ![Image](./images/filesystem.png)  
+It is installed with (on the device):
+```python
+>>> mip.install("github:peterhinch/micropython-micro-gui")
+```
+or (on the PC):
+```bash
+$ mpremote mip install "github:peterhinch/micropython-micro-gui"
+```
+In both cases the edited `hardware_setup.py` must be copied from the PC:
+```bash
+$ cd micropython-micro-gui
+$ mpremote cp hardware_setup.py :
+```
+When adding components the directory structure must be maintained. For example,
+in the `micropython-micro-gui` directory:
+```bash
+$ mpremote cp gui/fonts/font10.py :/gui/fonts/
+$ mpremote cp gui/widgets/checkbox.py :/gui/widgets/
+```
+
+### Freezing bytecode
 
 There is scope for speeding loading and saving RAM by using frozen bytecode.
 The entire `gui` tree may be frozen but the directory structure must be
-maintained. For reasons that are unclear freezing display drivers does not
+maintained. For reasons that are unclear freezing display drivers may not
 work. For fexibility, consider keeping `hardware_setup.py` in the filesystem.
 See [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode).
 
