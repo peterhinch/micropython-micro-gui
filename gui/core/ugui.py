@@ -118,6 +118,58 @@ class Input:
     def is_adjust(self):
         return self._adj
 
+# Special mode where an encoder with a "press" pushbutton is the only control.
+# nxt and prev are Pin instances corresponding to encoder X and Y.
+# sel is a Pin for the encoder's pushbutton.
+# encoder is the division ratio.
+class InputEnc:
+    def __init__(self, nxt, sel, prev, encoder):
+        from gui.primitives import Encoder
+        self._encoder = encoder  # Encoder in use
+        self._enc = Encoder(nxt, prev, div=encoder, callback=self.enc_cb)
+        self._precision = False  # Precision mode
+        self._adj = False  # Adjustment mode
+        self._sel = Pushbutton(sel, suppress=True)
+        self._sel.release_func(self.release)  # Widgets are selected on release.
+        self._sel.long_func(self.precision, (True,))  # Long press -> precision mode
+
+    # Screen.adjust: adjust the value of a widget. In this case 1st button arg
+    # is an int (discarded), val is the delta. (With button interface 1st arg
+    # arg is the button, delta is +1 or -1).
+    def enc_cb(self, position, delta):  # Default encoder callback
+        if self._adj:
+            Screen.adjust(0, delta)
+        else:
+            Screen.ctrl_move(_NEXT if delta > 0 else _PREV)
+
+    def release(self):
+        self.adj_mode() #False)  # Cancel adjust and precision
+        Screen.sel_ctrl()
+        
+    def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode
+        if val:
+            if not self._adj:
+                self.adj_mode()
+            self._precision = True
+        else:
+            self._precision = False
+        Screen.redraw_co()
+
+    # If v is None, toggle adjustment mode. Bool sets or clears
+    def adj_mode(self, v=None):  # Set, clear or toggle adjustment mode
+        self._adj = not self._adj if v is None else v
+        if not self._adj:
+            self._precision = False
+        Screen.redraw_co()  # Redraw curret object
+
+    def encoder(self):
+        return self._encoder
+
+    def is_precision(self):
+        return self._precision
+
+    def is_adjust(self):
+        return self._adj
 
 # Wrapper for global ssd object providing framebuf compatible methods.
 # Must be subclassed: subclass provides input device and populates globals
@@ -227,13 +279,18 @@ class Display(DisplayIP):
     ):
         global display, ssd
         ssd = objssd
-        if touch:
-            from gui.primitives import ESP32Touch
-
-            ESP32Touch.threshold(touch)
-            ipdev = Input(nxt, sel, prev, incr, decr, encoder, ESP32Touch)
+        if incr is False:  # Special encoder-only mode
+            ev = isinstance(encoder, int) 
+            assert ev and touch is False and decr is None and prev is not None, "Invalid args"
+            ipdev = InputEnc(nxt, sel, prev, encoder)
         else:
-            ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
+            if touch:
+                from gui.primitives import ESP32Touch
+
+                ESP32Touch.threshold(touch)
+                ipdev = Input(nxt, sel, prev, incr, decr, encoder, ESP32Touch)
+            else:
+                ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
         super().__init__(ipdev)
         display = self
 
