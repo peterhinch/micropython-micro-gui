@@ -63,19 +63,16 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
-Now requires firmware >= V1.20.
-
-July 2022: Add ESP32 touch pad support.
-
+Now requires firmware >= V1.20.  
+July 2022: Add ESP32 touch pad support.  
 June 2022: Add [QRMap](./README.md#620-qrmap-widget) and
-[BitMap](./README.md#619-bitmap-widget) widgets.
-
-March 2022: Add [latency control](./README.md#45-bound-variable) for hosts with
-SPIRAM.
-
+[BitMap](./README.md#619-bitmap-widget) widgets.  
+March 2022: Add [latency control](./README.md#45-class-variable) for hosts with
+SPIRAM.  
 February 2022: Supports use with only three buttons devised by Bart Cerneels.
-Simplified widget import. Existing users should replace the entire `gui` tree.
+Simplified widget import. Existing users should replace the entire `gui` tree.  
 
 Code has been tested on ESP32, ESP32-S2, ESP32-S3, Pi Pico and Pyboard. This is
 under development so check for updates.
@@ -86,7 +83,8 @@ under development so check for updates.
  1.1 [Coordinates](./README.md#11-coordinates) The GUI's coordinate system.  
  1.2 [Screen Window and Widget objects](./README.md#12-Screen-window-and-widget-objects) Basic GUI classes.  
  1.3 [Fonts](./README.md#13-fonts)  
- 1.4 [Navigation](./README.md#14-navigation) How the GUI navigates between widgets.  
+ 1.4 [Navigation](./README.md#14-navigation) Options for hardware. How the GUI navigates between widgets.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.4.1 [Encoder-only mode](./README.md#141-encoder-only-mode) Using only an encoder for navigation.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
  1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config. Please do this first.  
  1.7 [Installation](./README.md#17-installation) Installing the library.  
@@ -104,13 +102,15 @@ under development so check for updates.
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.3.1 [Monochrome displays](./README.md#231-monochrome-displays)  
 3. [The ssd and display objects](./README.md#3-the-ssd-and-display-objects)  
  3.1 [SSD class](./README.md#31-ssd-class) Instantiation in hardware_setup.  
- 3.2 [Display class](./README.md#32-display-class) Instantiation in hardware_setup.  
+ 3.2 [Display class](./README.md#32-display-class) Instantiation in hardware_setup.py.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.1 [Encoder usage](./README.md#321-encoder-usage)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.2.2 [Encoder only mode](./README.md#322-encoder-only-mode)  
 4. [Screen class](./README.md#4-screen-class) Full screen window.  
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
  4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
- 4.5 [Bound variable](./README.md#45-bound-variable) Control latency caused by garbage collection.  
+ 4.5 [Class variable](./README.md#45-class-variable) Control latency caused by garbage collection.  
  4.6 [Usage](./README.md#46-usage) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
@@ -309,6 +309,20 @@ some cases the state can be specified as a constructor arg, but other widgets
 have a predefined state. An `active` widget can be disabled and re-enabled at
 runtime. A disabled `active` widget is shown "greyed-out" and cannot accept the
 `focus` until re-enabled.
+
+### 1.4.1 Encoder only mode
+
+This uses a rotary encoder with a pushbutton as the sole means of navigation, a
+mode suggested by @eudoxos. By default, turning the dial moves the currency
+between widgets. Clicking the button selects a widget; the widget with the
+focus has a white border. Supporting widgets such as sliders and dropdown lists
+enter "adjust" mode such that turning the dial adjusts the widget.
+[Floating Point Widgets](./README.md#112-floating-point-widgets) can enter
+precision adjustment mode with a long press of the button. "Adjust" mode is
+cleared with a short button press.
+
+This mode works well and its use is quite intuitive. The rapid navigation makes
+it particularly useful when a screen has a large number of widgets.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -912,7 +926,7 @@ Class variables:
  * `verbose=True` Causes a message to be printed indicating whether an encoder
  was specified.
  
-#### Encoder usage
+### 3.2.1 Encoder usage
 
 If an encoder is used, it should be connected to the pins assigned to
 `increase` and `decrease`. If the direction of movement is wrong, these pins
@@ -926,6 +940,18 @@ is 32 pulses per revolution, a value of 4 would yield a virtual device with
 
 If an encoder is used but the `encoder` arg is `False`, response to the encoder
 will be erratic.
+
+### 3.2.2 Encoder only mode
+
+This uses an encoder with an included pushbutton as the sole means of control.
+To use this mode, constructor args should be:
+ 1. `objssd` The `SSD` instance. A reference to the display driver.
+ 2. `nxt` A `Pin` instance attached to the encoder X pin.
+ 3. `sel` A `Pin` instance attached to the encoder button.
+ 4. `prev` A `Pin` instance attached to the encoder Y pin.
+ 5. `incr=False`. Must set `False`.
+ 6. `decr=None`.
+ 7. `encoder` An `int` defining the division ratio as above.
 
 ###### [Contents](./README.md#0-contents)
 
