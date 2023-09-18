@@ -122,6 +122,8 @@ class Input:
 # nxt and prev are Pin instances corresponding to encoder X and Y.
 # sel is a Pin for the encoder's pushbutton.
 # encoder is the division ratio.
+# Note that using a single click for adjust mode failed because the mode changed when
+# activating pushbuttons, checkboxes etc.
 class InputEnc:
     def __init__(self, nxt, sel, prev, encoder):
         from gui.primitives import Encoder
@@ -136,8 +138,8 @@ class InputEnc:
 
     # Screen.adjust: adjust the value of a widget. In this case 1st button arg
     # is an int (discarded), val is the delta. (With button interface 1st arg
-    # arg is the button, delta is +1 or -1).
-    def enc_cb(self, position, delta):  # Default encoder callback
+    # is the button, delta is +1 or -1).
+    def enc_cb(self, position, delta):  # Eencoder callback
         if self._adj:
             Screen.adjust(0, delta)
         else:
