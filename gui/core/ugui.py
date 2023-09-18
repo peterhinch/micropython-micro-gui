@@ -132,6 +132,7 @@ class InputEnc:
         self._sel = Pushbutton(sel, suppress=True)
         self._sel.release_func(self.release)  # Widgets are selected on release.
         self._sel.long_func(self.precision, (True,))  # Long press -> precision mode
+        self._sel.double_func(self.adj_mode, (True,))  # Double press -> adjust mode
 
     # Screen.adjust: adjust the value of a widget. In this case 1st button arg
     # is an int (discarded), val is the delta. (With button interface 1st arg
@@ -143,7 +144,7 @@ class InputEnc:
             Screen.ctrl_move(_NEXT if delta > 0 else _PREV)
 
     def release(self):
-        self.adj_mode() #False)  # Cancel adjust and precision
+        self.adj_mode(False)  # Cancel adjust and precision
         Screen.sel_ctrl()
         
     def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode

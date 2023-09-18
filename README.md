@@ -312,17 +312,17 @@ runtime. A disabled `active` widget is shown "greyed-out" and cannot accept the
 
 ### 1.4.1 Encoder only mode
 
-This uses a rotary encoder with a pushbutton as the sole means of navigation, a
-mode suggested by @eudoxos. By default, turning the dial moves the currency
-between widgets. Clicking the button selects a widget; the widget with the
-focus has a white border. Supporting widgets such as sliders and dropdown lists
-enter "adjust" mode such that turning the dial adjusts the widget.
+This uses a rotary encoder with a built-in pushbutton as the sole means of
+navigation, a mode suggested by @eudoxos. By default, turning the dial moves
+the currency between widgets; the widget with the focus has a white border.
+Widgets for numeric entry such as sliders and scales may be put into "adjust"
+mode with a double click. In that mode turning the dial adjusts the widget.
 [Floating Point Widgets](./README.md#112-floating-point-widgets) can enter
-precision adjustment mode with a long press of the button. "Adjust" mode is
-cleared with a short button press.
+"precision" adjustment mode with a long press of the button. "Adjust" and
+"precision" modes are cleared with a short button press.
 
-This mode works well and its use is quite intuitive. The rapid navigation makes
-it particularly useful when a screen has a large number of widgets.
+This mode works well and its use is quite intuitive. Navigation by turning a
+dial makes it particularly useful when a screen has a large number of widgets.
 
 ###### [Contents](./README.md#0-contents)
 
