@@ -11,7 +11,6 @@
 
 import uasyncio as asyncio
 from machine import Pin
-from . import Delay_ms
 
 
 class Encoder:
@@ -34,7 +33,7 @@ class Encoder:
         self._y = pin_y()
         self._v = v * div  # Initialise hardware value
         self._cv = v  # Current (divided) value
-        self._delay = Delay_ms(duration=delay)
+        self._delay = delay  # Time when motion is judged to have stopped
         self._timeout = 2 * delay  # Continuous rotation timeout
         # Pause (ms) for motion to stop/limit callback frequency
 
@@ -65,23 +64,24 @@ class Encoder:
             self._v -= 1 if y ^ self._pin_x() else -1
             self._tsf.set()
 
-    async def respond(self):  # Retrigger the delay until motion/bounce stops
-        while True:
-            await self._tsf.wait()
-            self._delay.trigger()
+    async def has_stopped(self):  # Encoder has moved
+        while True:  # Return when it has stopped
+            v = self._v  # Get current position
+            await asyncio.sleep_ms(self._delay)
+            if v == self._v:  # Motion has stopped
+                return
 
     async def _run(self, vmin, vmax, div, mod, cb, args):
         pv = self._v  # Prior hardware value
         pcv = self._cv  # Prior divided value passed to callback
         lcv = pcv  # Current value after limits applied
         plcv = pcv  # Previous value after limits applied
-        self._rspt = asyncio.create_task(self.respond())
         while True:
+            await self._tsf.wait()  # A stationary encoder uses minimal resources
             try:
-                await asyncio.wait_for_ms(self._delay.wait(), self._timeout)
+                await asyncio.wait_for_ms(self.has_stopped(), self._timeout)
             except asyncio.TimeoutError:  # Continuous rotation
                 pass
-            self._delay.clear()
             hv = self._v  # Sample hardware (atomic read).
             if hv == pv:  # A change happened but was negated before
                 continue  # this got scheduled. Nothing to do.
@@ -103,5 +103,4 @@ class Encoder:
         return self._cv
 
     def deinit(self):
-        self._rspt.cancel()
         self._runt.cancel()
