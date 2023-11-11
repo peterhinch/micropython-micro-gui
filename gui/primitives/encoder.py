@@ -17,10 +17,11 @@ from select import poll, POLLIN
 
 
 def ready(tsf, poller):
-    poller.register(tsf, POLLIN)
+    r = (tsf, POLLIN)
+    poller.register(*r)
 
     def is_rdy():
-        return len([t for t in poller.ipoll(0) if t[0] is tsf]) > 0
+        return r in poller.ipoll(0)
 
     return is_rdy
 
