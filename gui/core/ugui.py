@@ -118,6 +118,7 @@ class Input:
     def is_adjust(self):
         return self._adj
 
+
 # Special mode where an encoder with a "press" pushbutton is the only control.
 # nxt and prev are Pin instances corresponding to encoder X and Y.
 # sel is a Pin for the encoder's pushbutton.
@@ -127,6 +128,7 @@ class Input:
 class InputEnc:
     def __init__(self, nxt, sel, prev, encoder):
         from gui.primitives import Encoder
+
         self._encoder = encoder  # Encoder in use
         self._enc = Encoder(nxt, prev, div=encoder, callback=self.enc_cb)
         self._precision = False  # Precision mode
@@ -148,7 +150,7 @@ class InputEnc:
     def release(self):
         self.adj_mode(False)  # Cancel adjust and precision
         Screen.sel_ctrl()
-        
+
     def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode
         if val:
             if not self._adj:
@@ -173,6 +175,7 @@ class InputEnc:
 
     def is_adjust(self):
         return self._adj
+
 
 # Wrapper for global ssd object providing framebuf compatible methods.
 # Must be subclassed: subclass provides input device and populates globals
@@ -283,7 +286,7 @@ class Display(DisplayIP):
         global display, ssd
         ssd = objssd
         if incr is False:  # Special encoder-only mode
-            ev = isinstance(encoder, int) 
+            ev = isinstance(encoder, int)
             assert ev and touch is False and decr is None and prev is not None, "Invalid args"
             ipdev = InputEnc(nxt, sel, prev, encoder)
         else:
@@ -350,7 +353,11 @@ class Screen:
     @classmethod
     def change(cls, cls_new_screen, *, forward=True, args=[], kwargs={}):
         cs_old = cls.current_screen
-        if cs_old is not None:  # Leaving an existing screen
+        # If initialising ensure there is an event loop before instantiating the
+        # first Screen: it may create tasks in the constructor.
+        if cs_old is None:
+            loop = asyncio.get_event_loop()
+        else:  # Leaving an existing screen
             for entry in cls.current_screen.tasks:
                 # Always cancel on back. Also on forward if requested.
                 if entry[1] or not forward:
@@ -376,7 +383,7 @@ class Screen:
         cs_new._do_open(cs_old)  # Clear and redraw
         cs_new.after_open()  # Optional subclass method
         if cs_old is None:  # Initialising
-            asyncio.run(Screen.monitor())  # Starts and ends uasyncio
+            loop.run_until_complete(Screen.monitor())  # Starts and ends uasyncio
             # Don't do asyncio.new_event_loop() as it prevents re-running
             # the same app.
 
