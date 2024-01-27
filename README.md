@@ -155,7 +155,7 @@ under development so check for updates.
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
 10. [ePaper displays](./README.md#10-epaper-displays) Guidance on using ePaper displays.  
 
-[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives  
+[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives, more on callbacks.
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 
@@ -629,7 +629,7 @@ Before running a different demo the host should be reset (ctrl-d) to clear RAM.
 
 These will run on screens of 128x128 pixels or above. The initial ones are
 minimal and aim to demonstrate a single technique.  
- * `simple.py` Minimal demo discussed below. `Button` presses print to REPL. 
+ * `simple.py` Minimal demo discussed below. `Button` presses print to REPL.
  * `checkbox.py` A `Checkbox` controlling an `LED`.
  * `slider.py` A `Slider` whose color varies with its value.
  * `slider_label.py` A `Slider` updating a `Label`. Good for trying precision
@@ -653,7 +653,7 @@ minimal and aim to demonstrate a single technique.
  * `qrcode.py` Display a QR code. Requires the uQR module.
  * `calendar.py` Demo of grid widget.
  * `epaper.py` Warts-and-all demo for an ePaper display. Currently the only
- supported display is the 
+ supported display is the
  [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
  with Pico or other host.
 
@@ -809,6 +809,10 @@ are passed, bearing in mind the first arg described above. An incorrect
 argument count results in puzzling tracebacks which appear to implicate the GUI
 code. This is because it is the GUI which actually executes the callbacks.
 
+Callbacks should complete quickly. See
+[Appendix 1 Application design](./README.md#appendix-1-application-design) for
+discussion of this.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 2.3 Colors
@@ -925,7 +929,7 @@ The constructor takes the following positional args:
 Class variables:  
  * `verbose=True` Causes a message to be printed indicating whether an encoder
  was specified.
- 
+
 ### 3.2.1 Encoder usage
 
 If an encoder is used, it should be connected to the pins assigned to
@@ -936,7 +940,7 @@ To specify to the GUI that an encoder is in use an integer should be passed to
 the `Display` constructor `encoder` arg. Its value represents the division
 ratio. A value of 1 defines the native rate of the encoder; if the native rate
 is 32 pulses per revolution, a value of 4 would yield a virtual device with
-8 pulses per rev. A value of 4 matches most encoders with mechanical detents. 
+8 pulses per rev. A value of 4 matches most encoders with mechanical detents.
 
 If an encoder is used but the `encoder` arg is `False`, response to the encoder
 will be erratic.
@@ -1460,7 +1464,7 @@ Methods:
  provided, should be a button in the set. If supplied and the button is not
  active the currency changes to the supplied button, which is displayed. By
  default the callback of the previous button is run, otherwise the callback of
- the newly displayed button. 
+ the newly displayed button.
 
 Always returns the active button.
 
@@ -1747,7 +1751,7 @@ class BaseScreen(Screen):
         els = (('hydrogen', cb, ('H2',)),
                ('helium', cb, ('He',)),
                ('neon', cb, ('Ne',)),
-               ('xenon', cb, ('Xe',)), 
+               ('xenon', cb, ('Xe',)),
                ('radon', cb_radon, ('Ra',)))
         Dropdown(wri, 2, 2, elements = els,
                 bdcolor = RED, fgcolor=RED, fontcolor = YELLOW)
@@ -1766,7 +1770,7 @@ from gui.widgets import DialogBox  # File: dialog.py
 ![Image](./images/dialog.JPG)
 
 An active dialog box. Auto generated dialogs contain only `pushbutton`
-instances, but user created dialogs may contain any widget. 
+instances, but user created dialogs may contain any widget.
 
 This implements a modal dialog box based on a horizontal row of pushbuttons.
 Any button press will close the dialog. The caller can determine which button
@@ -1932,7 +1936,7 @@ Keyword only args:
  displayed to  the right hand side of the meter, starting at the bottom. E.G.
  `('0.0', '0.5', '1.0')`
  * `value=0` Initial value.
- 
+
 Methods:
  1. `value` Args: `n=None, color=None`.
     * `n` should be a float in range 0 to 1.0. Causes the meter to be updated.
@@ -2072,7 +2076,7 @@ Optional keyword only arguments:
  the centre of the control along which the slider moves. Defaults to the
  background color.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow to for a visual indication. An alternative color can be provided. 
+ to yellow to for a visual indication. An alternative color can be provided.
  `WHITE` will defeat this change.
  * `callback=dolittle` Callback function which runs whenever the control's
  value changes. If the control is `active` it also runs on instantiation. This
@@ -2146,7 +2150,7 @@ Constructor mandatory positional args:
  2. `row` Location on screen.
  3. `col`  
 
-Optional keyword only arguments: 
+Optional keyword only arguments:
  * `ticks=200` Number of "tick" divisions on scale. Must be divisible by 2.
  * `value=0.0` Initial value.
  * `height=0` Default is a minimum height based on the font height.
@@ -2159,7 +2163,7 @@ Optional keyword only arguments:
  be drawn. If a  color is provided, a border line will be drawn around the
  control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow to for a visual indication. An alternative color can be provided. 
+ to yellow to for a visual indication. An alternative color can be provided.
  `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `fgcolor`.
@@ -2220,7 +2224,7 @@ The above arithmetic aims to show the logic. It can (obviously) be simplified.
 
 This callback enables the tick color to be changed dynamically. For example a
 scale might change from green to orange, then to red as it nears the extremes.
-The callback takes two args, being the value of the tick (in range 
+The callback takes two args, being the value of the tick (in range
 -1.0 <= v <= 1.0) and the default color. It must return a color. This example
 is taken from the `scale.py` demo:
 ```python
@@ -2290,7 +2294,7 @@ Constructor mandatory positional args:
  2. `row` Location on screen.
  3. `col`  
 
-Keyword only arguments (all optional): 
+Keyword only arguments (all optional):
  * `decades=5` Defines the control's maximum value (i.e. `10**decades`).
  * `value=1.0` Initial value for control. Will be constrained to
  `1.0 <= value <= 10**decades` if outside this range.
@@ -2304,7 +2308,7 @@ Keyword only arguments (all optional):
  be drawn. If a color is provided, a border line will be drawn around the
  control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow to for a visual indication. An alternative color can be provided. 
+ to yellow to for a visual indication. An alternative color can be provided.
  `WHITE` will defeat this change.
  * `pointercolor=None` Color of pointer. Defaults to `.fgcolor`.
  * `fontcolor=None` Color of legends. Default `WHITE`.
@@ -2327,7 +2331,7 @@ Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
  current 'greyed out' status of the control. Otherwise enables or disables it,
  showing it in its new state.
- 
+
 Class variable:
  * `encoder_rate=5` If the hardware uses an encoder, this determines the rate
  of change when the value is adjusted. Increase to raise the rate.
@@ -2540,7 +2544,7 @@ Optional keyword only arguments:
  * `bdcolor=False` Color of border. If `False` no border will be drawn. If a
  color is provided, a border line will be drawn around the control.
  * `prcolor=None` If `active`, in precision mode the white focus border changes
- to yellow for a visual indication. An alternative color can be provided. 
+ to yellow for a visual indication. An alternative color can be provided.
  `WHITE` defeats this change; `False` disables precision mode.
  * `callback=dolittle` Callback function runs when the user moves the knob or
  the value is changed programmatically.
@@ -2812,7 +2816,7 @@ Static Method:__
  * `make_buffer` args `version`, `scale`. Returns a buffer big enough to hold
  the QR code bitmap. Use of this is optional: it is a solution if memory errors
  are encountered when instantiating a `QRMap`.
- 
+
 Note on image sizes. The size of a QR code bitmap depends on the `version` and
 `scale` parameters according to this formula:  
 `edge_length_in_pixels = (4 * version + 17) * scale`  
@@ -3170,7 +3174,7 @@ In general ePaper displays do not work well with micro-gui because refresh is
 slow (seconds) and visually intrusive. Some displays support partial refresh
 which is faster (hundreds of ms) and non-intrusive. The penalty is "ghosting"
 where pixels which change from black to white do so imperfectly, leaving a grey
-trace behind. The degree of ghosting varies between display types. 
+trace behind. The degree of ghosting varies between display types.
 
 The [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
 has quite a low level of ghosting. A full refresh takes about 2.1s and partial
@@ -3197,7 +3201,7 @@ async def set_partial():  # Ensure 1st refresh is a full refresh
     ssd.set_partial()
 ```
 The application then runs in partial mode with a reasonably quick and visually
-satisfactory response to user inputs such as button events. See the 
+satisfactory response to user inputs such as button events. See the
 [epaper demo](https://github.com/peterhinch/micropython-micro-gui/blob/main/gui/demos/epaper.py).
 
 It is likely that applications will provide a full refresh method to clear any
@@ -3282,7 +3286,7 @@ have the following bound variables, which should be considered read-only:
  * `width` Ditto.
  * `mrow` Maximum absolute row occupied by the widget (including border).
  * `mcol` Maximum absolute col occupied by the widget (including border).
- 
+
 A further aid to metrics is the `Writer` method `.stringlen(s)`. This takes a
 string as its arg and returns its length in pixels when rendered using that
 `Writer` instance's font.
@@ -3338,6 +3342,31 @@ convention of `x, y` coordinates rather than the `row, col` system used by
 micro-gui.
 
 The `primitives.py` demo provides a simple example.
+
+## Callbacks
+
+Callback functions should execute quickly, otherwise screen refresh will be
+delayed until the callback is complete. Where a time consuming task is to be
+triggered by a callback an `asyncio` task should be launched. In the following
+sample an `LED` widget is to be cycled through various colors in response to
+a callback.
+```python
+def callback(self, button, val):
+    asyncio.create_task(self.flash_led())
+
+async def flash_led(self):
+    self.led.color(RED)
+    self.led.value(True)  # Turn on LED
+    await asyncio.sleep_ms(500)
+    self.led.color(YELLOW)
+    await asyncio.sleep_ms(500)
+    self.led.color(GREEN)
+    await asyncio.sleep_ms(500)
+    self.led.value(False)  # Turn it off. Task is complete.
+```
+The `callback()` executes fast, with the `flash_led()` running as a background
+task. For more information on asyncio, see
+[the tutorial](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/TUTORIAL.md).
 
 ###### [Contents](./README.md#0-contents)
 
