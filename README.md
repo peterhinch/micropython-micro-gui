@@ -109,7 +109,7 @@ under development so check for updates.
  4.1 [Class methods](./README.md#41-class-methods)  
  4.2 [Constructor](./README.md#42-constructor)  
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
- 4.4 [Method](./README.md#44-method) Optional interface to uasyncio code.  
+ 4.4 [Method](./README.md#44-method) Optional interface to asyncio code.  
  4.5 [Class variable](./README.md#45-class-variable) Control latency caused by garbage collection.  
  4.6 [Usage](./README.md#46-usage) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
@@ -161,8 +161,8 @@ under development so check for updates.
 
 # 1. Basic concepts
 
-Internally `micro-gui` uses `uasyncio`. It presents a conventional callback
-based interface; knowledge of `uasyncio` is not required for its use. Display
+Internally `micro-gui` uses `asyncio`. It presents a conventional callback
+based interface; knowledge of `asyncio` is not required for its use. Display
 refresh is handled automatically. Widgets are drawn using graphics primitives
 rather than icons. This makes them efficiently scalable and minimises RAM usage
 compared to icon-based graphics. It also facilitates the provision of extra
@@ -529,7 +529,7 @@ The consequence of inadequate speed is that brief button presses can be missed.
 This is because display update blocks for tens of milliseconds, during which
 time the pushbuttons are not polled. This can be an issue in displays with a
 large number of pixels, multi-byte colors and/or slow SPI clock rates. In high
-resolution cases the device driver has specfic `uasyncio` support whereby the
+resolution cases the device driver has specfic `asyncio` support whereby the
 driver yields to the scheduler a few times during the refresh.Currently this
 exists on ILI9486, ILI9341 and ST7789 (e.g. TTGO T-Display). By my calculations
 and measurements this should be unnecessary on other drivers, but please report
@@ -567,7 +567,7 @@ These are listed to enable users to check for newer versions or to read docs:
  A copy of the official driver for OLED displays using the SSD1306 chip is
  provided. The link is to the official file.
  * [Synchronisation primitives](https://github.com/peterhinch/micropython-async/tree/master/v3/primitives).
- The link is to my `uasyncio` support repo.
+ The link is to my `asyncio` support repo.
  * [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
  Displays based on the Nokia 5110 (PCD8544 chip) require this driver. It is not
  provided in this repo. The link is to its source.
@@ -643,7 +643,7 @@ minimal and aim to demonstrate a single technique.
  "forward" button.
  * `primitives.py` Use of graphics primitives.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
- screen layout using widget metrics. Has a simple `uasyncio` task.
+ screen layout using widget metrics. Has a simple `asyncio` task.
  * `tbox.py` Text boxes and user-controlled scrolling.
  * `tstat.py` A demo of the `Meter` class with data sensitive regions.
  * `menu.py` A multi-level menu.
@@ -3345,16 +3345,16 @@ The `primitives.py` demo provides a simple example.
 
 ## Callbacks
 
-Callback functions should execute quickly, otherwise screen refresh will be
-delayed until the callback is complete. Where a time consuming task is to be
+Callback functions should execute quickly, otherwise screen refresh will not
+occur until the callback is complete. Where a time consuming task is to be
 triggered by a callback an `asyncio` task should be launched. In the following
 sample an `LED` widget is to be cycled through various colors in response to
 a callback.
 ```python
 def callback(self, button, val):
-    asyncio.create_task(self.flash_led())
+    self.reg_task(self.flash_led(), on_change=True)
 
-async def flash_led(self):
+async def flash_led(self):  # Will be cancelled if the screen ceases to be current
     self.led.color(RED)
     self.led.value(True)  # Turn on LED
     await asyncio.sleep_ms(500)
@@ -3364,9 +3364,13 @@ async def flash_led(self):
     await asyncio.sleep_ms(500)
     self.led.value(False)  # Turn it off. Task is complete.
 ```
-The `callback()` executes fast, with the `flash_led()` running as a background
-task. For more information on asyncio, see
-[the tutorial](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/TUTORIAL.md).
+The `callback()` executes fast, with `flash_led()` running as a background task.
+The use of [reg_task](./README.md#44-method)
+is because `flash_led()` is a method of the `Screen` object accessing bound
+objects. The method ensures that the task is cancelled if the user closes or
+overlays the current screen. For more information on `asyncio`, see the
+[official docs](https://docs.micropython.org/en/latest/library/asyncio.html)
+and [tutorial](https://github.com/peterhinch/micropython-async/blob/master/v3/docs/TUTORIAL.md).
 
 ###### [Contents](./README.md#0-contents)
 
