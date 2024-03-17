@@ -33,13 +33,15 @@ micro_gui now has limited support for ePaper.
 
 # Rationale
 
-Touch GUI's have many advantages, however they have drawbacks, principally cost
-and the need for calibration (although the
-[official LCD160cr](https://store.micropython.org/product/LCD160CRv1.1H) is
-factory calibrated). Another problem is that there are various types of touch
-controller, magnifying the difficulty of writing a portable GUI.
+Touch GUI's are supported by [micropython-touch](https://github.com/peterhinch/micropython-touch).
+This GUI provides an alternative for displays without a touch overlay. A
+non-touch solution avoids the need for calibration and can also save cost. Cheap
+Chinese touch displays often marry a good display to a poor touch overlay. It
+can make sense to use such a screen with micro-gui, ignoring the touch overlay.
+For touch support it is worth spending money on a good quality device (for
+example Adafruit). 
 
-The input options work well and yield astonishingly low cost solutions. A
+The micro-gui input options work well and can yield inexpensive solutions. A
 network-connected board with a 135x240 color display can be built for under £20
 ($20?) using the
 [TTGO T-Display](https://www.lilygo.cc/products/lilygo%C2%AE-ttgo-t-display-1-14-inch-lcd-esp32-control-board). The
@@ -1407,7 +1409,7 @@ Method:
  showing it in its new state.
 
 Class variable:
- * `lit_time=1` Period in seconds the `litcolor` is displayed.
+ * `lit_time=1000` Period in ms the `litcolor` is displayed.
 
 ### CloseButton
 ![Image](./images/closebutton.JPG)  
