@@ -39,7 +39,7 @@ non-touch solution avoids the need for calibration and can also save cost. Cheap
 Chinese touch displays often marry a good display to a poor touch overlay. It
 can make sense to use such a screen with micro-gui, ignoring the touch overlay.
 For touch support it is worth spending money on a good quality device (for
-example Adafruit). 
+example Adafruit).
 
 The micro-gui input options work well and can yield inexpensive solutions. A
 network-connected board with a 135x240 color display can be built for under £20
@@ -65,6 +65,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+April 2024: Add screen replace feature for non-tree navigation.
 Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
 Now requires firmware >= V1.20.  
@@ -233,7 +234,12 @@ conventions within graphs.
 
 A `Screen` is a window which occupies the entire display. A `Screen` can
 overlay another, replacing all its contents. When closed, the `Screen` below is
-re-displayed.
+re-displayed. This default method of navigation results in a tree structure of
+`Screen` instances where the screen below retains state. An alternative allows
+a `Screen` to replace another, allowing `Screen` instances to be navigated in an
+arbitrary way. For example a set of `Screen` instances might be navigated in a
+circular fashion. The penalty is that, to save RAM, state is not retained when a
+`Screen` is replaced
 
 A `Window` is a subclass of `Screen` but is smaller, with size and location
 attributes. It can overlay part of an underlying `Screen` and is typically used
@@ -643,6 +649,7 @@ minimal and aim to demonstrate a single technique.
  * `dialog.py` `DialogBox` demo. Illustrates the screen change mechanism.
  * `screen_change.py` A `Pushbutton` causing a screen change using a re-usable
  "forward" button.
+ * `screen_replace.py` A more complex (non-tree) screen layout.
  * `primitives.py` Use of graphics primitives.
  * `aclock.py` An analog clock using the `Dial` vector display. Also shows
  screen layout using widget metrics. Has a simple `asyncio` task.
@@ -977,14 +984,23 @@ communication between them.
 
 ## 4.1 Class methods
 
-In normal use the following methods only are required:  
- * `change(cls, cls_new_screen, *, forward=True, args=[], kwargs={})` Change
- screen, refreshing the display. Mandatory positional argument: the new screen
- class name. This must be a class subclassed from `Screen`. The class will be
- instantiated and displayed. Optional keyword arguments `args`, `kwargs` enable
- passing positional and keyword arguments to the constructor of the new, user
- defined, screen.
- * `back(cls)` Restore previous screen.
+In normal use only `change` and `back` are required, to move to a new `Screen`
+and to drop back to the previous `Screen` in a tree (or to quit the application
+if there is no predecessor).
+
+ * `change(cls, cls_new_screen, mode=Screen.STACK, *, args=[], kwargs={})`  
+ Change screen, refreshing the display. Mandatory positional argument: the new
+ screen class name. This must be a class subclassed from `Screen`. The class
+ will be instantiated and displayed. Optional keyword arguments `args`, `kwargs`
+ enable  passing positional and keyword arguments to the constructor of the new,
+ user defined, screen. By default the new screen overlays the old. When the new
+ `Screen` is closed (via `back`) the old is re-displayed having retained state.
+ If `mode=Screen.REPLACE` is passed the old screen instance is deleted. The new
+ one retains the parent of the old, so if it is closed that parent is
+ re-displayed with its state retained. This enables arbitrary navigation between
+ screens (directed graph rather than tree structure). See demo `screen_replace`.
+ * `back(cls)` Restore previous screen. If there is no parent, quits the
+ application.
 
 These are uncommon:  
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
@@ -1015,7 +1031,7 @@ See `demos/plot.py` for examples of usage of `after_open`.
 ## 4.4 Method
 
  * `reg_task(self, task, on_change=False)` The first arg may be a `Task`
- instance or a coroutine.
+ instance or a coroutine. Returns the passed `task` object.
 
 This is a convenience method which provides for the automatic cancellation of
 tasks. If a screen runs independent tasks it can opt to register these. If the
