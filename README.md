@@ -658,7 +658,8 @@ minimal and aim to demonstrate a single technique.
  * `menu.py` A multi-level menu.
  * `adjuster.py` Simple demo of the `Adjuster` control.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
- * `bitmap.py` Demo of the `BitMap` widget showing a changing image.
+ * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
+    docs).
  * `qrcode.py` Display a QR code. Requires the uQR module.
  * `calendar.py` Demo of grid widget.
  * `epaper.py` Warts-and-all demo for an ePaper display. Currently the only
@@ -2788,17 +2789,18 @@ Keyword only args:
 
 Methods:__
  * `value` mandatory arg `fn` path to an image file. Causes the `BitMap` image
- to be updated from the file. Blocks for a period depending on filesystem
- performance.
+ to be updated from the file. Files should be stored on the root directory of
+ the host. Blocks for a period depending on filesystem performance.
  * `color` args `fgcolor=None`, `bgcolor=None`. Causes the image colors to be
  changed. The file will be re-read and the image updated.
 
-Beacuse of the use of file storage when an update occurs there will be a brief
+Because of the use of file storage when an update occurs there will be a brief
 "dead time" when the GUI is unresponsive. This is not noticeable if the image
 is displayed when a screen initialises, or if it changes in response to a user
 action. Use in animations is questionable.
 
-See `gui/demos/bitmap.py` for a usage example.
+See `gui/demos/bitmap.py` for a usage example. Files must be copied from
+`gui/fonts/bitmaps/` to the root directory of the device.
 
 ###### [Contents](./README.md#0-contents)
 

@@ -13,7 +13,6 @@ from gui.core.colors import *
 
 
 class BaseScreen(Screen):
-
     def __init__(self):
 
         super().__init__()
@@ -29,7 +28,7 @@ class BaseScreen(Screen):
         self.image = 0
 
     def cb(self, _):
-        self.graphic.value(f"/gui/fonts/bitmaps/m{self.image:02d}")
+        self.graphic.value(f"/m{self.image:02d}")
         self.image += 1
         self.image %= 4
         if self.image == 3:
@@ -37,8 +36,10 @@ class BaseScreen(Screen):
         else:
             self.graphic.color(WHITE)
 
+
 def test():
     print("Bitmap demo.")
     Screen.change(BaseScreen)  # A class is passed here, not an instance.
+
 
 test()
