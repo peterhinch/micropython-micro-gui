@@ -11,8 +11,7 @@ import asyncio
 from drivers.boolpalette import BoolPalette
 
 # Initialisation ported from Russ Hughes' C driver
-# https://github.com/russhughes/gc9a01_mpy/blob/main/src/gc9a01.h
-# https://github.com/russhughes/gc9a01_mpy/blob/main/src/gc9a01.c
+# https://github.com/russhughes/gc9a01_mpy/
 # Based on a ST7789 C driver: https://github.com/devbis/st7789_mpy
 # Many registers are undocumented. Lines initialising them are commented "?"
 # in cases where initialising them seems to have no effect.
@@ -21,7 +20,7 @@ from drivers.boolpalette import BoolPalette
 # Waveshare touch board https://www.waveshare.com/wiki/1.28inch_Touch_LCD has CST816S touch controller
 # Touch controller uses I2C
 
-# Portrait mode
+# Portrait mode. ~70μs on RP2 at standard clock.
 @micropython.viper
 def _lcopy(dest: ptr16, source: ptr8, lut: ptr16, length: int):
     # rgb565 - 16bit/pixel
@@ -84,7 +83,7 @@ class GC9A01(framebuf.FrameBuffer):
         sleep_ms(50)
         if self._spi_init:  # A callback was passed
             self._spi_init(spi)  # Bus may be shared
-        self._lock = asyncio.Lock()
+        self._lock = asyncio.Lock()  # Prevent concurrent refreshes.
         sleep_ms(100)
         self._wcd(b"\x2a", int.to_bytes(width - 1, 4, "big"))
         # Default page address start == 0 end == 0xEF (239)
