@@ -7,6 +7,7 @@
 # UC8176 manual https://www.waveshare.com/w/upload/8/88/UC8176.pdf
 # Waveshare's copy of this driver.
 # https://github.com/waveshare/Pico_ePaper_Code/blob/main/pythonNanoGui/drivers/ePaper4in2.py
+# https://github.com/waveshare/Pico_ePaper_Code/blob/main/python/Pico-ePaper-4.2.py
 
 # *****************************************************************************
 # * | File        :	  Pico_ePaper-3.7.py
@@ -42,7 +43,7 @@
 from machine import Pin, SPI
 import framebuf
 import time
-import uasyncio as asyncio
+import asyncio
 from drivers.boolpalette import BoolPalette
 
 
@@ -67,7 +68,8 @@ _BUSY_PIN = const(13)
 # LUT elements vcom, ww, bw, wb, bb
 # ****************************** full screen update LUT********************************* #
 
-lut_full = (b"\x00\x08\x08\x00\x00\x02\x00\x0F\x0F\x00\x00\x01\x00\x08\x08\x00\
+lut_full = (
+    b"\x00\x08\x08\x00\x00\x02\x00\x0F\x0F\x00\x00\x01\x00\x08\x08\x00\
 \x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x00\x00\x00",
     b"\x50\x08\x08\x00\x00\x02\x90\x0F\x0F\x00\x00\x01\xA0\x08\x08\x00\x00\x02\

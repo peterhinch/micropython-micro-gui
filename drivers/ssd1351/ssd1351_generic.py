@@ -9,7 +9,7 @@
 # This driver is based on the Adafruit C++ library for Arduino
 # https://github.com/adafruit/Adafruit-SSD1351-library.git
 
-# Copyright (c) Peter Hinch 2018-2022
+# Copyright (c) Peter Hinch 2018-2020
 # Released under the MIT license see LICENSE
 
 import framebuf
@@ -18,7 +18,7 @@ import gc
 import micropython
 from drivers.boolpalette import BoolPalette
 
-#import sys
+import sys
 # https://github.com/peterhinch/micropython-nano-gui/issues/2
 # The ESP32 does not work reliably in SPI mode 1,1. Waveforms look correct.
 # Now using 0,0 on STM and ESP32
