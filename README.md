@@ -1471,6 +1471,9 @@ comprise the currently visible button followed by its arguments.
 
 Constructor argument:
  * `callback=dolittle` The callback function. Default does nothing.
+ * `new_cb=False` When a button is pressed, determines whether the callback run
+ is that of the button visible when pressed, or that which becomes visible after
+ the press.
 
 Methods:
  * `add_button` Adds a button to the `ButtonList`. Arguments: as per the
@@ -1491,7 +1494,9 @@ Counter intuitively, running the callback of the previous button is normal
 behaviour. Consider a `ButtonList` consisting of ON and OFF buttons. If ON is
 visible this implies that the machine under control is off. Pressing `select`
 causes the ON callback to run, starting the machine. The new button displayed
-now reads OFF.
+now reads OFF. There are situations in which the opposite behaviour is required
+such as when choosing an option from a list: in this case the callback from the
+newly visible button might be expected to run.
 
 Typical usage is as follows:
 ```python

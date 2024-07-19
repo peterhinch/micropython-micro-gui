@@ -389,6 +389,13 @@ class Screen:
         ins_new.after_open()  # Optional subclass method
         if ins_old is None:  # Initialising
             loop.run_until_complete(cls.monitor())  # Starts and ends uasyncio
+            # asyncio is no longer running
+            if hasattr(ssd, "shutdown"):
+                ssd.shutdown()  # An EPD with a special shutdown method.
+            else:
+                ssd.fill(0)
+                ssd.show()
+            cls.current_screen = None  # Ensure another demo can run
             # Don't do asyncio.new_event_loop() as it prevents re-running
             # the same app.
 
@@ -403,9 +410,6 @@ class Screen:
             # Screen instance will be discarded: no need to worry about .tasks
             entry[0].cancel()
         await asyncio.sleep_ms(0)  # Allow task cancellation to occur.
-        display.clr_scr()
-        ssd.show()
-        cls.current_screen = None  # Ensure another demo can run
 
     # If the display driver has an async refresh method, determine the split
     # value which must be a factor of the height. In the unlikely event of

@@ -8,14 +8,30 @@ from gui.core.ugui import Screen, Widget, display
 from gui.primitives.delay_ms import Delay_ms
 from gui.core.colors import *
 
-dolittle = lambda *_ : None
+dolittle = lambda *_: None
 
 
 class Button(Widget):
     lit_time = 1000
-    def __init__(self, writer, row, col, *, shape=RECTANGLE, height=20, width=50,
-                 fgcolor=None, bgcolor=None, bdcolor=False, textcolor=None, litcolor=None, text='',
-                 callback=dolittle, args=[]):
+
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        *,
+        shape=RECTANGLE,
+        height=20,
+        width=50,
+        fgcolor=None,
+        bgcolor=None,
+        bdcolor=False,
+        textcolor=None,
+        litcolor=None,
+        text="",
+        callback=dolittle,
+        args=[]
+    ):
         sl = writer.stringlen(text)
         if shape == CIRCLE:  # Only height need be specified
             width = max(sl, height)
@@ -40,7 +56,7 @@ class Button(Widget):
         y = self.row
         w = self.width
         h = self.height
-        if not self.visible:   # erase the button
+        if not self.visible:  # erase the button
             display.usegrey(False)
             display.fill_rect(x, y, w, h, BGCOLOR)
             return
@@ -55,16 +71,20 @@ class Button(Widget):
         else:
             xc = x + w // 2
             yc = y + h // 2
-            if self.shape == RECTANGLE: # rectangle
+            if self.shape == RECTANGLE:  # rectangle
                 display.fill_rect(x, y, w, h, self.bgcolor)
                 display.rect(x, y, w, h, self.fgcolor)
                 if len(self.text):
-                    display.print_centred(self.writer, xc, yc, self.text, self.textcolor, self.bgcolor)
-            elif self.shape == CLIPPED_RECT: # clipped rectangle
+                    display.print_centred(
+                        self.writer, xc, yc, self.text, self.textcolor, self.bgcolor
+                    )
+            elif self.shape == CLIPPED_RECT:  # clipped rectangle
                 display.fill_clip_rect(x, y, w, h, self.bgcolor)
                 display.clip_rect(x, y, w, h, self.fgcolor)
                 if len(self.text):
-                    display.print_centred(self.writer, xc, yc, self.text, self.textcolor, self.bgcolor)
+                    display.print_centred(
+                        self.writer, xc, yc, self.text, self.textcolor, self.bgcolor
+                    )
 
     async def shownormal(self):
         # Handle case where screen changed while timer was active: delay repaint
@@ -75,12 +95,13 @@ class Button(Widget):
         self.bgcolor = self.def_bgcolor
         self.draw = True  # Redisplay
 
-    def do_sel(self): # Select was pushed
-        self.callback(self, *self.callback_args) # CB takes self as 1st arg.
+    def do_sel(self):  # Select was pushed
+        self.callback(self, *self.callback_args)  # CB takes self as 1st arg.
         if self.litcolor is not None and self.has_focus():  # CB may have changed focus
             self.bgcolor = self.litcolor
             self.draw = True  # Redisplay
             self.delay.trigger(Button.lit_time)
+
 
 # Preferred way to close a screen or dialog. Produces an X button at the top RHS.
 # Note that if the bottom screen is closed, the application terminates.
@@ -89,30 +110,38 @@ class CloseButton(Button):
         scr = Screen.current_screen
         # Calculate the button width if not provided. Button allows
         # 5 pixels either side.
-        wd = width if width else (writer.stringlen('X') + 10)
+        wd = width if width else (writer.stringlen("X") + 10)
         self.user_cb = callback
         self.user_args = args
-        super().__init__(writer, *scr.locn(4, scr.width - wd - 4),
-                         width = wd, height = wd, bgcolor = bgcolor,
-                         callback = self.cb, text = 'X')
+        super().__init__(
+            writer,
+            *scr.locn(4, scr.width - wd - 4),
+            width=wd,
+            height=wd,
+            bgcolor=bgcolor,
+            callback=self.cb,
+            text="X"
+        )
 
     def cb(self, _):
         self.user_cb(self, *self.user_args)
         Screen.back()
-        
+
+
 # Group of buttons, typically at same location, where pressing one shows
 # the next e.g. start/stop toggle or sequential select from short list
 class ButtonList:
-    def __init__(self, callback=dolittle):
+    def __init__(self, callback=dolittle, new_cb=False):
         self.user_callback = callback
+        self._new_cb = new_cb
         self.lstbuttons = []
-        self.current = None # No current button
+        self.current = None  # No current button
         self._greyed_out = False
 
     def add_button(self, *args, **kwargs):
         button = Button(*args, **kwargs)
         self.lstbuttons.append(button)
-        active = self.current is None # 1st button added is active
+        active = self.current is None  # 1st button added is active
         button.visible = active
         button.callback = self._callback
         if active:
@@ -128,12 +157,12 @@ class ButtonList:
             new.visible = True
             new.draw = True  # Redisplay without changing currency
             # Args for user callback: button instance followed by any specified.
-            # Normal behaviour is to run cb of old button: this mimics a button press.
-            # Optionally programmatic value changes can run the cb of new button.
-            if new_cb:  # Forced value change, callback is that of new button
+            # Normal behaviour is to run cb of old button (see docs).
+            # This may be overridden for programmatic value changes, or for
+            # physical button presses via constructor arg. See docs.
+            if new_cb or self._new_cb:
                 self.user_callback(new, *new.callback_args)
-            else:  # A button was pressed
-                # Callback context is button just pressed, not the new one
+            else:
                 self.user_callback(old, *old.callback_args)
         return self.current
 
@@ -153,8 +182,10 @@ class ButtonList:
         old.visible = False
         new.visible = True
         Screen.select(new)  # Move currency and redisplay
-        # Callback context is button just pressed, not the new one
-        self.user_callback(old, *old.callback_args)
+        if self._new_cb:
+            self.user_callback(new, *new.callback_args)
+        else:
+            self.user_callback(old, *old.callback_args)
 
 
 # Group of buttons at different locations, where pressing one shows
@@ -163,7 +194,7 @@ class RadioButtons:
     def __init__(self, highlight, callback=dolittle, selected=0):
         self.user_callback = callback
         self.lstbuttons = []
-        self.current = None # No current button
+        self.current = None  # No current button
         self.highlight = highlight
         self.selected = selected
         self._greyed_out = False
@@ -198,4 +229,4 @@ class RadioButtons:
             else:
                 but.bgcolor = but.def_bgcolor
             but.draw = True
-        self.user_callback(button, *args) # user gets button with args they specified
+        self.user_callback(button, *args)  # user gets button with args they specified

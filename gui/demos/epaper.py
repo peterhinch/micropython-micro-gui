@@ -3,7 +3,7 @@
 # Use with setup_examples/pico_epaper_42_pico.py
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2023 Peter Hinch
+# Copyright (c) 2023-2024 Peter Hinch
 
 # Initialise hardware and framebuf before importing modules.
 # Create SSD instance. Must be done first because of RAM use.
@@ -16,6 +16,8 @@ import gui.fonts.freesans20 as large
 
 from gui.core.colors import *
 
+# Option to leave image in place on exit:
+# ssd.blank_on_exit = False
 # Widgets
 from gui.widgets import (
     Label,
@@ -47,9 +49,11 @@ async def full_refresh():
     await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
     ssd.set_partial()
 
+
 async def set_partial():  # Ensure 1st refresh is a full refresh
     await Screen.rfsh_done.wait()  # Wait for first refresh to end
     ssd.set_partial()
+
 
 class FooScreen(Screen):
     def __init__(self):
