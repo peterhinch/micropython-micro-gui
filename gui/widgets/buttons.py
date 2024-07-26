@@ -5,7 +5,6 @@
 
 import uasyncio as asyncio
 from gui.core.ugui import Screen, Widget, display
-from gui.primitives.delay_ms import Delay_ms
 from gui.core.colors import *
 
 dolittle = lambda *_: None
@@ -46,8 +45,6 @@ class Button(Widget):
         self.text = text
         self.callback = callback
         self.callback_args = args
-        if self.litcolor is not None:
-            self.delay = Delay_ms(self.shownormal)
 
     def show(self):
         if self.screen is not Screen.current_screen:
@@ -86,21 +83,22 @@ class Button(Widget):
                         self.writer, xc, yc, self.text, self.textcolor, self.bgcolor
                     )
 
-    async def shownormal(self):
-        # Handle case where screen changed while timer was active: delay repaint
-        # until screen is current. Pathological app behaviour where another
-        # control caused a screen change while timer running.
-        while self.screen is not Screen.current_screen:
-            await asyncio.sleep_ms(500)
+    async def shownormal(self):  # Revert to normal color after a delay
+        try:
+            await asyncio.sleep_ms(Button.lit_time)
+        except asyncio.CancelledError:  # Or prior to a screen change
+            pass
         self.bgcolor = self.def_bgcolor
         self.draw = True  # Redisplay
 
     def do_sel(self):  # Select was pushed
         self.callback(self, *self.callback_args)  # CB takes self as 1st arg.
         if self.litcolor is not None and self.has_focus():  # CB may have changed focus
-            self.bgcolor = self.litcolor
-            self.draw = True  # Redisplay
-            self.delay.trigger(Button.lit_time)
+            if self.bgcolor != self.litcolor:
+                self.bgcolor = self.litcolor
+                self.draw = True  # Redisplay
+                revert = asyncio.create_task(self.shownormal())
+                Screen.current_screen.reg_task(revert, True)  # Cancel on screen change
 
 
 # Preferred way to close a screen or dialog. Produces an X button at the top RHS.
