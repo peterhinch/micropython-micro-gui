@@ -68,8 +68,33 @@ class Listbox(Widget):
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor
-        self._value = value # No callback until user selects
+        self._value = value  # No callback until user selects
         self.ev = value  # Value change detection
+
+
+    def set_elements(self, new_elements):
+        e0 = new_elements[0]
+        # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
+        if isinstance(e0, tuple) or isinstance(e0, list):
+            self.els = new_elements  # Retain original for .despatch
+            self.elements = [x[0] for x in new_elements]  # Copy text component
+        else:
+            # elements are strings list
+            self.elements = new_elements
+
+        if any(not isinstance(s, str) for s in self.elements):
+            raise ValueError("Invalid elements arg.")
+
+        # Calculate dimensions
+        self.entry_height, height, self.dlines, tw = self.dimensions(
+            self.writer, self.elements, self.dlines
+        )
+        self.ntop = 0
+        if self._value >= self.dlines:  # Must scroll
+            self._value = min(self._value, len(new_elements) - 1)
+            self.ntop = self._value - self.dlines + 1
+
+        self.draw = True
 
     def show(self):
         if not super().show(False):  # Clear to self.bgcolor
