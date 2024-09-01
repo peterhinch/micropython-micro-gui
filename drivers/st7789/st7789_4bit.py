@@ -36,6 +36,24 @@ DFR0995 = (34, 0, 0)  # DFR0995 Contributed by @EdgarKluge
 WAVESHARE_13 = (0, 0, 16)  # Waveshare 1.3" 240x240 LCD contributed by Aaron Mittelmeier
 ADAFRUIT_1_9 = (35, 0, PORTRAIT) #  320x170 TFT https://www.adafruit.com/product/5394
 
+# ST7789 commands
+_ST7789_SWRESET = b"\x01"
+_ST7789_SLPIN = b"\x10"
+_ST7789_SLPOUT = b"\x11"
+_ST7789_NORON = b"\x13"
+_ST7789_INVOFF = b"\x20"
+_ST7789_INVON = b"\x21"
+_ST7789_DISPOFF = b"\x28"
+_ST7789_DISPON = b"\x29"
+_ST7789_CASET = b"\x2a"
+_ST7789_RASET = b"\x2b"
+_ST7789_RAMWR = b"\x2c"
+_ST7789_VSCRDEF = b"\x33"
+_ST7789_COLMOD = b"\x3a"
+_ST7789_MADCTL = b"\x36"
+_ST7789_VSCSAD = b"\x37"
+_ST7789_RAMCTL = b"\xb0"
+
 @micropython.viper
 def _lcopy(dest: ptr16, source: ptr8, lut: ptr16, length: int, gscale: bool):
     # rgb565 - 16bit/pixel
@@ -143,13 +161,13 @@ class ST7789(framebuf.FrameBuffer):
             self._spi_init(self._spi)  # Bus may be shared
         cmd = self._wcmd
         wcd = self._wcd
-        cmd(b"\x01")  # SW reset datasheet specifies 120ms before SLPOUT
+        cmd(_ST7789_SWRESET)  # SW reset datasheet specifies 120ms before SLPOUT
         sleep_ms(150)
-        cmd(b"\x11")  # SLPOUT: exit sleep mode
+        cmd(_ST7789_SLPOUT)  # SLPOUT: exit sleep mode
         sleep_ms(10)  # Adafruit delay 500ms (datsheet 5ms)
-        wcd(b"\x3a", b"\x55")  # _COLMOD 16 bit/pixel, 65Kbit color space
-        cmd(b"\x20")  # INVOFF Adafruit turn inversion on. This driver fixes .rgb
-        cmd(b"\x13")  # NORON Normal display mode
+        wcd(_ST7789_COLMOD, b"\x55")  # _COLMOD 16 bit/pixel, 65Kbit color space
+        cmd(_ST7789_INVOFF)  # INVOFF Adafruit turn inversion on. This driver fixes .rgb
+        cmd(_ST7789_NORON)  # NORON Normal display mode
 
         # Table maps user request onto hardware values. index values:
         # 0 Normal
@@ -171,8 +189,8 @@ class ST7789(framebuf.FrameBuffer):
         mode = (0x60, 0xE0, 0xA0, 0x20, 0, 0x40, 0xC0, 0x80)[user_mode]
         # Set display window depending on mode, .height and .width.
         self.set_window(mode)
-        wcd(b"\x36", int.to_bytes(mode, 1, "little"))
-        cmd(b"\x29")  # DISPON. Adafruit then delay 500ms.
+        wcd(_ST7789_MADCTL, int.to_bytes(mode, 1, "little"))
+        cmd(_ST7789_DISPON)  # DISPON. Adafruit then delay 500ms.
 
     # Define the mapping between RAM and the display.
     # Datasheet section 8.12 p124.
@@ -210,9 +228,9 @@ class ST7789(framebuf.FrameBuffer):
                 xe = rwd - xoff - 1
 
         # Col address set.
-        self._wcd(b"\x2a", int.to_bytes((xs << 16) + xe, 4, "big"))
+        self._wcd(_ST7789_CASET, int.to_bytes((xs << 16) + xe, 4, "big"))
         # Row address set
-        self._wcd(b"\x2b", int.to_bytes((ys << 16) + ye, 4, "big"))
+        self._wcd(_ST7789_RASET, int.to_bytes((ys << 16) + ye, 4, "big"))
 
     def greyscale(self, gs=None):
         if gs is not None:
