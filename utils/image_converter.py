@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+This file is copied from: https://github.com/russhughes/st7789py_mpy/blob/7265925bd0c092e8105200d18b2dba9dfbc12c27/utils/image_converter.py
 Convert an image file to a python module for use with the bitmap method. Use redirection to save the
 output to a file. The image is converted to a bitmap using the number of bits per pixel you specify.
 The bitmap is saved as a python module that can be imported and used with the bitmap method.
