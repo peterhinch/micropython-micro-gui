@@ -58,7 +58,7 @@ def rgb_to_color565(r, g, b):
         int: Converted color value in the 16-bit color format (565).
     """
 
-    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b & 0xF8)
+    return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
 
 
 def convert_to_bitmap(image_file, bits_requested):

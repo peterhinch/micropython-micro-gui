@@ -49,6 +49,7 @@ _ST7789_DISPON = b"\x29"
 _ST7789_CASET = b"\x2a"
 _ST7789_RASET = b"\x2b"
 _ST7789_RAMWR = b"\x2c"
+_ST7789_WRMEMC = b"\x3c"
 _ST7789_VSCRDEF = b"\x33"
 _ST7789_COLMOD = b"\x3a"
 _ST7789_MADCTL = b"\x36"
@@ -261,27 +262,28 @@ class ST7789(framebuf.FrameBuffer):
         self._cs(1)
 
     # Asynchronous refresh with support for reducing blocking time.
-    async def ddo_refresh(self, split=5):
+    async def do_refresh(self, split=5):
         async with self._lock:
             lines, mod = divmod(self.height, split)  # Lines per segment
             if mod:
                 raise ValueError("Invalid do_refresh arg.")
-            #clut = ST7789.lut
-            wd = -(-self.width // 2)
-            lb = memoryview(self._linebuf)
-            cm = self._gscale  # color False, greyscale True
+
+            bw = self.width * 2
+            end = self.height * self.width * 2
             buf = self.mvb
+
             line = 0
             for n in range(split):
                 if self._spi_init:  # A callback was passed
                     self._spi_init(self._spi)  # Bus may be shared
+
                 self._dc(0)
                 self._cs(0)
-                self._spi.write(b"\x3c" if n else b"\x2c")  # RAMWR/Write memory continue
+                self._spi.write(_ST7789_WRMEMC  if n else _ST7789_RAMWR)  # RAMWR/Write memory continue
                 self._dc(1)
-                for start in range(wd * line, wd * (line + lines), wd):
-                    #_lcopy(lb, buf[start:], 0xffff, wd, cm)  # Copy and map colors
-                    self._spi.write(buf[start : start + wd])
+
+                for start in range(bw * line, bw * (line + lines), bw):
+                    self._spi.write(buf[start : start + bw])
                 line += lines
                 self._cs(1)
                 await asyncio.sleep(0)

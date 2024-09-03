@@ -9,14 +9,14 @@
 from gui.core.ugui import Widget
 from gui.core.colors import *
 from gui.core.ugui import ssd
-import struct
 
-def little_to_big_endian(value):
-    # A Helper function to convert 16 bit int from little to big endian
-    # Pack the value as little-endian
-    packed = struct.pack(f'<H', value)
-    # Unpack it as big-endian
-    return struct.unpack(f'>H', packed)[0]
+
+def transform_palette(color565):
+    # change endian of the color from little to BIG
+    col = (color565 & 0xFF00) >> 8 | color565  << 8
+    # invert bitwise
+    return col ^ 0xffff
+
 
 class ColorBitMap(Widget):
 
@@ -36,7 +36,8 @@ class ColorBitMap(Widget):
 
     # Transform palette to match display color format
     # this will be run for with all image palette members
-    palette_transformer_cb = lambda self, x: ~little_to_big_endian(x) & 0xffff
+    # I did not find good way of changing other than class variable.
+    palette_transformer_cb =  staticmethod(transform_palette)
 
     def show(self):
         if not super().show(True):  # Draw or erase border
