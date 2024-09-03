@@ -2812,7 +2812,7 @@ See `gui/demos/bitmap.py` for a usage example. Files must be copied from
 ```python
 from gui.widgets import ColorBitMap  # File: color_bitmap.py
 ```
-![Image](./images/bitmap.JPG)  
+![Image](./images/color_bitmap_example.jpg)  
 
 This renders a image with color palette prepared with image_converter.py. The
 bitmap file format is python module. ColorBitwapWidget has the bitmap() method to 
