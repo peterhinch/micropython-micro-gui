@@ -26,6 +26,7 @@ _attrs = {
     "BitMap": "bitmap",
     "QRMap": "qrcode",
     "Grid": "grid",
+    "ColorBitMap": "color_bitmap",
     }
 
 # Lazy loader, effectively does:

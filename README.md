@@ -2807,6 +2807,43 @@ action. Use in animations is questionable.
 See `gui/demos/bitmap.py` for a usage example. Files must be copied from
 `gui/fonts/bitmaps/` to the root directory of the device.
 
+## 6.19 ColorBitMap Widget (experimental)
+
+```python
+from gui.widgets import ColorBitMap  # File: color_bitmap.py
+```
+![Image](./images/bitmap.JPG)  
+
+This renders a image with color palette prepared with image_converter.py. The
+bitmap file format is python module. ColorBitwapWidget has the bitmap() method to 
+decode bitstream. Bitmap can have up to 8 bits for color from 16 bit palette. Converter 
+script downscales image colors to fit wanted bit per pixel.
+
+This Widget is only tested currently with drivers/st7789/st7789_16bit.py and has a 
+palette transformer function that converts bitmap palette to display's rgb565 format
+
+Constructor mandatory positional args:  
+ 1. `writer` A `Writer` instance.
+ 2. `row` Location on screen.
+ 3. `col`
+ 4. `height` Image height in pixels. Dimensions must exactly match the image file.
+ 5. `width` Image width in pixels.
+
+Keyword only args:  
+ * `fgcolor=None` Foreground (1) color of image. <NOT USED ATM>
+ * `bgcolor=None` Background (0) color. <NOT USED ATM>
+ * `bdcolor=RED` Border color.
+
+Methods:__
+ * `value` mandatory arg `fn` path to an image file. Causes the `BitMap` image
+ to be updated from the file. Files should be stored on the root directory of
+ the host. Blocks for a period depending on filesystem performance.
+ * `color` arg `bgcolor=None`. Causes the border color to be changed. The file 
+   will be re-read and the image updated.
+
+See `gui/demos/color_bitmap.py` for a usage example. The test_image.py must be copied 
+from `gui/fonts/bitmaps/` to the root directory of the device.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 6.20 QRMap Widget
