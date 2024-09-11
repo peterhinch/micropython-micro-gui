@@ -65,7 +65,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-April 2024: Add screen replace feature for non-tree navigation.
+April 2024: Add screen replace feature for non-tree navigation.  
 Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
 Now requires firmware >= V1.20.  

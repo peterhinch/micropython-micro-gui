@@ -1,18 +1,20 @@
 # listbox.py Extension to ugui providing the Listbox class
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021-2022 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
+# 11 Sep 24 Support variable list contents.
 # 12 Sep 21 Support for scrolling.
 
 from gui.core.ugui import Widget, display
 from gui.core.colors import *
 
-dolittle = lambda *_ : None
+dolittle = lambda *_: None
 
 # Behaviour has issues compared to touch displays because movement between
 # entries is sequential. This can affect the choice in when the callback runs.
 # It always runs when select is pressed. See 'also' ctor arg.
+
 
 class Listbox(Widget):
     ON_MOVE = 1  # Also run whenever the currency moves.
@@ -22,7 +24,7 @@ class Listbox(Widget):
     @staticmethod
     def dimensions(writer, elements, dlines):
         # Height of a single entry in list.
-        entry_height = writer.height + 2 # Allow a pixel above and below text
+        entry_height = writer.height + 2  # Allow a pixel above and below text
         # Number of displayable lines
         dlines = len(elements) if dlines is None else dlines
         # Height of control
@@ -30,12 +32,25 @@ class Listbox(Widget):
         textwidth = max(writer.stringlen(s) for s in elements) + 4
         return entry_height, height, dlines, textwidth
 
-    def __init__(self, writer, row, col, *, 
-                 elements,
-                 dlines=None, width=None, value=0,
-                 fgcolor=None, bgcolor=None, bdcolor=False,
-                 fontcolor=None, select_color=DARKBLUE,
-                 callback=dolittle, args=[], also=0):
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        *,
+        elements,
+        dlines=None,
+        width=None,
+        value=0,
+        fgcolor=None,
+        bgcolor=None,
+        bdcolor=False,
+        fontcolor=None,
+        select_color=DARKBLUE,
+        callback=dolittle,
+        args=[],
+        also=0
+    ):
 
         e0 = elements[0]
         # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
@@ -43,16 +58,15 @@ class Listbox(Widget):
             self.els = elements  # Retain original for .despatch
             self.elements = [x[0] for x in elements]  # Copy text component
             if callback is not dolittle:
-                raise ValueError('Cannot specify callback.')
+                raise ValueError("Cannot specify callback.")
             self.cb = self.despatch
         else:
             self.cb = callback
             self.elements = elements
         if any(not isinstance(s, str) for s in self.elements):
-            raise ValueError('Invalid elements arg.')
+            raise ValueError("Invalid elements arg.")
         # Calculate dimensions
-        self.entry_height, height, self.dlines, tw = self.dimensions(
-            writer, self.elements, dlines)
+        self.entry_height, height, self.dlines, tw = self.dimensions(writer, self.elements, dlines)
         if width is None:
             width = tw  # Text width
 
@@ -68,8 +82,15 @@ class Listbox(Widget):
         self.cb_args = args
         self.select_color = select_color
         self.fontcolor = fontcolor
-        self._value = value # No callback until user selects
+        self._value = value  # No callback until user selects
         self.ev = value  # Value change detection
+
+    def update(self):  # Elements list has changed.
+        l = len(self.elements)
+        nl = self.dlines  # No. of lines that can fit in window
+        self.ntop = max(0, min(self.ntop, l - nl))
+        self._value = min(self._value, l - 1)
+        self.show()
 
     def show(self):
         if not super().show(False):  # Clear to self.bgcolor
@@ -92,10 +113,12 @@ class Listbox(Widget):
                     if pos > self.width:
                         break
                     nch += 1
-                text = text[: nch]
+                text = text[:nch]
             if n == self._value:
                 display.fill_rect(x, y + 1, self.width, eh - 1, self.select_color)
-                display.print_left(self.writer, x + 2, y + 1, text, self.fontcolor, self.select_color)
+                display.print_left(
+                    self.writer, x + 2, y + 1, text, self.fontcolor, self.select_color
+                )
             else:
                 display.print_left(self.writer, x + 2, y + 1, text, self.fontcolor, self.bgcolor)
             y += eh
@@ -107,11 +130,13 @@ class Listbox(Widget):
             y = self.row + (dlines - 1) * eh
             display.vline(x, y, eh - 1, self.fgcolor)
 
-    def textvalue(self, text=None): # if no arg return current text
+    def textvalue(self, text=None):  # if no arg return current text
         if text is None:
             return self.elements[self._value]
-        else: # set value by text
+        else:  # set value by text
             try:
+                # print(text)
+                # print(self.elements.index(text))
                 v = self.elements.index(text)
             except ValueError:
                 v = None
@@ -127,14 +152,14 @@ class Listbox(Widget):
         elif vnew < self.ntop:
             self.ntop = vnew
         self.value(vnew)
-        if (self.also & Listbox.ON_MOVE):  # Treat as if select pressed
+        if self.also & Listbox.ON_MOVE:  # Treat as if select pressed
             self.do_sel()
 
     def do_adj(self, _, val):
         v = self._value
         if val > 0:
             if v:
-                self._vchange(v -1)
+                self._vchange(v - 1)
         elif val < 0:
             if v < len(self.elements) - 1:
                 self._vchange(v + 1)
@@ -143,7 +168,7 @@ class Listbox(Widget):
     # list currency and then moves off the control. Otherwise if we have a
     # callback that refreshes another control, that second control does not
     # track currency.
-    def do_sel(self): # Select was pushed
+    def do_sel(self):  # Select was pushed
         self.ev = self._value
         self.cb(self, *self.cb_args)
 
