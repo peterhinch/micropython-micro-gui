@@ -65,6 +65,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Sept 2024: Dropdown and Listbox support dynamically variable lists of elements.  
 April 2024: Add screen replace feature for non-tree navigation.  
 Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
@@ -128,7 +129,9 @@ under development so check for updates.
  6.5 [ButtonList object](./README.md#65-buttonlist-object) Pushbuttons with multiple states.  
  6.6 [RadioButtons object](./README.md#66-radiobuttons-object) One-of-N pushbuttons.  
  6.7 [Listbox widget](./README.md#67-listbox-widget)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.7.1 [Dynamic changes](./README.md#671-dynamic-changes) Alter listbox contents at runtime.  
  6.8 [Dropdown widget](./README.md#68-dropdown-widget) Dropdown lists.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6.8.1 [Dynamic changes](./README.md#681-dynamic-changes) Alter dropdown contents at runtime.  
  6.9 [DialogBox class](./README.md#69-dialogbox-class) Pop-up modal dialog boxes.  
  6.10 [Textbox widget](./README.md#610-textbox-widget) Scrolling text display.  
  6.11 [Meter widget](./README.md#611-meter-widget) Display floats on an analog meter, with data driven callbacks.  
@@ -684,6 +687,8 @@ Some of these require larger screens. Required sizes are specified as
  (240x320).
  * `vtest.py` Clock and compass styles of vector display (240x320).
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
+ * `listbox_var.py` Listbox with dynamically variable elements.
+ * `dropdown_var.py` Dropdown with dynamically variable elements.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1628,6 +1633,7 @@ Methods:
  the control's list, that item becomes current. Normally returns the current
  string. If a provided arg did not match any list item, the control's state is
  not changed and `None` is returned.
+ * `update` No args. See [Dynamic changes](./README.md#671-dynamic-changes).
 
 The callback's first argument is the listbox instance followed by any args
 specified to the constructor. The currently selected item may be retrieved by
@@ -1668,6 +1674,12 @@ class BaseScreen(Screen):
 
 Screen.change(BaseScreen)
 ```
+### 6.7.1 Dynamic changes
+
+The contents of a listbox may be changed at runtime. To achieve this, elements
+must be defined as a list rather than a tuple. After the application has
+modified the list, it should call the `.update` method to refresh the control.
+The demo script `listbox_var.py` illustrates this.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1734,6 +1746,7 @@ Methods:
  the control's list, that item becomes current. Normally returns the current
  string. If a provided arg did not match any list item, the control's state is
  not changed and `None` is returned.
+ * `update` No args. See [Dynamic changes](./README.md#681-dynamic-changes).
 
 If `select` is pressed when the `Dropdown` has focus, the list is displayed.
 The `increase` and `decrease` buttons move the list currency. If `select` is
@@ -1784,6 +1797,13 @@ class BaseScreen(Screen):
 
 Screen.change(BaseScreen)
 ```
+### 6.8.1 Dynamic changes
+
+The contents of a Dropdown may be changed at runtime. To achieve this, elements
+must be defined as a list rather than a tuple. After the application has
+modified the list, it should call the `.update` method to refresh the control.
+The demo script `dropdown_var.py` illustrates this.
+
 ###### [Contents](./README.md#0-contents)
 
 ## 6.9 DialogBox class

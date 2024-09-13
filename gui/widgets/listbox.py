@@ -29,7 +29,9 @@ class Listbox(Widget):
         dlines = len(elements) if dlines is None else dlines
         # Height of control
         height = entry_height * dlines + 2
-        textwidth = max(writer.stringlen(s) for s in elements) + 4
+        simple = isinstance(elements[0], str)  # list or list of lists?
+        q = (p for p in elements) if simple else (p[0] for p in elements)
+        textwidth = max(writer.stringlen(x) for x in q) + 4
         return entry_height, height, dlines, textwidth
 
     def __init__(
@@ -52,25 +54,23 @@ class Listbox(Widget):
         also=0
     ):
 
-        e0 = elements[0]
+        self.els = elements
         # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
-        if isinstance(e0, tuple) or isinstance(e0, list):
-            self.els = elements  # Retain original for .despatch
-            self.elements = [x[0] for x in elements]  # Copy text component
-            if callback is not dolittle:
-                raise ValueError("Cannot specify callback.")
-            self.cb = self.despatch
-        else:
-            self.cb = callback
-            self.elements = elements
-        if any(not isinstance(s, str) for s in self.elements):
+        self.simple = isinstance(self.els[0], str)
+        self.cb = callback if self.simple else self.despatch
+        if not self.simple and callback is not dolittle:
+            raise ValueError("Cannot specify callback.")
+        # Iterate text values
+        q = (p for p in self.els) if self.simple else (p[0] for p in self.els)
+        if not all(isinstance(x, str) for x in q):
             raise ValueError("Invalid elements arg.")
+
         # Calculate dimensions
-        self.entry_height, height, self.dlines, tw = self.dimensions(writer, self.elements, dlines)
+        self.entry_height, height, self.dlines, tw = self.dimensions(writer, self.els, dlines)
         if width is None:
             width = tw  # Text width
 
-        self.also = also
+        self.also = also  # Additioal callback events
         self.ntop = 0  # Top visible line
         if not isinstance(value, int):
             value = 0  # Or ValueError?
@@ -86,7 +86,7 @@ class Listbox(Widget):
         self.ev = value  # Value change detection
 
     def update(self):  # Elements list has changed.
-        l = len(self.elements)
+        l = len(self.els)
         nl = self.dlines  # No. of lines that can fit in window
         self.ntop = max(0, min(self.ntop, l - nl))
         self._value = min(self._value, l - 1)
@@ -99,11 +99,13 @@ class Listbox(Widget):
         x = self.col
         y = self.row
         eh = self.entry_height
-        ntop = self.ntop
         dlines = self.dlines
-        nlines = min(dlines, len(self.elements))  # Displayable lines
+        self.ntop = min(self.ntop, self._value)  # Ensure currency is visible
+        self.ntop = max(self.ntop, self._value - dlines + 1)
+        ntop = self.ntop
+        nlines = min(dlines, len(self.els))  # Displayable lines
         for n in range(ntop, ntop + nlines):
-            text = self.elements[n]
+            text = self.els[n] if self.simple else self.els[n][0]
             if self.writer.stringlen(text) > self.width:  # Clip
                 font = self.writer.font
                 pos = 0
@@ -126,18 +128,25 @@ class Listbox(Widget):
         x = self.col + self.width - 2
         if ntop:
             display.vline(x, self.row, eh - 1, self.fgcolor)
-        if ntop + dlines < len(self.elements):
+        if ntop + dlines < len(self.els):
             y = self.row + (dlines - 1) * eh
             display.vline(x, y, eh - 1, self.fgcolor)
 
     def textvalue(self, text=None):  # if no arg return current text
         if text is None:
-            return self.elements[self._value]
+            r = self.els[self._value]
+            return r if self.simple else r[0]
         else:  # set value by text
             try:
                 # print(text)
-                # print(self.elements.index(text))
-                v = self.elements.index(text)
+                # print(self.els.index(text))
+                if self.simple:
+                    v = self.els.index(text)
+                else:  # More RAM-efficient than converting to list and using .index
+                    q = (p[0] for p in self.els)
+                    v = 0
+                    while next(q) != text:
+                        v += 1
             except ValueError:
                 v = None
             else:
@@ -161,7 +170,7 @@ class Listbox(Widget):
             if v:
                 self._vchange(v - 1)
         elif val < 0:
-            if v < len(self.elements) - 1:
+            if v < len(self.els) - 1:
                 self._vchange(v + 1)
 
     # Callback runs if select is pressed. Also (if ON_LEAVE) if user changes
