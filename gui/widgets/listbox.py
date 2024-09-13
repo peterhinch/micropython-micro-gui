@@ -3,7 +3,7 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
-# 11 Sep 24 Support variable list contents.
+# 13 Sep 24 Support dynamic elements list.
 # 12 Sep 21 Support for scrolling.
 
 from gui.core.ugui import Widget, display
@@ -19,6 +19,7 @@ dolittle = lambda *_: None
 class Listbox(Widget):
     ON_MOVE = 1  # Also run whenever the currency moves.
     ON_LEAVE = 2  # Also run on exit from the control.
+    NOCB = 4  # When used in a dropdown, force passed callback.
 
     # This is used by dropdown.py and menu.py
     @staticmethod
@@ -57,8 +58,8 @@ class Listbox(Widget):
         self.els = elements
         # Check whether elements specified as (str, str,...) or ([str, callback, args], [...)
         self.simple = isinstance(self.els[0], str)
-        self.cb = callback if self.simple else self.despatch
-        if not self.simple and callback is not dolittle:
+        self.cb = callback if (self.simple or also == 4) else self.despatch
+        if not (self.simple or also == 4) and callback is not dolittle:
             raise ValueError("Cannot specify callback.")
         # Iterate text values
         q = (p for p in self.els) if self.simple else (p[0] for p in self.els)
@@ -138,8 +139,6 @@ class Listbox(Widget):
             return r if self.simple else r[0]
         else:  # set value by text
             try:
-                # print(text)
-                # print(self.els.index(text))
                 if self.simple:
                     v = self.els.index(text)
                 else:  # More RAM-efficient than converting to list and using .index
@@ -147,7 +146,7 @@ class Listbox(Widget):
                     v = 0
                     while next(q) != text:
                         v += 1
-            except ValueError:
+            except (ValueError, StopIteration):
                 v = None
             else:
                 if v != self._value:

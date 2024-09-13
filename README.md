@@ -65,7 +65,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Sept 2024: Dropdown and Listbox support dynamically variable lists of elements.  
+Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 April 2024: Add screen replace feature for non-tree navigation.  
 Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
@@ -689,6 +689,7 @@ Some of these require larger screens. Required sizes are specified as
  * `calendar.py` Demo of grid control (240x320 - but could be reduced).
  * `listbox_var.py` Listbox with dynamically variable elements.
  * `dropdown_var.py` Dropdown with dynamically variable elements.
+ * `dropdown_var_tuple.py ` Dropdown with dynamically variable tuple elements.
 
 ###### [Contents](./README.md#0-contents)
 
