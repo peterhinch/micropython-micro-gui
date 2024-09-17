@@ -303,6 +303,7 @@ class Display(DisplayIP):
 
 class Screen:
     do_gc = True  # Allow user to take control of GC
+    sync_update = False  # This will set screen updates synchronous
     current_screen = None
     is_shutdown = asyncio.Event()
     # These events enable user code to synchronise display refresh
@@ -352,6 +353,7 @@ class Screen:
             if obj.visible:  # In a buttonlist only show visible button
                 if force or obj.draw:
                     obj.show()
+                    force or print('r:'+str(obj))  # print object that caused update TODO: remove this
 
     @classmethod
     def change(cls, cls_new_screen, mode=1, *, args=[], kwargs={}):
@@ -416,6 +418,8 @@ class Screen:
     # no factor, do_refresh confers no benefit, so use synchronous code.
     @classmethod
     async def auto_refresh(cls):
+        import time
+
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
         # By default rfsh_start is permanently set. User code can clear this.
         cls.rfsh_start.set()
@@ -428,10 +432,17 @@ class Screen:
             await cls.rfsh_start.wait()
             Screen.show(False)  # Update stale controls. No physical refresh.
             # Now perform physical refresh.
+            s = time.ticks_us()
             if arfsh:
                 await ssd.do_refresh(split)
             else:
                 ssd.show()  # Synchronous (blocking) refresh.
+            e = time.ticks_diff(time.ticks_us(), s)
+
+            if cls.current_screen.sync_update:
+                print(f'ref: {e} us')
+                cls.rfsh_start.clear()
+
             # Flag user code.
             cls.rfsh_done.set()
             await asyncio.sleep_ms(0)  # Let user code respond to event
@@ -564,6 +575,7 @@ class Screen:
         return
 
     def after_open(self):
+        self.rfsh_start.set()
         return
 
     def on_hide(self):
@@ -689,7 +701,7 @@ class Widget:
         self.mrow = row + height + 2  # in subclass. Allow for border.
         self.mcol = col + width + 2
         self.visible = True  # Used by ButtonList class for invisible buttons
-        self.draw = True  # Signals that obect must be redrawn
+        self._draw = True  # Signals that object must be redrawn
         self._value = value
 
         # Set colors. Writer colors cannot be None:
@@ -712,6 +724,16 @@ class Widget:
         self.has_border = False
         self.callback = lambda *_: None  # Value change callback
         self.args = []
+
+    @property
+    def draw(self):
+        return self._draw
+
+    @draw.setter
+    def draw(self, value):
+        self._draw = bool(value)
+        if Screen.current_screen.sync_update:
+            Screen.rfsh_start.set()
 
     def warning(self):
         print(
@@ -753,6 +775,7 @@ class Widget:
             x = self.col
             y = self.row
             dev.fill_rect(x, y, self.width, self.height, color_map[BG] if black else self.bgcolor)
+        Screen.rfsh_start.set()  # tell driver that we need a refresh TODO: This might not be needed
         return True
 
     # Called by Screen.show(). Draw background and bounding box if required.
