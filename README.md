@@ -164,6 +164,7 @@ under development so check for updates.
 [Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives, more on callbacks.
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
+[Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) The reason for continuous refresh.  
 
 # 1. Basic concepts
 
@@ -3214,6 +3215,9 @@ another from occurring.
 ```
 The demo `gui/demos/audio.py` provides example usage.
 
+See [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) for
+the reason for continuous refresh.  
+
 # 10 ePaper displays
 
 In general ePaper displays do not work well with micro-gui because refresh is
@@ -3460,6 +3464,8 @@ changes. I also keep the display driver and `boolpalette.py` in the filesystem
 as I have experienced problems freezing display drivers - but feel free to
 experiment.
 
+###### [Contents](./README.md#0-contents)
+
 ## Appendix 3 Cross compiling
 
 This addresses the case where a memory error occurs on import. There are better
@@ -3476,3 +3482,64 @@ This creates a file `ugui.mpy`. It is necessary to move, delete or rename
 
 If "incorrect mpy version" errors occur, the cross compiler should be
 recompiled.
+
+## Appendix 4 GUI Design notes
+
+A user (Toni Röyhy) raised the question of why refresh operates as a continuous
+background task, even when nothing has changed on screen. The concern was that
+it may result in needless power consumption. The following reasons apply:
+* It enables applications to draw on the screen using FrameBuffer primitives
+without the need to notify the GUI to perform a refresh.
+* There is a mechanism for stopping refresh in those rare occasions when it is
+necessary.
+* Stopping refresh has no measurable effect on power consumption. This is
+because `asyncio` continues to schedule tasks even if refresh is paused. Overall
+CPU activity remains high. The following script may be used to confirm this.
+
+```py
+import hardware_setup  # Create a display instance
+from gui.core.ugui import Screen, ssd
+
+from gui.widgets import Label, Button, CloseButton
+from gui.core.writer import CWriter
+import gui.fonts.arial10 as arial10
+from gui.core.colors import *
+import asyncio
+
+async def refresh_and_stop():
+    Screen.rfsh_start.set()  # Allow refresh
+    Screen.rfsh_done.clear()  # Enable completion flag
+    await Screen.rfsh_done.wait()  # Wait for a refresh to end
+    Screen.rfsh_start.clear()  # Prevent another.
+    print("Refresh stopped")
+
+def cby(_):
+    asyncio.create_task(refresh_and_stop())
+
+def cbn(_):
+    Screen.rfsh_start.set()  # Allow refresh
+    print("Refresh started.")
+
+
+class BaseScreen(Screen):
+    def __init__(self):
+
+        super().__init__()
+        wri = CWriter(ssd, arial10, GREEN, BLACK)
+        col = 2
+        row = 2
+        Label(wri, row, col, "Refresh test")
+        row = 50
+        Button(wri, row, col, text="Stop", callback=cby)
+        col += 60
+        Button(wri, row, col, text="Start", callback=cbn)
+        CloseButton(wri)  # Quit
+
+
+def test():
+    print("Refresh test.")
+    Screen.change(BaseScreen)
+
+test()
+```
+###### [Contents](./README.md#0-contents)
