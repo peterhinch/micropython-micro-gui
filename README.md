@@ -65,18 +65,13 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Sept 2024: Refresh control is now via a `Lock`. See [Realtime applications](./README.md#9-realtime-applications).
+This is a breaking change for applications which use refresh control.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
 April 2024: Add screen replace feature for non-tree navigation.  
 Sept 2023: Add "encoder only" mode suggested by @eudoxos.  
 April 2023: Add limited ePaper support, grid widget, calendar and epaper demos.
 Now requires firmware >= V1.20.  
-July 2022: Add ESP32 touch pad support.  
-June 2022: Add [QRMap](./README.md#620-qrmap-widget) and
-[BitMap](./README.md#619-bitmap-widget) widgets.  
-March 2022: Add [latency control](./README.md#45-class-variable) for hosts with
-SPIRAM.  
-February 2022: Supports use with only three buttons devised by Bart Cerneels.
-Simplified widget import. Existing users should replace the entire `gui` tree.  
 
 Code has been tested on ESP32, ESP32-S2, ESP32-S3, Pi Pico and Pyboard. This is
 under development so check for updates.
@@ -3179,41 +3174,36 @@ docs on `pushbutton.py` may be found
 
 # 9. Realtime applications
 
-Screen refresh is performed in a continuous loop with yields to the scheduler.
+Screen refresh is performed in a continuous loop which yields to the scheduler.
 In normal applications this works well, however a significant proportion of
-processor time is spent performing a blocking refresh. A means of synchronising
-refresh to other tasks is provided, enabling the application to control the
-screen refresh. This is done by means of two `Event` instances. The refresh
+processor time is spent performing a blocking refresh. The `asyncio` scheduler
+allocates run time to tasks in round-robin fashion. This means that another task
+will normally be scheduled once per screen refresh. This can limit data
+throughput. To enable applications to handle this, a means of synchronising
+refresh to other tasks is provided. This is via a `Lock` instance. The refresh
 task operates as below (code simplified to illustrate this mechanism).
-
 ```python
 class Screen:
-    rfsh_start = Event()  # Refresh pauses until set (set by default).
-    rfsh_done = Event()  # Flag a user task that a refresh was done.
+    rfsh_lock = Lock()  # Refresh pauses until lock is acquired
 
     @classmethod
     async def auto_refresh(cls):
-        cls.rfsh_start.set()
         while True:
-            await cls.rfsh_start.wait()
-            ssd.show()  # Synchronous (blocking) refresh.
+            async with cls.rfsh_lock:
+                ssd.show()  # Refresh the physical display.
             # Flag user code.
-            cls.rfsh_done.set()
             await asyncio.sleep_ms(0)  # Let user code respond to event
 ```
-By default the `rfsh_start` event is permanently set, allowing refresh to free
-run. User code can clear this event to delay refresh. The `rfsh_done` event can
-signal to user code that refresh is complete. As an example of simple usage,
-the following, if awaited, pauses until a refresh is complete and prevents
-another from occurring.
+User code can wait on the lock and, once acquired, perform an operation which
+cannot be interrupted by a refresh. This is normally done as follows:
 ```python
-    async def refresh_and_stop(self):
-        Screen.rfsh_start.set()  # Allow refresh
-        Screen.rfsh_done.clear()  # Enable completion flag
-        await Screen.rfsh_done.wait()  # Wait for a refresh to end
-        Screen.rfsh_start.clear()  # Prevent another.
+async with Screen.rfsh_lock:
+    # do something that can't be interrupted with a refresh
 ```
-The demo `gui/demos/audio.py` provides example usage.
+The demo `gui/demos/audio.py` provides an example, where the `play_song` task
+gives priority to maintaining the audio buffer. It does this by holding the lock
+for several iterations of buffer filling before releasing the lock to allow a
+single refresh.
 
 See [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) for
 the reason for continuous refresh.  
@@ -3500,41 +3490,41 @@ CPU activity remains high. The following script may be used to confirm this.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 
-from gui.widgets import Label, Button, CloseButton
+from gui.widgets import Label, Button, CloseButton, LED
 from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10
 from gui.core.colors import *
 import asyncio
 
-async def refresh_and_stop():
-    Screen.rfsh_start.set()  # Allow refresh
-    Screen.rfsh_done.clear()  # Enable completion flag
-    await Screen.rfsh_done.wait()  # Wait for a refresh to end
-    Screen.rfsh_start.clear()  # Prevent another.
-    print("Refresh stopped")
+async def stop_rfsh():
+    await Screen.rfsh_lock.acquire()
 
 def cby(_):
-    asyncio.create_task(refresh_and_stop())
+    asyncio.create_task(stop_rfsh())
 
 def cbn(_):
-    Screen.rfsh_start.set()  # Allow refresh
-    print("Refresh started.")
-
+    Screen.rfsh_lock.release()  # Allow refresh
 
 class BaseScreen(Screen):
     def __init__(self):
 
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK)
+        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
         col = 2
         row = 2
         Label(wri, row, col, "Refresh test")
+        self.led = LED(wri, row, 80)
         row = 50
         Button(wri, row, col, text="Stop", callback=cby)
         col += 60
         Button(wri, row, col, text="Start", callback=cbn)
+        self.reg_task(self.flash())
         CloseButton(wri)  # Quit
 
+    async def flash(self):  # Proof of stopped refresh
+        while True:
+            self.led.value(not self.led.value())
+            await asyncio.sleep_ms(300)
 
 def test():
     print("Refresh test.")

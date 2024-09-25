@@ -25,7 +25,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 8)
+__version__ = (0, 1, 9)
 
 
 async def _g():
@@ -305,10 +305,8 @@ class Screen:
     do_gc = True  # Allow user to take control of GC
     current_screen = None
     is_shutdown = asyncio.Event()
-    # These events enable user code to synchronise display refresh
-    # to a realtime process.
-    rfsh_start = asyncio.Event()  # Refresh pauses until set (set by default).
-    rfsh_done = asyncio.Event()  # Flag a user task that a refresh was done.
+    # The lock enables user code to synchronise refresh with a realtime process.
+    rfsh_lock = asyncio.Lock()
     BACK = 0
     STACK = 1
     REPLACE = 2
@@ -417,24 +415,22 @@ class Screen:
     @classmethod
     async def auto_refresh(cls):
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
-        # By default rfsh_start is permanently set. User code can clear this.
-        cls.rfsh_start.set()
         if arfsh:
             h = ssd.height
             split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
             if split == 1:
                 arfsh = False
         while True:
-            await cls.rfsh_start.wait()
             Screen.show(False)  # Update stale controls. No physical refresh.
-            # Now perform physical refresh.
-            if arfsh:
-                await ssd.do_refresh(split)
-            else:
-                ssd.show()  # Synchronous (blocking) refresh.
-            # Flag user code.
-            cls.rfsh_done.set()
-            await asyncio.sleep_ms(0)  # Let user code respond to event
+            # Now perform physical refresh. If there is no user locking,
+            # the lock will be acquired immediately
+            async with cls.rfsh_lock:
+                await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
+                if arfsh:
+                    await ssd.do_refresh(split)
+                else:
+                    ssd.show()  # Synchronous (blocking) refresh.
+            await asyncio.sleep_ms(0)  # Let user code respond to lock release
 
     @classmethod
     def back(cls):
