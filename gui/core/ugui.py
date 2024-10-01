@@ -25,7 +25,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 9)
+__version__ = (0, 1, 11)
 
 
 async def _g():
@@ -415,6 +415,7 @@ class Screen:
     @classmethod
     async def auto_refresh(cls):
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
+        gran = hasattr(ssd, "lock_mode")  # Allow granular locking
         if arfsh:
             h = ssd.height
             split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
@@ -422,14 +423,19 @@ class Screen:
                 arfsh = False
         while True:
             Screen.show(False)  # Update stale controls. No physical refresh.
-            # Now perform physical refresh. If there is no user locking,
-            # the lock will be acquired immediately
-            async with cls.rfsh_lock:
-                await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
-                if arfsh:
-                    await ssd.do_refresh(split)
-                else:
-                    ssd.show()  # Synchronous (blocking) refresh.
+            # Now perform physical refresh.
+            # If there is no user locking, .rfsh_lock will be acquired immediately
+            if arfsh and gran and ssd.lock_mode:  # Async refresh, display driver can handle lock
+                # User locking is granular: lock is released at intervals during refresh
+                await ssd.do_refresh(split, cls.rfsh_lock)
+            else:  # Either synchronous refresh or old style device driver
+                # Lock for the entire refresh period.
+                async with cls.rfsh_lock:
+                    await asyncio.sleep_ms(0)  # Allow other tasks to detect lock
+                    if arfsh:
+                        await ssd.do_refresh(split)
+                    else:
+                        ssd.show()  # Synchronous (blocking) refresh.
             await asyncio.sleep_ms(0)  # Let user code respond to lock release
 
     @classmethod

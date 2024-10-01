@@ -3,12 +3,14 @@
 This is a lightweight, portable, MicroPython GUI library for displays having
 drivers subclassed from `framebuf`. Written in Python it runs under a standard
 MicroPython firmware build. Options for data input comprise:
- * Two pushbuttons: limited capabilities with some widgets unusable for input.
- * Three pushbuttons with full capability.
- * Five pushbuttons: full capability, less "modal" interface.
+ * Two pushbuttons: restricted capabilities with some widgets unusable for input.
+ * All the following options offer full capability:
+ * Three pushbuttons.
+ * Five pushbuttons: extra buttons provide a less "modal" interface.
  * A switch-based navigation joystick: another way to implement five buttons.
- * Via two pushbuttons and a rotary encoder such as
+ * Two pushbuttons and a rotary encoder such as
  [this one](https://www.adafruit.com/product/377). An intuitive interface.
+ * A rotary encoder with built-in push switch only.
  * On ESP32 physical buttons may be replaced with touchpads.
 
 It is larger and more complex than `nano-gui` owing to the support for input.
@@ -65,6 +67,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Oct 2024: Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Refresh control is now via a `Lock`. See [Realtime applications](./README.md#9-realtime-applications).
 This is a breaking change for applications which use refresh control.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
@@ -686,6 +689,8 @@ Some of these require larger screens. Required sizes are specified as
  * `listbox_var.py` Listbox with dynamically variable elements.
  * `dropdown_var.py` Dropdown with dynamically variable elements.
  * `dropdown_var_tuple.py ` Dropdown with dynamically variable tuple elements.
+ * `refresh_lock.py` Specialised demo of an application which controls refresh
+ behaviour. See [Realtime applications](./README.md#8-realtime-applications).
 
 ###### [Contents](./README.md#0-contents)
 
@@ -3174,14 +3179,39 @@ docs on `pushbutton.py` may be found
 
 # 9. Realtime applications
 
-Screen refresh is performed in a continuous loop which yields to the scheduler.
-In normal applications this works well, however a significant proportion of
-processor time is spent performing a blocking refresh. The `asyncio` scheduler
-allocates run time to tasks in round-robin fashion. This means that another task
-will normally be scheduled once per screen refresh. This can limit data
-throughput. To enable applications to handle this, a means of synchronising
-refresh to other tasks is provided. This is via a `Lock` instance. The refresh
-task operates as below (code simplified to illustrate this mechanism).
+These notes assume an application based on `asyncio` that needs to handle events
+occurring in real time. There are two ways in which the GUI might affect real
+time performance:
+* By imposing latency on the scheduling of tasks.
+* By making demands on processing power such that a critical task is starved of
+execution.
+
+The GUI uses `asyncio` internally and runs a number of tasks. Most of these are
+simple and undemanding, the one exception being refresh. This has to copy the
+contents of the frame buffer to the hardware, and runs continuously. The way
+this works depends on the display type. On small displays with relatively few
+pixels it is a blocking, synchronous method. On bigger screens such a method
+would block for many tens of ms which would affect latency which would affect
+the responsiveness of the user interface. The drivers for such screens have an
+asynchronous `do_refresh` method: this divides the refresh into a small number
+of segments, each of which blocks for a short period, preserving responsiveness.
+
+In the great majority of applications this works well. For demanding cases a
+user-accessible `Lock` is provided to enable refresh to be paused. This is
+`Screen.rfsh_lock`. Further, the behaviour of this `Lock` can be modified. By
+default the refresh task will hold the `Lock` for the entire duration of a
+refresh. Alternatively the `Lock` can be held for the duration of the update of
+one segment. In testing on a Pico with ILI9341 the `Lock` duration was reduced
+from 95ms to 11.3ms. If an application has a task which needs to be scheduled at
+a high rate, this corresponds to an increase from 10Hz to 88Hz.
+
+The mechanism for controlling lock behaviour is a method of the `ssd` instance:
+* `short_lock(v=None)` If `True` is passed, the `Lock` will be held briefly,
+`False` will cause it to be held for the entire refresh, `None` makes no change.
+The method returns the current state. Note that only the larger display drivers
+support this method.
+
+The following (pseudocode, simplified) illustrates this mechanism:
 ```python
 class Screen:
     rfsh_lock = Lock()  # Refresh pauses until lock is acquired
@@ -3189,21 +3219,36 @@ class Screen:
     @classmethod
     async def auto_refresh(cls):
         while True:
-            async with cls.rfsh_lock:
-                ssd.show()  # Refresh the physical display.
-            # Flag user code.
-            await asyncio.sleep_ms(0)  # Let user code respond to event
+            if display_supports_segmented_refresh and short_lock_is_enabled:
+                # At intervals yield and release the lock
+                await ssd.do_refresh(split, cls.rfsh_lock)
+            else:  # Lock for the entire refresh
+                await asyncio.sleep_ms(0)  # Let user code respond to event
+                async with cls.rfsh_lock:
+                    if display_supports_segmented_refresh:
+                        # Yield at intervals (retaining lock)
+                        await ssd.do_refresh(split)  # Segmented refresh
+                    else:
+                        ssd.show()  # Blocking synchronous refresh on small screen.
 ```
-User code can wait on the lock and, once acquired, perform an operation which
-cannot be interrupted by a refresh. This is normally done as follows:
+User code can wait on the lock and, once acquired, run asynchronous code which
+cannot be interrupted by a refresh. This is normally done with an asynchronous
+context manager:
 ```python
 async with Screen.rfsh_lock:
     # do something that can't be interrupted with a refresh
 ```
-The demo `gui/demos/audio.py` provides an example, where the `play_song` task
-gives priority to maintaining the audio buffer. It does this by holding the lock
-for several iterations of buffer filling before releasing the lock to allow a
-single refresh.
+The demo `refresh_lock.py` illustrates this mechanism, allowing refresh to be
+started and stopped. The demo also allows the `short_lock` method to be tested,
+with a display of the scheduling rate of a minimal locked task. In a practical
+application this rate is dependant on various factors. A number of debugging
+aids exist to assist in measuring and optimising this. See
+[this doc](https://github.com/peterhinch/micropython-async/blob/master/v3/README.md).
+
+The demo `gui/demos/audio.py`
+provides an example, where the `play_song` task gives priority to maintaining
+the audio buffer. It does this by holding the lock for several iterations of
+buffer filling before releasing the lock to allow a single refresh.
 
 See [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) for
 the reason for continuous refresh.  
