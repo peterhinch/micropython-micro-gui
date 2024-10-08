@@ -22,13 +22,14 @@ pyb.Pin("EN_3V3").on()  # provide 3.3V on 3V3 output pin
 
 # ======= I2S CONFIGURATION =======
 
-I2S_ID = 1
 # allocate sample array once
 wav_samples = bytearray(WAVSIZE)
 
 # The proper way is to parse the WAV file as per
 # https://github.com/miketeachman/micropython-i2s-examples/blob/master/examples/wavplayer.py
 # Here for simplicity we assume stereo files ripped from CD's.
+# Pyboard D
+I2S_ID = 1
 config = {
     "sck": Pin("W29"),
     "ws": Pin("W16"),
@@ -39,6 +40,19 @@ config = {
     "rate": 44100,  # Sample rate in Hz
     "ibuf": BUFSIZE,  # Buffer size
 }
+
+# RP2 from https://docs.micropython.org/en/latest/rp2/quickref.html#i2s-bus
+# I2S_ID = 0
+# config = {
+#     "sck": Pin(16),
+#     "ws": Pin(17),
+#     "sd": Pin(18),
+#     "mode": I2S.TX,
+#     "bits": 16,  # Sample size in bits/channel
+#     "format": I2S.STEREO,
+#     "rate": 44100,  # Sample rate in Hz
+#     "ibuf": BUFSIZE,  # Buffer size
+# }
 
 audio_out = I2S(I2S_ID, **config)
 

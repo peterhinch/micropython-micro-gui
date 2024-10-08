@@ -163,6 +163,7 @@ under development so check for updates.
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) The reason for continuous refresh.  
+[Appendix 5 Bus sharing](./README.md#appendix-5-bus-sharing) Using the SD card on Waveshare boards.    
 
 # 1. Basic concepts
 
@@ -3577,4 +3578,46 @@ def test():
 
 test()
 ```
+###### [Contents](./README.md#0-contents)
+
+## Appendix 5 Bus sharing
+
+Boards from Waveshare use the same SPI bus to access the display controller, the
+touch controller, and an optional SD card. If an SD card is fitted, it is
+possible to mount this in `boot.py`: doing this enables the filesystem on the
+SD card to be managed at the Bash prompt using `mpremote`. There is a "gotcha"
+here. For this to work reliably, the `CS\` pins of the display controller and
+the touch controller must be set high, otherwise bus contention on the `miso`
+line can occur. Note that this still applies even if the touch controller is
+unused: it should still be prevented from asserting `miso`. The following is an
+example of a `boot.py` for the 2.8" Pico Res touch.
+```py
+from machine import SPI, Pin
+from sdcard import SDCard
+import os
+BAUDRATE = 3_000_000  # Much higher rates seem OK, but may depend on card.
+# Initialise all CS\ pins
+cst = Pin(16, Pin.OUT, value=1)  # Touch XPT2046
+csd = Pin(9, Pin.OUT, value=1)  # Display ST7789
+css = Pin(22, Pin.OUT, value=1)  # SD card
+spi = SPI(1, BAUDRATE, sck=Pin(10), mosi=Pin(11), miso=Pin(12))
+sd = SDCard(spi, css, BAUDRATE)
+vfs = os.VfsFat(sd)
+os.mount(vfs, "/sd")
+```
+An application which is to access the SD card must ensure that the GUI is
+prevented from accessing the SPI bus for the duration of SD card access. This
+may be done with an asynchronous context manager. When the context manager
+terminates, refresh will re-start.
+```py
+async def read_data():
+    async with Screen.rfsh_lock:
+        # set up the SPI bus baudrate for the SD card
+        # read the data
+    await asyncio.sleep_ms(0)  # Allow refresh and touch to proceed
+    # Do anything else you need
+```
+See section 8 for further background. Tested by @bianc104 in micropython-touch
+[iss 15](https://github.com/peterhinch/micropython-touch/issues/15#issuecomment-2397988225)
+
 ###### [Contents](./README.md#0-contents)
