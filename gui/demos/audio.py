@@ -3,32 +3,35 @@
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2021-2024 Peter Hinch
 
+# Uses nonblocking reads rather than StreamWriter because there is no non-hacky way
+# to do non-allocating writes: see https://github.com/micropython/micropython/pull/7868
+# Hack was
+# swriter.out_buf = wav_samples_mv[:num_read]
+# await swriter.drain()
+# WAV files
+# The proper way is to parse the WAV file as per
+# https://github.com/miketeachman/micropython-i2s-examples/blob/master/examples/wavplayer.py
+# Here for simplicity we assume stereo files ripped from CD's.
+
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 from machine import I2S
 from machine import Pin
 import pyb
 
-# ***************
+root = "/sd/music"  # Location of directories containing albums
 
 # Do allocations early
 BUFSIZE = 1024 * 20  # 5.8ms/KiB 8KiB occasional dropouts
 WAVSIZE = 1024 * 2
 _RFSH_GATE = const(10)  # While playing, reduce refresh rate
-
-root = "/sd/music"  # Location of directories containing albums
-
-pyb.Pin("EN_3V3").on()  # provide 3.3V on 3V3 output pin
-
-# ======= I2S CONFIGURATION =======
-
 # allocate sample array once
 wav_samples = bytearray(WAVSIZE)
 
-# The proper way is to parse the WAV file as per
-# https://github.com/miketeachman/micropython-i2s-examples/blob/master/examples/wavplayer.py
-# Here for simplicity we assume stereo files ripped from CD's.
+# ======= I2S CONFIGURATION =======
+
 # Pyboard D
+pyb.Pin("EN_3V3").on()  # Pyboard D: provide 3.3V on 3V3 output pin
 I2S_ID = 1
 config = {
     "sck": Pin("W29"),
@@ -38,7 +41,7 @@ config = {
     "bits": 16,  # Sample size in bits/channel
     "format": I2S.STEREO,
     "rate": 44100,  # Sample rate in Hz
-    "ibuf": BUFSIZE,  # Buffer size
+    "ibuf": BUFSIZE,  # Internal buffer size
 }
 
 # RP2 from https://docs.micropython.org/en/latest/rp2/quickref.html#i2s-bus
@@ -68,7 +71,7 @@ from gui.core.colors import *
 
 import os
 import gc
-import uasyncio as asyncio
+import asyncio
 import sys
 
 # Initial check on filesystem
@@ -103,7 +106,6 @@ class SelectScreen(Screen):
 
 class BaseScreen(Screen):
     def __init__(self):
-        self.swriter = asyncio.StreamWriter(audio_out)
 
         args = {
             "bdcolor": RED,
@@ -117,6 +119,8 @@ class BaseScreen(Screen):
             "fgcolor": GREEN,
         }
         super().__init__()
+        self.mt = asyncio.ThreadSafeFlag()
+        audio_out.irq(self.audiocb)
         # Audio status
         self.playing = False  # Track is playing
         self.stop_play = False  # Command
@@ -142,13 +146,9 @@ class BaseScreen(Screen):
         col = 14
         HorizSlider(wri, row, col, callback=self.slider_cb, **args)
         CloseButton(wri)  # Quit the application
-        # self.reg_task(asyncio.create_task(self.report()))
 
-    async def report(self):
-        while True:
-            gc.collect()
-            print(gc.mem_free())
-            await asyncio.sleep(20)
+    def audiocb(self, i2s):  # Audio buffer empty
+        self.mt.set()
 
     def slider_cb(self, s):
         self.volume = round(8 * (s.value() - 1))
@@ -231,29 +231,23 @@ class BaseScreen(Screen):
     # Open and play a binary wav file
     async def play_song(self, song):
         wav_samples_mv = memoryview(wav_samples)
-        lock = Screen.rfsh_lock
         size = len(wav_samples)
         if not self.paused:
             # advance to first byte of Data section in WAV file. This is not
             # correct for all WAV files. See link above.
             self.offset = 44
-        swriter = self.swriter
         with open(song, "rb") as wav:
             _ = wav.seek(self.offset)
             while not self.stop_play:
-                async with lock:
-                    n = 0
-                    while n < _RFSH_GATE:
+                async with Screen.rfsh_lock:  # Lock out refresh
+                    for n in range(_RFSH_GATE):  # for _RFSH_GATE buffers full
                         if not (num_read := wav.readinto(wav_samples_mv)):  # Song end
-                            self.stop_play = True
-                            break
+                            return
                         I2S.shift(buf=wav_samples_mv[:num_read], bits=16, shift=self.volume)
-                        # HACK awaiting https://github.com/micropython/micropython/pull/7868
-                        swriter.out_buf = wav_samples_mv[:num_read]
-                        await swriter.drain()
+                        audio_out.write(wav_samples_mv[:num_read])
+                        await self.mt.wait()
                         # wav_samples is now empty. Save offset in case we pause play.
                         self.offset += size
-                        n += 1
                 await asyncio.sleep_ms(0)  # Allow refresh to grab lock
 
 
