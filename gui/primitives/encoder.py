@@ -2,7 +2,7 @@
 # This is minimised for micro-gui. Derived from
 # https://github.com/peterhinch/micropython-async/blob/master/v3/primitives/encoder.py
 
-# Copyright (c) 2021-2023 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 # Released under the MIT License (MIT) - see LICENSE file
 
 # Thanks are due to @ilium007 for identifying the issue of tracking detents,
@@ -11,9 +11,10 @@
 # against a state table design
 # https://github.com/miketeachman/micropython-rotary/blob/master/rotary.py
 
-import uasyncio as asyncio
+# Now uses ThreadSafeFlag.clear()
+
+import asyncio
 from machine import Pin
-from select import poll, POLLIN
 
 
 class Encoder:
