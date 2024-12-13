@@ -67,7 +67,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
-Oct 2024: Oct 2024: Refresh locking can now be handled by device driver.  
+Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Refresh control is now via a `Lock`. See [Realtime applications](./README.md#9-realtime-applications).
 This is a breaking change for applications which use refresh control.  
 Sept 2024: Dropdown and Listbox widgets support dynamically variable lists of elements.  
@@ -2652,6 +2652,8 @@ Optional keyword only arguments:
  * `callback=dolittle` Callback function runs when the user moves the knob or
  the value is changed programmatically.
  * `args=[]` A list/tuple of arguments for above callback.
+ * `min_delta=0.01` Amount value changes for one click in fine mode.
+ * `max_delta=0.1` Amount value changes for one click in normal mode.
 
 Methods:
  * `greyed_out` Optional Boolean argument `val=None`. If `None` returns the
@@ -2672,12 +2674,12 @@ linked label.
 ### A numeric entry device
 
 The file [widgets/adjuster.py](./gui/widgets/adjuster.py) includes an example
-class which combines an `Adjuster` with one or two `Label` instances. The
-`Adjuster` changes the displayed value in the `Label` to its left. Its use is
-illustrated in [demos/adjuster.py](./gui/demos/adjuster.py). The class can be
+class `FloatAdj` which combines an `Adjuster` with one or two `Label` instances.
+The `Adjuster` changes the displayed value in the `Label` to its left. Its use
+is illustrated in [demos/adjuster.py](./gui/demos/adjuster.py). The class can be
 used as a template for a user class, which may have a different layout on
 screen. It supports arbitrary mapping and number formatting on a per-instance
-basis. See code comments for further details.
+basis.
 
 ###### [Contents](./README.md#0-contents)
 

@@ -1,7 +1,7 @@
 # adjuster.py Tiny control knob (rotary potentiometer) widget
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2021 Peter Hinch
+# Copyright (c) 2021-2024 Peter Hinch
 
 from gui.core.ugui import LinearIO, display
 from gui.widgets.label import Label
@@ -11,17 +11,42 @@ TWOPI = 2 * math.pi
 # Null function
 dolittle = lambda *_: None
 
-# *********** CONTROL KNOB CLASS ***********
+# *********** ADJUSTER CLASS ***********
 
 
 class Adjuster(LinearIO):
-    def __init__(self, writer, row, col, *,
-                 value=0.0, fgcolor=None, bgcolor=None, color=None,
-                 prcolor=None, callback=dolittle, args=[]):
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        *,
+        value=0.0,
+        fgcolor=None,
+        bgcolor=None,
+        color=None,
+        prcolor=None,
+        callback=dolittle,
+        args=[],
+        min_delta=0.01,
+        max_delta=0.1,
+    ):
         height = writer.height  # Match a user-linked Label
-        super().__init__(writer, row, col, height, height,
-                         fgcolor, bgcolor, False, value,
-                         True, prcolor)
+        super().__init__(
+            writer,
+            row,
+            col,
+            height,
+            height,
+            fgcolor,
+            bgcolor,
+            False,
+            value,
+            True,
+            prcolor,
+            min_delta,
+            max_delta,
+        )
         super()._set_callbacks(callback, args)
         radius = height / 2
         self.arc = 1.5 * math.pi  # Usable angle of control
@@ -51,6 +76,7 @@ class Adjuster(LinearIO):
         y_end = int(self.yorigin - length * math.cos(angle))
         display.line(int(self.xorigin), int(self.yorigin), x_end, y_end, color)
 
+
 # This class combines an Adjuster with one or two labels. Numerous layout
 # options exist: users may wish to write a version of this example with
 # different visual characteristics.
@@ -59,10 +85,23 @@ class Adjuster(LinearIO):
 # The object's value is that of the Adjuster, in range 0.0-1.0. The scaled
 # value is retrieved with .mapped_value()
 class FloatAdj(Adjuster):
-    def __init__(self, wri, row, col, *,
-                 lbl_width=60, value=0.0, color=None,
-                 fstr="{:4.2f}", map_func=lambda v: v, text="",
-                 callback=dolittle, args=[]):
+    def __init__(
+        self,
+        wri,
+        row,
+        col,
+        *,
+        lbl_width=60,
+        value=0.0,
+        color=None,
+        fstr="{:4.2f}",
+        map_func=lambda v: v,
+        text="",
+        callback=dolittle,
+        args=[],
+        min_delta=0.01,
+        max_delta=0.1,
+    ):
 
         self.map_func = map_func
         self.facb = callback
@@ -70,8 +109,16 @@ class FloatAdj(Adjuster):
         self.fstr = fstr
 
         self.lbl = Label(wri, row, col, lbl_width, bdcolor=color)
-        super().__init__(wri, row, self.lbl.mcol + 2, value=value,
-                         fgcolor=color, callback=self.cb)
+        super().__init__(
+            wri,
+            row,
+            self.lbl.mcol + 2,
+            value=value,
+            fgcolor=color,
+            callback=self.cb,
+            min_delta=min_delta,
+            max_delta=max_delta,
+        )
         if text:
             self.legend = Label(wri, row, self.mcol + 2, text)
             self.mcol = self.legend.mcol  # For relative positioning
