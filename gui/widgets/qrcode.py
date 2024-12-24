@@ -6,9 +6,9 @@ from framebuf import FrameBuffer, MONO_HLSB
 from gui.core.ugui import Widget
 from gui.core.colors import *
 from gui.core.ugui import ssd
-from uQR import QRCode
-
+from optional_extras.py.uQR import QRCode
 from utime import ticks_diff, ticks_ms
+
 
 class QRMap(Widget):
     @staticmethod
@@ -20,7 +20,7 @@ class QRMap(Widget):
         side = QRMap.len_side(version) * scale
         width = (side >> 3) + int(side & 7 > 0)  # Width in bytes
         return bytearray(side * width)
-        
+
     def __init__(self, writer, row, col, version=4, scale=1, *, bdcolor=RED, buf=None):
         self._version = version
         self._scale = scale

@@ -281,8 +281,6 @@ is required `-f` is also required. Supplied examples are:
  * `font10.py` FreeSans 17 high.
  * `freesans20.py` FreeSans 20 high.
 
-The directory `gui/fonts/bitmaps` is only required for the `bitmap.py` demo.
-
 ###### [Contents](./README.md#0-contents)
 
 ## 1.4 Navigation
@@ -638,6 +636,16 @@ gui.demos.simple.test()
 ```
 Before running a different demo the host should be reset (ctrl-d) to clear RAM.
 
+It is possible to run the demos without installing. Copy the directory tree to
+the PC with
+```bash
+$ git clone https://github.com/peterhinch/micropython-micro-gui
+```
+Ensure your hardware_setup.py is in the GUI root and the hardware is connected.
+Then issue (e.g.)
+```bash
+$ mpremote mount . exec "import gui.demos.simple"
+```
 These will run on screens of 128x128 pixels or above. The initial ones are
 minimal and aim to demonstrate a single technique.  
  * `simple.py` Minimal demo discussed below. `Button` presses print to REPL.
@@ -663,7 +671,7 @@ minimal and aim to demonstrate a single technique.
  * `adjust_vec.py` A pair of `Adjuster`s vary a vector.
  * `bitmap.py` Demo of the `BitMap` widget showing a changing image. (See widget
     docs).
- * `qrcode.py` Display a QR code. Requires the uQR module.
+ * `qrcode.py` Display a QR code. Requires the uQR module: see widget docs.
  * `calendar.py` Demo of grid widget.
  * `epaper.py` Warts-and-all demo for an ePaper display. Currently the only
  supported display is the
@@ -2829,8 +2837,9 @@ Because of the use of file storage when an update occurs there will be a brief
 is displayed when a screen initialises, or if it changes in response to a user
 action. Use in animations is questionable.
 
-See `gui/demos/bitmap.py` for a usage example. Files must be copied from
-`gui/fonts/bitmaps/` to the root directory of the device.
+See `gui/demos/bitmap.py` for a usage example. Example bitmaps are in
+`optional_extras/bitmaps/`. This directory structure should be copied to the
+device.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -2884,7 +2893,7 @@ If memory errors are encountered try cross-compiling or the use of frozen byte
 code.
 
 See `gui/demos/qrcode.py` for a usage example. The demo expects `uQR.py` to be
-located in the root directory of the target.
+located in 'optional_extras/py/' on the target.
 
 ###### [Contents](./README.md#0-contents)
 
