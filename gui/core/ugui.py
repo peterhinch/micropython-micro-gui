@@ -177,6 +177,64 @@ class InputEnc:
         return self._adj
 
 
+# Special mode where an encoder with a "press" pushbutton is the only control.
+# nxt and prev are Pin instances corresponding to encoder X and Y.
+# sel is a Pin for the encoder's pushbutton.
+# encoder is the division ratio.
+# Note that using a single click for adjust mode failed because the mode changed when
+# activating pushbuttons, checkboxes etc.
+class InputI2CEnc:
+    def __init__(self, encoder):
+        from gui.primitives import I2CEncoder
+
+        self._encoder = encoder  # Encoder in use
+        self._enc = I2CEncoder(encoder=encoder, callback=self.enc_cb)
+        self._precision = False  # Precision mode
+        self._adj = False  # Adjustment mode
+        self._sel = Pushbutton(sel, suppress=True)
+        self._sel.release_func(self.release)  # Widgets are selected on release.
+        self._sel.long_func(self.precision, (True,))  # Long press -> precision mode
+        self._sel.double_func(self.adj_mode, (True,))  # Double press -> adjust mode
+
+    # Screen.adjust: adjust the value of a widget. In this case 1st button arg
+    # is an int (discarded), val is the delta. (With button interface 1st arg
+    # is the button, delta is +1 or -1).
+    def enc_cb(self, position, delta):  # Eencoder callback
+        if self._adj:
+            Screen.adjust(0, delta)
+        else:
+            Screen.ctrl_move(_NEXT if delta > 0 else _PREV)
+
+    def release(self):
+        self.adj_mode(False)  # Cancel adjust and precision
+        Screen.sel_ctrl()
+
+    def precision(self, val):  # Also called by Screen.ctrl_move to cancel mode
+        if val:
+            if not self._adj:
+                self.adj_mode()
+            self._precision = True
+        else:
+            self._precision = False
+        Screen.redraw_co()
+
+    # If v is None, toggle adjustment mode. Bool sets or clears
+    def adj_mode(self, v=None):  # Set, clear or toggle adjustment mode
+        self._adj = not self._adj if v is None else v
+        if not self._adj:
+            self._precision = False
+        Screen.redraw_co()  # Redraw curret object
+
+    def encoder(self):
+        return self._encoder
+
+    def is_precision(self):
+        return self._precision
+
+    def is_adjust(self):
+        return self._adj
+
+
 # Wrapper for global ssd object providing framebuf compatible methods.
 # Must be subclassed: subclass provides input device and populates globals
 # display and ssd.
@@ -286,9 +344,13 @@ class Display(DisplayIP):
         global display, ssd
         ssd = objssd
         if incr is False:  # Special encoder-only mode
-            ev = isinstance(encoder, int)
-            assert ev and touch is False and decr is None and prev is not None, "Invalid args"
-            ipdev = InputEnc(nxt, sel, prev, encoder)
+            if not isinstance(encoder, (int, bool)):
+                assert touch is False and nxt is None and sel is None and prev is None and decr is None, "Invalid args"
+                ipdev = InputI2CEnc(encoder)
+            else:
+                ev = isinstance(encoder, int)
+                assert ev and touch is False and decr is None and prev is not None, "Invalid args"
+                ipdev = InputEnc(nxt, sel, prev, encoder)
         else:
             if touch:
                 from gui.primitives import ESP32Touch
