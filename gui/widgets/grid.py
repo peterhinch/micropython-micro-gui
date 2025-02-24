@@ -20,9 +20,23 @@ def _do_slice(sli, nbytes):
     stop = min(stop if stop >= 0 else max(nbytes + stop, 0), nbytes)
     return (start, stop) if start < stop else None  # Caller should check
 
+
 # lwidth may be integer Label width in pixels or a tuple/list of widths
 class Grid(Widget):
-    def __init__(self, writer, row, col, lwidth, nrows, ncols, invert=False, fgcolor=None, bgcolor=BLACK, bdcolor=None, justify=0):
+    def __init__(
+        self,
+        writer,
+        row,
+        col,
+        lwidth,
+        nrows,
+        ncols,
+        invert=False,
+        fgcolor=None,
+        bgcolor=BLACK,
+        bdcolor=None,
+        justify=0,
+    ):
         self.nrows = nrows
         self.ncols = ncols
         self.ncells = nrows * ncols
@@ -41,7 +55,9 @@ class Grid(Widget):
         c = col
         for _ in range(self.nrows):
             for cw in self.cwidth:
-                self.cells.append(Label(writer, r, c, cw - 4, invert, fgcolor, bgcolor, False, justify))  # No border
+                self.cells.append(
+                    Label(writer, r, c, cw - 4, invert, fgcolor, bgcolor, False, justify)
+                )  # No border
                 c += cw
             r += self.cheight
             c = col
@@ -55,7 +71,7 @@ class Grid(Widget):
     # grid[[r, c]] = {"text": str(n), "fgcolor" : RED}
     def __setitem__(self, *args):
         x = args[1]  # Value
-        indices = do_args(args[: -1], self.nrows, self.ncols)
+        indices = do_args(args[:-1], self.nrows, self.ncols)
         for i in indices:
             try:
                 z = next(x)  # May be a generator
@@ -65,6 +81,9 @@ class Grid(Widget):
                 z = x
             v = self.cells[i].value  # method of Label
             _ = v(**z) if isinstance(x, dict) else v(z)
+
+    def __call__(self, row, col=None):  # Return a single Label
+        return self.cells[row if col is None else col + row * self.ncols]
 
     def show(self):
         super().show()  # Draw border

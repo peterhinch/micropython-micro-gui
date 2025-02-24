@@ -1255,6 +1255,8 @@ Constructor args:
  in the `Label` as defined by `lwidth`.
 
 Method:  
+* `__call__(row, col=None)` Returns the `Label` instance at a single location.
+If no `col` is provided 1D addressing is assumed.
  * `__getitem__` Returns an iterator enabling `Label` instances to be accessed.
  * `__setitem__` Assign a value to one or more labels. If multiple labels are
  specified and a single text value is passed, all labels will receive that
@@ -1284,7 +1286,18 @@ grid[1:3, 1:3] = (str(n) for n in range(2))  # Produces
 # 0 1
 # 1 1
 ```
-Read access:
+Read access:  
+It is important to note that array index notation always returns an iterator,
+even if only a single element is required. One way to access a single element is
+```python
+it = grid[0 : 0]
+label = next(it)
+```
+however function call syntax is more intuitive:
+```python
+label = grid(0, 0)
+```
+Accessing labels in a single row, by column:
 ```python
 for label in grid[2, 0:]:
     v = label.value()  # Access text of each label in row 2
