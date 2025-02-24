@@ -1290,8 +1290,8 @@ Read access:
 It is important to note that array index notation always returns an iterator,
 even if only a single element is required. One way to access a single element is
 ```python
-it = grid[0 : 0]
-label = next(it)
+it = grid[0 , 0]
+label = next(it)  # Label at row == 0, col == 0
 ```
 however function call syntax is more intuitive:
 ```python
