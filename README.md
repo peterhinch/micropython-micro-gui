@@ -113,7 +113,7 @@ under development so check for updates.
  4.3 [Callback methods](./README.md#43-callback-methods) Methods which run in response to events.  
  4.4 [Method](./README.md#44-method) Optional interface to asyncio code.  
  4.5 [Class variable](./README.md#45-class-variable) Control latency caused by garbage collection.  
- 4.6 [Usage](./README.md#46-usage) Accessing data created in a screen.  
+ 4.6 [Retrieving data](./README.md#46-retrieving-data) Accessing data created in a screen.  
 5. [Window class](./README.md#5-window-class)  
  5.1 [Constructor](./README.md#51-constructor)  
  5.2 [Class method](./README.md#52-class-method)  
@@ -1003,7 +1003,8 @@ communication between them.
 
 In normal use only `change` and `back` are required, to move to a new `Screen`
 and to drop back to the previous `Screen` in a tree (or to quit the application
-if there is no predecessor).
+if there is no predecessor). A means of returning data is provided by the `value`
+classmethod.
 
  * `change(cls, cls_new_screen, mode=Screen.STACK, *, args=[], kwargs={})`  
  Change screen, refreshing the display. Mandatory positional argument: the new
@@ -1018,6 +1019,8 @@ if there is no predecessor).
  screens (directed graph rather than tree structure). See demo `screen_replace`.
  * `back(cls)` Restore previous screen. If there is no parent, quits the
  application.
+ * `value(cls, val=None)` This is a convenience method for accessing data from a
+ `Screen` after closure. See [section 4.6](./README.md#46-retrieving-data).
 
 These are uncommon:  
  * `shutdown(cls)` Clear the screen and shut down the GUI. Normally done by a
@@ -1069,16 +1072,34 @@ explicitly in code.
  the application can perform GC at times when fast response to user actions is
  not required. If turned off, the GC task cannot be re-started.
 
-## 4.6 Usage
+ ## 4.6 Retrieving data
 
-The `Screen.change()` classmethod returns immediately. This has implications
-where the new, top screen sets up data for use by the underlying screen. One
-approach is for the top screen to populate class variables. These can be
-acccessed by the bottom screen's `after_open` method which will run after the
-top screen has terminated.
+ Where widgets on a `Screen` generate data and the `Screen` is then closed, there
+ are a number of ways to ensure that the data remains accessible. These include
+ * Shared global variables.
+ * Class variables.
+ * Passing callbacks to `Screen.change()`. This enables a `Screen` to update
+ controls on an underlying `Screen`. See the `screens` demo for an example.
 
-If a `Screen` throws an exception when instantiated, check that its constructor
-calls `super().__init__()`.
+ The `value` classmethod is provided to standardise and simplify the use of class
+ variables. Assume a user screen `MyScreenClass`. Widgets on the `MyScreenClass`
+ instance call `MyScreenClass.value(arg)`. The `arg` can be any Python object -
+ a `dict` might be used if there are multiple data widgets.
+
+ Data may be retrieved after the screen is closed with:
+ ```python
+ data = MyScreenClass.value()
+ ```
+ See the `dialog` demo for an example.
+
+ Where the underlying `Screen` has controls which need to be updated with the
+ returned data, the widgets should be re-populated in the `after_open` method.
+ This runs after the underlying `Screen` is re-displayed.
+
+ #### Note
+
+ If a `Screen` throws an exception when instantiated, check that its constructor
+ calls `super().__init__()`.
 
 ###### [Contents](./README.md#0-contents)
 
@@ -1105,17 +1126,11 @@ Followed by keyword-only args
  * `fgcolor=None` Foreground color, default white.
  * `writer=None` See Popups below.
 
-## 5.2 Class method
+ ## 5.2 Class method
 
- * `value(cls, val=None)` The `val` arg can be any Python type. It allows
- widgets on a `Window` to store information in a way which can be accessed from
- the calling screen. This typically occurs after the window has closed and no
- longer exists as an instance.
-
-Another approach, demonstrated in `demos/screens.py`, is to pass one or more
-callbacks to the user window constructor args. These may be called by widgets
-to send data to the calling screen. Note that widgets on the screen below will
-not be updated until the window has closed.
+ * `value(cls, val=None)` This is inherited from `Screen` and provides a
+ standardised way to access data created in a `Window`. See
+ [section 4.6](./README.md#46-retrieving-data).
 
 ## 5.3 Popup windows
 

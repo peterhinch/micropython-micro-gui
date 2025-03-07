@@ -25,7 +25,7 @@ ssd = None
 _vb = True
 
 gc.collect()
-__version__ = (0, 1, 11)
+__version__ = (0, 1, 12)
 
 
 async def _g():
@@ -311,7 +311,18 @@ class Screen:
     STACK = 1
     REPLACE = 2
 
-    @classmethod  # Called by Input when status change needs redraw of current obj
+    _value = None
+
+    # Allow a Window to store an arbitrary object. Retrieval may be
+    # done by caller, after the Screen instance was closed
+    @classmethod
+    def value(cls, val=None):
+        if val is not None:
+            cls._value = val
+        return cls._value
+
+    # Called by Input when status change needs redraw of current obj
+    @classmethod
     def redraw_co(cls):
         if cls.current_screen is not None:
             obj = cls.current_screen.get_obj()
@@ -594,16 +605,6 @@ class Screen:
 # Very basic window class. Cuts a rectangular hole in a screen on which
 # content may be drawn.
 class Window(Screen):
-    _value = None
-
-    # Allow a Window to store an arbitrary object. Retrieval may be
-    # done by caller, after the Window instance was deleted
-    @classmethod
-    def value(cls, val=None):
-        if val is not None:
-            cls._value = val
-        return cls._value
-
     @staticmethod
     def close():  # More intuitive name for popup window
         Screen.back()
