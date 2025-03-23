@@ -477,7 +477,7 @@ class Screen:
     def shutdown(cls):
         cls.is_shutdown.set()  # Tell monitor() to shutdown
 
-    def __init__(self):
+    def __init__(self, writer=None):
         self.lstactive = []  # Controls which respond to Select button
         self.selected_obj = None  # Index of currently selected object
         self.displaylist = []  # All displayable objects
@@ -491,6 +491,8 @@ class Screen:
             asyncio.create_task(self._garbage_collect())
         Screen.current_screen = self
         self.parent = None
+        if writer is not None:  # Special case of no active widgets (e.g. popup message)
+            DummyWidget(writer, self)  # Invisible active widget
 
     def _do_open(self, old_screen):  # Window overrides
         dev = display.usegrey(False)
@@ -621,7 +623,7 @@ class Window(Screen):
         fgcolor=None,
         writer=None,
     ):
-        Screen.__init__(self)
+        Screen.__init__(self, writer)
         self.row = row
         self.col = col
         self.height = height
@@ -629,8 +631,6 @@ class Window(Screen):
         self.draw_border = draw_border
         self.fgcolor = fgcolor if fgcolor is not None else color_map[FG]
         self.bgcolor = bgcolor if bgcolor is not None else color_map[BG]
-        if writer is not None:  # Special case of popup message
-            DummyWidget(writer, self)  # Invisible active widget
 
     def _do_open(self, old_screen):
         dev = display.usegrey(False)
@@ -898,8 +898,8 @@ class DummyWidget(Widget):
             window.col + 1,
             4,
             4,
-            window.fgcolor,
-            window.bgcolor,
+            None,
+            None,
             False,
             None,
             True,

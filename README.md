@@ -1036,7 +1036,11 @@ See `demos/plot.py` for an example of multi-screen design, or
 
 ## 4.2 Constructor
 
-This takes no arguments.
+This takes one optional argument.
+ * `writer=None` In general a `Screen` must have at least on active widget. In
+ the special case where there are none (e.g. a splash screen), a `Writer`
+ instance should be passed. Application code should close the splash screen by
+ issuing `Screen.back()`.
 
 ## 4.3 Callback methods
 
