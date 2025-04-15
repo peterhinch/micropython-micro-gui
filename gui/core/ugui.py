@@ -429,7 +429,8 @@ class Screen:
         gran = hasattr(ssd, "lock_mode")  # Allow granular locking
         if arfsh:
             h = ssd.height
-            split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
+            # split = max(y for y in (1, 2, 3, 5, 7) if not h % y)
+            split = max(y for y in range(1, 9) if not h % y)
             if split == 1:
                 arfsh = False
         while True:
