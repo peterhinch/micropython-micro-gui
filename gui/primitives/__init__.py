@@ -28,6 +28,7 @@ _attrs = {
     "Pushbutton": "pushbutton",
     "ESP32Touch": "pushbutton",
     "Switch": "switch",
+    "I2CEncoder": "i2cencoder",
 }
 
 # Copied from uasyncio.__init__.py
