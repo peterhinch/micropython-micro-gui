@@ -3311,12 +3311,10 @@ The [Waveshare pico_epaper_42](https://www.waveshare.com/pico-epaper-4.2.htm)
 has quite a low level of ghosting. A full refresh takes about 2.1s and partial
 about 740ms. In use there is a visible lag between operating a user control and
 a visible response, but it is usable. Currently this is the only fully
-supported ePaper display.
-
-It has a socket for a Pico or Pico W, but also comes with a cable suitable for
-connecting to any host. The hardware_setup.py should be copied or adapted from
-`setup_examples/pico_epaper_42_pico.py`. If using the socket, default args may
-be used (see code comment).
+supported ePaper display. It has a socket for a Pico or Pico W, but also comes
+with a cable suitable for connecting to any host. The hardware_setup.py should
+be copied or adapted from `setup_examples/pico_epaper_42_pico.py`. If using the
+Pico socket, default args may be used (see code comment).
 
 Some attention to detail is required to handle the refresh characteristics.
 The application must wait for the initial full refresh (which occurs
@@ -3328,8 +3326,10 @@ the screen constructor issuing
 to run
 ```python
 async def set_partial():  # Ensure 1st refresh is a full refresh
-    await Screen.rfsh_done.wait()  # Wait for first refresh to end
-    ssd.set_partial()
+    await asyncio.sleep(1)
+    async with Screen.rfsh_lock:
+        # Wait for first refresh to end
+        ssd.set_partial()
 ```
 The application then runs in partial mode with a reasonably quick and visually
 satisfactory response to user inputs such as button events. See the
@@ -3340,12 +3340,10 @@ ghosting. The demo provides for a full refresh via the `reset` button. A full
 refresh should be done as follows:
 ```python
 async def full_refresh():
-    Screen.rfsh_done.clear()  # Enable completion flag
-    await Screen.rfsh_done.wait()  # Wait for a refresh to end
-    ssd.set_full()
-    Screen.rfsh_done.clear()  # Re-enable completion flag
-    await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
-    ssd.set_partial()  # Subsequent refreshes are partial
+    async with Screen.rfsh_lock:
+        ssd.set_full()
+    # await asyncio.sleep(1)  # Allow a full refresh (seconds)
+    await set_partial()
 ```
 The driver for the supported display uses 1-bit color mapping: this means that
 greying-out has no visible effect. Greyed-out controls cannot accept the focus
