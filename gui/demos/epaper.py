@@ -47,30 +47,17 @@ import utime
 import gc
 
 
-# async def full_refresh():
-#     Screen.rfsh_done.clear()  # Enable completion flag
-#     await Screen.rfsh_done.wait()  # Wait for a refresh to end
-#     ssd.set_full()
-#     Screen.rfsh_done.clear()  # Enable completion flag
-#     await Screen.rfsh_done.wait()  # Wait for a single full refresh to end
-#     ssd.set_partial()
-#
-#
-# async def set_partial():  # Ensure 1st refresh is a full refresh
-#     await Screen.rfsh_done.wait()  # Wait for first refresh to end
-#     ssd.set_partial()
 async def full_refresh():
     async with Screen.rfsh_lock:
         ssd.set_full()
-    # await asyncio.sleep(1)  # Allow a full refresh (seconds)
-    await set_partial()
+    await asyncio.sleep_ms(0)  # Lock released, allow a refresh to start
+    await set_partial()  # Waits for it to complete before changing
 
 
-async def set_partial():  # Ensure 1st refresh is a full refresh
-    await asyncio.sleep(1)
+async def set_partial():
+    await ssd.complete.wait()  # Ensure 1st refresh is a full refresh
     async with Screen.rfsh_lock:
-        # Wait for first refresh to end
-        ssd.set_partial()
+        ssd.set_partial()  # Subsequent refreshes are partial.
 
 
 class FooScreen(Screen):

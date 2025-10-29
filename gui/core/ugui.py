@@ -427,7 +427,7 @@ class Screen:
     async def auto_refresh(cls):
         arfsh = hasattr(ssd, "do_refresh")  # Refresh can be asynchronous.
         gran = hasattr(ssd, "lock_mode")  # Allow granular locking. Non-ePaper display
-        epd = hasattr(ssd, "ready")  # ePaper
+        epd = hasattr(ssd, "complete")  # ePaper
         assert not (gran and epd), "Driver error"
         if arfsh:
             h = ssd.height
@@ -449,8 +449,7 @@ class Screen:
                     if arfsh:
                         await ssd.do_refresh(split)
                         if epd:  # Do not release lock until hardware is ready.
-                            while not ssd.ready():
-                                await asyncio.sleep_ms(50)
+                            await ssd.complete.wait()
                     else:
                         ssd.show()  # Synchronous (blocking) refresh.
             await asyncio.sleep_ms(0)  # Let user code respond to lock release
