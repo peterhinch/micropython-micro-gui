@@ -159,7 +159,7 @@ under development so check for updates.
 9. [Realtime applications](./README.md#9-realtime-applications) Accommodating tasks requiring fast RT performance.  
 10. [ePaper displays](./README.md#10-epaper-displays) Guidance on using ePaper displays.  
 
-[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives, more on callbacks.
+[Appendix 1 Application design](./README.md#appendix-1-application-design) Tab order, button layout, encoder interface, use of graphics primitives, more on callbacks.  
 [Appendix 2 Freezing bytecode](./README.md#appendix-2-freezing-bytecode) Optional way to save RAM.  
 [Appendix 3 Cross compiling](./README.md#appendix-3-cross-compiling) Another way to save RAM.  
 [Appendix 4 GUI Design notes](./README.md#appendix-4-gui-design-notes) The reason for continuous refresh.  

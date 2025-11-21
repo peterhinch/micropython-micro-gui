@@ -7,11 +7,12 @@
 # Also for suggesting abstracting the input device class.
 # Now requires firmware >= V1.20
 
-import uasyncio as asyncio
+import asyncio
 from time import ticks_diff, ticks_ms
 import gc
 from array import array
 import sys
+from machine import Pin
 
 from gui.core.colors import *
 from gui.primitives import Pushbutton
@@ -295,8 +296,9 @@ class Display(DisplayIP):
 
                 ESP32Touch.threshold(touch)
                 ipdev = Input(nxt, sel, prev, incr, decr, encoder, ESP32Touch)
-            else:
-                ipdev = Input(nxt, sel, prev, incr, decr, encoder, Pushbutton)
+            else:  # If non-Pin arg is passed, assume 5 Pushbutton-compatible objects
+                btn = Pushbutton if isinstance(nxt, Pin) else lambda x, **y: x
+                ipdev = Input(nxt, sel, prev, incr, decr, encoder, btn)
         super().__init__(ipdev)
         display = self
 
