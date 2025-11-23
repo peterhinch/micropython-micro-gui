@@ -87,6 +87,7 @@ under development so check for updates.
  1.3 [Fonts](./README.md#13-fonts)  
  1.4 [Navigation](./README.md#14-navigation) Options for hardware. How the GUI navigates between widgets.  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.4.1 [Encoder-only mode](./README.md#141-encoder-only-mode) Using only an encoder for navigation.  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.4.2 [Other input devices](./README.md#142-other-input-devices) Speech, gestures, motion.  
  1.5 [Hardware definition](./README.md#15-hardware-definition) How to configure your hardware.  
  1.6 [Quick hardware check](./README.md#16-quick-hardware-check) Testing the hardware config. Please do this first.  
  1.7 [Installation](./README.md#17-installation) Installing the library.  
@@ -332,6 +333,13 @@ mode with a double click. In that mode turning the dial adjusts the widget.
 
 This mode works well and its use is quite intuitive. Navigation by turning a
 dial makes it particularly useful when a screen has a large number of widgets.
+
+### 1.4.2 Other input devices
+
+Devices exist which enable operation by means such as speech, gestures captured
+by a camera or by an inertial measurement unit etc. A `VButton` primitive has
+been provided to facilitate interfacing such devices. This is described
+[in this doc](./optional_extras/INPUT.md).
 
 ###### [Contents](./README.md#0-contents)
 
