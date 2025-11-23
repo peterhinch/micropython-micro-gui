@@ -11,6 +11,8 @@ except ImportError:
 
 async def _g():
     pass
+
+
 type_coro = type(_g())
 
 # If a callback is passed, run it and return.
@@ -22,12 +24,14 @@ def launch(func, tup_args):
         res = asyncio.create_task(res)
     return res
 
+
 _attrs = {
     "Delay_ms": "delay_ms",
     "Encoder": "encoder",
     "Pushbutton": "pushbutton",
     "ESP32Touch": "pushbutton",
     "Switch": "switch",
+    "VButton": "virt_button",
 }
 
 # Copied from uasyncio.__init__.py
