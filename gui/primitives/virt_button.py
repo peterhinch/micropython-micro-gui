@@ -75,9 +75,7 @@ class VButton:
         while True:
             op_id = self.device.gui_op_id()  # Get GUI operation ID from device (or None)
             if op_id is not None and 0 <= op_id < len(cmd):
-                print(op_id)
                 ins = cmd[op_id]  # Get Instruction
-                print(ins)
                 if ins.dest == _ALL:
                     for b in self.buttons:
                         await self.process(b, ins)
