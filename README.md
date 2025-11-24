@@ -12,6 +12,8 @@ MicroPython firmware build. Options for data input comprise:
  [this one](https://www.adafruit.com/product/377). An intuitive interface.
  * A rotary encoder with built-in push switch only.
  * On ESP32 physical buttons may be replaced with touchpads.
+ * Alternative interfaces (speech, gestures) may be added via a user supplied
+ driver.
 
 It is larger and more complex than `nano-gui` owing to the support for input.
 It enables switching between screens and launching modal windows. Widgets are
