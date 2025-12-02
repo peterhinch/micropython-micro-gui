@@ -42,14 +42,15 @@ class _ListDialog(Window):
             select_color=dd.select_color,
             value=dd.value(),
             callback=self.callback,
-            also=Listbox.NOCB,  # Force passed callback even if elements are tuples
+            also=Listbox.IN_WIN,  # Must respond to Next, Prev
         )
         self.dd = dd
 
     def callback(self, obj_listbox):
         display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
-        self.dd.value(obj_listbox.value())  # Update it
+        if obj_listbox.current:  # Currency is still on control
+            self.dd.value(obj_listbox.value())  # Update it
 
 
 class Dropdown(Widget):

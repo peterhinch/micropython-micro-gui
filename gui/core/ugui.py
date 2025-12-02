@@ -539,20 +539,25 @@ class Screen:
             up = 1 if to == _NEXT else -1
 
         lo = self.get_obj()  # Old current object
-        done = False
-        while not done:
-            idx += up
-            idx %= len(self.lstactive)
-            co = self.get_obj(idx)
-            if co is not None:
-                if co is not lo:
-                    self.selected_obj = idx
-                    if lo is not None:
-                        lo.leave()  # Tell object it's losing currency.
-                        lo.show()  # Re-display with new status
-                    co.enter()  # Tell object it has currency
-                    co.show()
-                done = True
+        # Dropdown & Menu have Window containing a single Listbox instance. Need to
+        # respond to Next and Prev.
+        if (llsta := len(self.lstactive)) == 1:  # Screen contains no other widgets
+            lo.leave()  # Sole widget can ignore move request or respond to .leave
+        else:
+            done = False
+            while not done:
+                idx += up
+                idx %= llsta
+                co = self.get_obj(idx)
+                if co is not None:
+                    if co is not lo:
+                        self.selected_obj = idx
+                        if lo is not None:
+                            lo.leave()  # Tell object it's losing currency.
+                            lo.show()  # Re-display with new status
+                        co.enter()  # Tell object it has currency
+                        co.show()
+                    done = True
 
     # Move currency to a specific control.
     def move_to(self, obj):

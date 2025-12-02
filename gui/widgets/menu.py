@@ -15,7 +15,6 @@ from gui.core.colors import *
 # Next and Prev close the listbox without running the callback. This is
 # handled by Screen .move bound method
 class SubMenu(Window):
-
     def __init__(self, menu, button, elements):  # menu is parent Menu
         self.menu = menu
         self.button = button
@@ -32,10 +31,20 @@ class SubMenu(Window):
         ap_height = lb_height + 6  # Allow for listbox border
         ap_width = lb_width + 6
         super().__init__(row, col, ap_height, ap_width, draw_border=False)
-        Listbox(wri, row + 3, col + 3, elements = te, width = lb_width,
-                fgcolor = button.fgcolor, bgcolor = button.bgcolor, bdcolor=False, 
-                fontcolor = button.textcolor, select_color = menu.select_color,
-                callback = self.callback)
+        Listbox(
+            wri,
+            row + 3,
+            col + 3,
+            elements=te,
+            width=lb_width,
+            fgcolor=button.fgcolor,
+            bgcolor=button.bgcolor,
+            bdcolor=False,
+            fontcolor=button.textcolor,
+            select_color=menu.select_color,
+            callback=self.callback,
+            also=Listbox.IN_WIN,  # Must respond to Next, Prev
+        )
 
     def callback(self, lbox):
         display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
@@ -43,10 +52,11 @@ class SubMenu(Window):
         el = self.elements[lbox.value()]  # (text, cb, args)
         if len(el) == 2:  # Recurse into submenu
             args = (self.menu, self.button, el[1])
-            Screen.change(SubMenu, args = args)
+            Screen.change(SubMenu, args=args)
             display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
-        else:
+        elif lbox.current:  # Currency is still on control
             el[1](lbox, *el[2])
+
 
 # A Menu is a set of Button objects at the top of the screen. On press, Buttons either run the
 # user callback or instantiate a SubMenu
@@ -54,29 +64,37 @@ class SubMenu(Window):
 # Single items: (top_text, cb, (args, ...))
 # Submenus: (top_text, ((mnu_text, cb, (args, ...)),(mnu_text, cb, (args, ...)),...)
 class Menu:
-
-    def __init__(self, writer, *, height=25, bgcolor=None, fgcolor=None,
-                 textcolor=None, select_color=DARKBLUE, args):
+    def __init__(
+        self,
+        writer,
+        *,
+        height=25,
+        bgcolor=None,
+        fgcolor=None,
+        textcolor=None,
+        select_color=DARKBLUE,
+        args
+    ):
         self.writer = writer
         self.select_color = select_color
         row = 2
         col = 2
-        btn = {'bgcolor' : bgcolor,
-               'fgcolor' : fgcolor,
-               'height' : height,
-               'textcolor' : textcolor, }
+        btn = {
+            "bgcolor": bgcolor,
+            "fgcolor": fgcolor,
+            "height": height,
+            "textcolor": textcolor,
+        }
         for arg in args:
             if len(arg) == 2:  # Handle submenu
                 # txt, ((element, cb, (cbargs,)),(element,cb, (cbargs,)), ..) = arg
-                b = Button(writer, row, col, text=arg[0],
-                           callback=self.cb, args=arg, **btn)
+                b = Button(writer, row, col, text=arg[0], callback=self.cb, args=arg, **btn)
             else:
                 txt, cb, cbargs = arg
-                b = Button(writer, row, col, text=txt,
-                           callback=cb, args=cbargs, **btn)
+                b = Button(writer, row, col, text=txt, callback=cb, args=cbargs, **btn)
             col = b.mcol
 
     def cb(self, button, txt, elements):  # Button pushed which calls submenu
         args = (self, button, elements)
-        Screen.change(SubMenu, args = args)
+        Screen.change(SubMenu, args=args)
         display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
