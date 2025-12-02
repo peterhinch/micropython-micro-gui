@@ -46,7 +46,7 @@ class SubMenu(Window):
             also=Listbox.IN_WIN,  # Must respond to Next, Prev
         )
 
-    def callback(self, lbox):
+    def callback(self, lbox, update):
         display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
         el = self.elements[lbox.value()]  # (text, cb, args)
@@ -54,8 +54,10 @@ class SubMenu(Window):
             args = (self.menu, self.button, el[1])
             Screen.change(SubMenu, args=args)
             display.ipdev.adj_mode(True)  # If in 3-button mode, go into adjust mode
-        elif lbox.current:  # Currency is still on control
+        elif update:  # Currency is still on control, run user callback.
             el[1](lbox, *el[2])
+        else:
+            display.ipdev.adj_mode(False)  # Collapsing menu, cancel 3-button adjust
 
 
 # A Menu is a set of Button objects at the top of the screen. On press, Buttons either run the

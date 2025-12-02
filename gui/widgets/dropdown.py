@@ -46,10 +46,10 @@ class _ListDialog(Window):
         )
         self.dd = dd
 
-    def callback(self, obj_listbox):
+    def callback(self, obj_listbox, update):
         display.ipdev.adj_mode(False)  # If in 3-button mode, leave adjust mode
         Screen.back()
-        if obj_listbox.current:  # Currency is still on control
+        if update:  # Currency is still on control
             self.dd.value(obj_listbox.value())  # Update it
 
 

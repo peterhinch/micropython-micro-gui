@@ -80,12 +80,12 @@ class Listbox(Widget):
             self.ntop = value - self.dlines + 1
         super().__init__(writer, row, col, height, width, fgcolor, bgcolor, bdcolor, value, True)
         self.adjustable = True  # Can show adjustable border
-        self.cb_args = args
+        # Windowed Listbox has special CB taking bool: update/leave
+        self.cb_args = (True,) if also == Listbox.IN_WIN else args
         self.select_color = select_color
         self.fontcolor = fontcolor
         self._value = value  # No callback until user selects
         self.ev = value  # Value change detection
-        self.current = True  # Use in Dropdown and Menu
 
     def update(self):  # Elements list has changed.
         l = len(self.els)
@@ -189,7 +189,7 @@ class Listbox(Widget):
         if (self.also & Listbox.ON_LEAVE) and self._value != self.ev:
             self.do_sel()
         elif self.also & Listbox.IN_WIN:  # Listbox is sole occupant of a Window:
-            self.cb(self, *self.cb_args)  # run its special CB without changing the value
+            self.cb(self, False)  # Its special CB closes window without changing the value
 
     def despatch(self, _):  # Run the callback specified in elements
         x = self.els[self()]
