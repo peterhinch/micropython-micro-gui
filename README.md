@@ -69,6 +69,7 @@ target and a C device driver (unless you can acquire a suitable binary).
 
 # Project status
 
+Dec 2025: GUI can optionally be started from a running asyncio task.
 Oct 2024: Refresh locking can now be handled by device driver.  
 Sept 2024: Refresh control is now via a `Lock`. See [Realtime applications](./README.md#9-realtime-applications).
 This is a breaking change for applications which use refresh control.  
