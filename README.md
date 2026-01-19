@@ -336,6 +336,14 @@ mode with a double click. In that mode turning the dial adjusts the widget.
 
 This mode works well and its use is quite intuitive. Navigation by turning a
 dial makes it particularly useful when a screen has a large number of widgets.
+To specify this mode, `hardware_setup.py` should end thus:
+```py
+# Code omitted
+sel = Pin(16, Pin.IN, Pin.PULL_UP)  # Encoder pushbutton
+ex = Pin(20, Pin.IN, Pin.PULL_UP)  # Encoder X
+ey = Pin(17, Pin.IN, Pin.PULL_UP)  # Encoder Y
+display = Display(ssd, nxt=ex, sel=sel, prev=ey, incr=False, encoder=4)
+```
 
 ### 1.4.2 Other input devices
 

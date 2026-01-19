@@ -34,6 +34,7 @@ from machine import Pin, SPI, freq
 import gc
 
 from drivers.ili93xx.ili9341 import ILI9341 as SSD
+
 freq(250_000_000)  # RP2 overclock
 # Create and export an SSD instance
 pdc = Pin(8, Pin.OUT, value=0)  # Arbitrary pins
@@ -44,6 +45,7 @@ gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, usd=True)
 
 from gui.core.ugui import Display
+
 # Create and export a Display instance
 # Define control buttons
 nxt = Pin(19, Pin.IN, Pin.PULL_UP)  # Move to next control
@@ -52,3 +54,5 @@ prev = Pin(18, Pin.IN, Pin.PULL_UP)  # Move to previous control
 increase = Pin(20, Pin.IN, Pin.PULL_UP)  # Increase control's value
 decrease = Pin(17, Pin.IN, Pin.PULL_UP)  # Decrease control's value
 display = Display(ssd, nxt, sel, prev, increase, decrease, 4)  # Encoder
+# Encoder-only mode
+# display = Display(ssd, nxt=increase, sel=sel, prev=decrease, incr=False, encoder=4)
