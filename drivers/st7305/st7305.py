@@ -5,6 +5,7 @@
 from time import sleep_ms
 import gc
 import framebuf
+import uasyncio as asyncio
 import micropython
 from drivers.boolpalette import BoolPalette
 
