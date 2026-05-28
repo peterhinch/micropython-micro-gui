@@ -2,10 +2,13 @@
 # ST7305 is a 1-bit monochrome reflective LCD controller (400x300)
 # Reference: https://github.com/waveshareteam/ESP32-S3-RLCD-4.2
 
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2026 chnyangjie
+
 from time import sleep_ms
 import gc
 import framebuf
-import uasyncio as asyncio
+import asyncio
 import micropython
 from drivers.boolpalette import BoolPalette
 
@@ -46,7 +49,9 @@ class ST7305(framebuf.FrameBuffer):
     def rgb(r, g, b):
         return 1 if (r + g + b) > 384 else 0  # 0 = black, 1 = white
 
-    def __init__(self, spi, cs, dc, rst=None, height=300, width=400, orientation=LANDSCAPE, init_spi=False):
+    def __init__(
+        self, spi, cs, dc, rst=None, height=300, width=400, orientation=LANDSCAPE, init_spi=False
+    ):
         self._spi = spi
         self._rst = rst
         self._dc = dc
@@ -104,60 +109,60 @@ class ST7305(framebuf.FrameBuffer):
         wcd = self._wcd
 
         # NVM Load Control
-        wcd(b'\xd6', b'\x17\x02')
+        wcd(b"\xd6", b"\x17\x02")
         # Booster Enable
-        wcd(b'\xd1', b'\x01')
+        wcd(b"\xd1", b"\x01")
         # Gate Voltage Setting
-        wcd(b'\xc0', b'\x11\x04')
+        wcd(b"\xc0", b"\x11\x04")
         # VSHP Setting (High Power Mode)
-        wcd(b'\xc1', b'\x41\x41\x41\x41')
+        wcd(b"\xc1", b"\x41\x41\x41\x41")
         # VSLP Setting (Low Power Mode)
-        wcd(b'\xc2', b'\x19\x19\x19\x19')
+        wcd(b"\xc2", b"\x19\x19\x19\x19")
         # VSHN Setting (High Power Mode)
-        wcd(b'\xc4', b'\x41\x41\x41\x41')
+        wcd(b"\xc4", b"\x41\x41\x41\x41")
         # VSLN Setting (Low Power Mode)
-        wcd(b'\xc5', b'\x19\x19\x19\x19')
+        wcd(b"\xc5", b"\x19\x19\x19\x19")
         # OSC Setting
-        wcd(b'\xd8', b'\xa6\xe9')
+        wcd(b"\xd8", b"\xa6\xe9")
         # Frame Rate Control
-        wcd(b'\xb2', b'\x05')
+        wcd(b"\xb2", b"\x05")
         # Gate EQ Control (High Power Mode)
-        wcd(b'\xb3', b'\xe5\xf6\x05\x46\x77\x77\x77\x77\x76\x45')
+        wcd(b"\xb3", b"\xe5\xf6\x05\x46\x77\x77\x77\x77\x76\x45")
         # Gate EQ Control (Low Power Mode)
-        wcd(b'\xb4', b'\x05\x46\x77\x77\x77\x77\x76\x45')
+        wcd(b"\xb4", b"\x05\x46\x77\x77\x77\x77\x76\x45")
         # Gate Timing Control
-        wcd(b'\x62', b'\x32\x03\x1f')
+        wcd(b"\x62", b"\x32\x03\x1f")
         # Source EQ Enable
-        wcd(b'\xb7', b'\x13')
+        wcd(b"\xb7", b"\x13")
         # Gate Line Setting (300 lines = 100 * 3)
-        wcd(b'\xb0', b'\x64')
+        wcd(b"\xb0", b"\x64")
         # Sleep Out
-        cmd(b'\x11')
+        cmd(b"\x11")
         sleep_ms(200)
         # Source Voltage Select
-        wcd(b'\xc9', b'\x00')
+        wcd(b"\xc9", b"\x00")
         # Memory Data Access Control (MX=1, DO=1)
-        wcd(b'\x36', b'\x48')
+        wcd(b"\x36", b"\x48")
         # Data Format Select - 1-bit monochrome mode
-        wcd(b'\x3a', b'\x11')
+        wcd(b"\x3a", b"\x11")
         # Gamma Mode Setting - Monochrome mode
-        wcd(b'\xb9', b'\x20')
+        wcd(b"\xb9", b"\x20")
         # Panel Setting
-        wcd(b'\xb8', b'\x29')
+        wcd(b"\xb8", b"\x29")
         # Display Inversion On
-        cmd(b'\x21')
+        cmd(b"\x21")
         # Column Address Set (0x12 to 0x2A)
-        wcd(b'\x2a', b'\x12\x2a')
+        wcd(b"\x2a", b"\x12\x2a")
         # Row Address Set (0x00 to 0xC7)
-        wcd(b'\x2b', b'\x00\xc7')
+        wcd(b"\x2b", b"\x00\xc7")
         # Tearing Effect Line On
-        wcd(b'\x35', b'\x00')
+        wcd(b"\x35", b"\x00")
         # Auto Power Down Control
-        wcd(b'\xd0', b'\xff')
+        wcd(b"\xd0", b"\xff")
         # High Power Mode On
-        cmd(b'\x38')
+        cmd(b"\x38")
         # Display On
-        cmd(b'\x29')
+        cmd(b"\x29")
 
     def _remap(self):
         _remap_buf(self._hwbuf, self._mvb, self.width, self.height)
@@ -172,13 +177,13 @@ class ST7305(framebuf.FrameBuffer):
         self._remap()
         if self._spi_init:
             self._spi_init(self._spi)
-        self._wcmd(b'\x2a')  # Column Address Set
-        self._wdata(b'\x12\x2a')
-        self._wcmd(b'\x2b')  # Row Address Set
-        self._wdata(b'\x00\xc7')
+        self._wcmd(b"\x2a")  # Column Address Set
+        self._wdata(b"\x12\x2a")
+        self._wcmd(b"\x2b")  # Row Address Set
+        self._wdata(b"\x00\xc7")
         self._dc(0)
         self._cs(0)
-        self._spi.write(b'\x2c')  # RAMWR
+        self._spi.write(b"\x2c")  # RAMWR
         self._dc(1)
         self._spi.write(self._hwbuf)
         self._cs(1)
@@ -200,8 +205,12 @@ class ST7305(framebuf.FrameBuffer):
             async with elock:
                 self._dc(0)
                 self._cs(0)
-                self._spi.write(b'\x2c')
+                self._spi.write(b"\x2c")
                 self._dc(1)
-                self._spi.write(self._hwbuf[n * lines * (self.width // 8):(n + 1) * lines * (self.width // 8)])
+                self._spi.write(
+                    self._hwbuf[
+                        n * lines * (self.width // 8) : (n + 1) * lines * (self.width // 8)
+                    ]
+                )
                 self._cs(1)
             await asyncio.sleep(0)
