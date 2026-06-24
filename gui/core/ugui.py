@@ -558,8 +558,24 @@ class Screen:
         if isinstance(old_screen, Window):
             x0, y0, x1, y1, w, h = old_screen._list_dims()
             dev.fill_rect(x0, y0, w, h, color_map[BG])  # Blank to screen BG
-            for obj in [z for z in self.displaylist if z.overlaps(x0, y0, x1, y1)]:
-                if obj.visible:
+            # A widget's show() blanks its whole bounding box, which for a
+            # container (e.g. Grid) extends beyond the window. Grow the dirty
+            # region to the union of every widget overlapping it, so a
+            # partially-covered container's children are all redrawn - not just
+            # those behind the window.
+            grown = True
+            while grown:
+                grown = False
+                for obj in self.displaylist:
+                    if obj.visible and obj.overlaps(x0, y0, x1, y1):
+                        nx0, ny0 = min(x0, obj.col), min(y0, obj.row)
+                        nx1 = max(x1, obj.col + obj.width)
+                        ny1 = max(y1, obj.row + obj.height)
+                        if (nx0, ny0, nx1, ny1) != (x0, y0, x1, y1):
+                            x0, y0, x1, y1 = nx0, ny0, nx1, ny1
+                            grown = True
+            for obj in self.displaylist:
+                if obj.visible and obj.overlaps(x0, y0, x1, y1):
                     obj.show()
         # Normally clear the screen and redraw everything
         else:
